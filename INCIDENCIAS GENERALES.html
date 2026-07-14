@@ -824,6 +824,33 @@
   @keyframes gemeloPulso{ 0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,.35);} 50%{box-shadow:0 0 0 7px rgba(229,57,53,0);} }
   .gemelo-gate-icono{font-size:26px;margin-bottom:6px;}
   .gemelo-gate-nombre{font-size:10.5px;font-weight:700;color:var(--teal-dark);line-height:1.3;}
+  /* ---------- OP OMSA SANTIAGO — flota de autobuses ---------- */
+  .omsa-flota-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;}
+  .omsa-bus-card{
+    background:#fff;border-radius:16px;padding:18px 14px;text-align:center;cursor:pointer;
+    border:3px solid #2e9e5b;transition:transform .15s ease;
+  }
+  .omsa-bus-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1);}
+  .omsa-bus-card.fuera-servicio{
+    border-color:#e53935;
+    animation:omsaParpadeo 1.1s ease-in-out infinite;
+  }
+  @keyframes omsaParpadeo{
+    0%,100%{ background:#fff; box-shadow:0 0 0 0 rgba(229,57,53,.4); }
+    50%{ background:#ffecec; box-shadow:0 0 0 8px rgba(229,57,53,0); }
+  }
+  .omsa-bus-icono{font-size:34px;margin-bottom:8px;}
+  .omsa-bus-ficha{font-size:14px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;}
+  .omsa-bus-badge{
+    display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
+    padding:3px 10px;border-radius:12px;margin-bottom:6px;
+  }
+  .omsa-bus-badge.ok{background:#e3f6ea;color:#2e9e5b;}
+  .omsa-bus-badge.mal{background:#fdecea;color:#e53935;}
+  .omsa-bus-tiempo{font-size:10.5px;color:#c53030;font-weight:700;}
+  .omsa-bus-eliminar{
+    display:block;margin-top:8px;font-size:10px;color:#a9b6bd;text-decoration:underline;cursor:pointer;background:none;border:none;
+  }
   /* ---------- CHAT / MENSAJES — diseño profesional tipo app de mensajería ---------- */
   .chat-app{
     display:flex;background:var(--white);border-radius:18px;box-shadow:0 4px 20px rgba(0,61,84,.1);
@@ -1005,7 +1032,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V3.2.1</div>
+<div id="versionLabel">V3.4.0</div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1059,7 +1086,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 3.2.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 3.4.0
     </div>
   </div>
 </div>
@@ -1195,6 +1222,51 @@
   <button onclick="toggleModoCapacitacion()" style="background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 12px;border-radius:14px;cursor:pointer;font-weight:800;font-size:11.5px;">Salir</button>
 </div>
 
+<button id="btnCloudConfig" onclick="abrirModalConfigNube()" style="display:none;position:fixed;top:18px;right:26px;z-index:150;width:46px;height:46px;border-radius:50%;background:var(--teal);border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 4px 14px rgba(0,88,121,.35);align-items:center;justify-content:center;">
+  ☁️
+  <span id="cloudConfigDot" style="position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#8a97a3;border:2px solid #fff;"></span>
+</button>
+
+<div id="liveConfigModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.75);">
+  <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="cerrarModalConfigNube()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="color:var(--teal-dark);font-size:17px;margin:0 0 6px 0;">☁️ Modo en vivo (Google Sheets)</h2>
+    <p style="font-size:13px;color:var(--gray-text);margin:0 0 16px 0;line-height:1.5;">Todas las incidencias que se envíen aquí se comparten automáticamente en vivo con Google Sheets, visibles para cualquier persona conectada desde otra computadora.</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span id="liveDot" style="width:10px;height:10px;border-radius:50%;background:#8a97a3;display:inline-block;flex-shrink:0;"></span>
+      <span id="liveLabel" style="font-size:12.5px;color:var(--gray-text);">Modo en vivo no configurado — los datos solo se guardan en este navegador</span>
+    </div>
+    <label style="margin-top:0;">URL del Apps Script</label>
+    <input type="text" id="liveUrlInput" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="sincronizarAhora(true)">🔄 Sincronizar ahora</button>
+      <button class="btn btn-primary" onclick="guardarUrlEnVivo()">🔗 Guardar y conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ALERTA CRÍTICA PERSISTENTE (sigue sonando en cualquier pestaña) ============ -->
+<div id="alertaCriticaBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:700;background:linear-gradient(90deg,#c0392b,#e53935);color:#fff;padding:12px 18px;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;box-shadow:0 4px 16px rgba(0,0,0,.35);animation:priorityPulse 1.4s ease-in-out infinite;">
+  <span id="alertaCriticaTexto" style="font-weight:800;font-size:13px;text-align:center;">🚨 INCIDENCIA CRÍTICA</span>
+  <button onclick="pedirSilenciarAlertaCritica()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);color:#fff;padding:7px 16px;border-radius:16px;cursor:pointer;font-weight:800;font-size:12px;white-space:nowrap;">🔇 Silenciar</button>
+</div>
+
+<div id="confirmarSilencioModal" style="display:none;position:fixed;inset:0;z-index:710;align-items:center;justify-content:center;background:rgba(0,26,36,.8);">
+  <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:380px;box-shadow:0 30px 60px rgba(0,0,0,.4);">
+    <h2 style="color:#c0392b;font-size:16px;margin:0 0 8px 0;">🔒 Confirma tu identidad para silenciar</h2>
+    <p style="font-size:12.5px;color:var(--gray-text);margin:0 0 16px 0;line-height:1.5;">Para silenciar una alerta crítica, vuelve a ingresar el usuario y la contraseña de la cuenta con la que iniciaste sesión.</p>
+    <label style="margin-top:0;">Usuario</label>
+    <input type="text" id="silencioUsuarioInput" placeholder="Tu usuario">
+    <label>Contraseña</label>
+    <input type="password" id="silencioPasswordInput" placeholder="Tu contraseña">
+    <div class="error-msg" id="silencioError" style="display:none;">Los datos no coinciden con la cuenta abierta.</div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="cerrarModalSilencio()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarSilenciarAlertaCritica()">Confirmar y silenciar</button>
+    </div>
+  </div>
+</div>
+
 <div id="onboardingOverlay" style="display:none;position:fixed;inset:0;z-index:600;">
   <div id="onboardingSpotlight" style="position:absolute;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,20,28,.78);transition:top .35s ease,left .35s ease,width .35s ease,height .35s ease;pointer-events:none;"></div>
   <div id="onboardingTooltip" style="position:absolute;background:#fff;border-radius:16px;padding:20px 22px;width:280px;box-shadow:0 16px 36px rgba(0,0,0,.35);transition:top .35s ease,left .35s ease;">
@@ -1225,6 +1297,7 @@
   <button class="nav-btn" id="nav-fallas" onclick="showPage('fallas')" style="display:none;"><span class="ic">📈</span> Fallas Recurrentes</button>
   <button class="nav-btn" id="nav-mantenimiento" onclick="showPage('mantenimiento')" style="display:none;"><span class="ic">🔧</span> Mantenimiento</button>
   <button class="nav-btn" id="nav-gemelo" onclick="showPage('gemelo')" style="display:none;"><span class="ic">🧬</span> Gemelo Digital</button>
+  <button class="nav-btn" id="nav-omsa" onclick="showPage('omsa')" style="display:none;"><span class="ic">🚌</span> OP OMSA Santiago</button>
   <button class="nav-btn" id="nav-sala" onclick="showPage('sala')" style="display:none;"><span class="ic">🖥️</span> Sala de Control</button>
   <div class="clock" id="clockBox">—</div>
   <div class="notif-widget" style="position:relative;" id="busquedaGlobalWidget">
@@ -1695,22 +1768,6 @@
       </div>
     </div>
 
-    <div class="sync-panel" id="livePanel" style="display:none;">
-      <div class="sp-text">
-        <h3>☁️ Modo en vivo (Google Sheets)</h3>
-        <p>Todas las incidencias que se envíen aquí se comparten automáticamente en vivo con Google Sheets, visibles para cualquier persona conectada desde otra computadora. No necesitas configurar nada — ya viene activado.</p>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
-          <span id="liveDot" style="width:10px;height:10px;border-radius:50%;background:#8a97a3;display:inline-block;flex-shrink:0;"></span>
-          <span id="liveLabel" style="font-size:12px;color:#bfe0ea;">Modo en vivo no configurado — los datos solo se guardan en este navegador</span>
-        </div>
-        <input type="text" id="liveUrlInput" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec" style="margin-top:10px;">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn-sync" onclick="guardarUrlEnVivo()">🔗 Guardar y conectar</button>
-        <button class="btn-sync" style="background:linear-gradient(145deg, var(--teal-2), var(--teal));box-shadow:0 6px 0 #003D54,0 10px 20px rgba(0,88,121,.3);" onclick="sincronizarAhora(true)">🔄 Sincronizar ahora</button>
-      </div>
-    </div>
-
     <div class="subtabs">
       <button class="subtab-btn active" id="subtab-sistema" onclick="showSubtab('sistema')">🎫 Sistema de Transporte</button>
       <button class="subtab-btn" id="subtab-vt" onclick="showSubtab('vt')">🚦 Validador / Torniquete</button>
@@ -1983,10 +2040,11 @@
       <h2><span class="num-badge">⚙️</span> Configuración General</h2>
       <div class="subtitle" style="margin-bottom:14px;">Después de cuántas horas sin resolver una incidencia se considera "crítica" (afecta la pestaña "Incidencias Críticas", la campana de notificaciones y la Sala de Control). Esto se guarda en este navegador.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <input type="number" id="inpUmbralCritico" min="1" step="1" style="width:120px;" placeholder="24">
+        <input type="number" id="inpUmbralCritico" min="0.1" step="0.01" style="width:120px;" placeholder="24">
         <span style="font-size:13px;color:var(--gray-text);">horas</span>
         <button class="btn btn-primary" onclick="aplicarUmbralCritico()">Guardar</button>
       </div>
+      <div class="hint" style="margin-top:8px;">Acepta decimales para fracciones de hora — ej: 1 hora 40 minutos = <b>1.67</b>, 30 minutos = <b>0.5</b>, 45 minutos = <b>0.75</b>.</div>
     </div>
 
     <div class="card" style="margin-top:24px;">
@@ -2174,6 +2232,32 @@
     <div class="card">
       <h2 style="margin-bottom:14px;">🏙️ Santo Domingo — Sistema de Transporte</h2>
       <div id="gemeloSantoDomingoBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ PÁGINA: OP OMSA SANTIAGO (flota de autobuses) ============ -->
+  <div class="page" id="page-omsa">
+    <div class="topbar">
+      <div>
+        <img class="topbar-logo logo-color-img" alt="FIMOVIT">
+        <h1>🚌 OP OMSA Santiago</h1>
+        <div class="subtitle">Estado en vivo de la flota de autobuses activos — verde: operando bien, rojo parpadeante: fuera de servicio.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:22px;">
+      <h2 style="margin-bottom:14px;">➕ Agregar autobús a la flota</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input type="text" id="omsaNuevaFicha" placeholder="Número de ficha, ej: BUS-012" style="flex:1;min-width:220px;">
+        <button class="btn btn-primary" onclick="agregarBusOmsa()">➕ Agregar autobús</button>
+      </div>
+      <div class="error-msg" id="err-omsaDup">Esa ficha ya está registrada en la flota.</div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:6px;">Flota activa</h2>
+      <div class="subtitle" style="margin-bottom:16px;">Haz clic en un autobús para cambiar su estado.</div>
+      <div id="omsaFlotaGrid"><div class="empty-state">Cargando flota...</div></div>
     </div>
   </div>
 
@@ -3074,6 +3158,131 @@ function renderGemeloSantoDomingo(){
   cont.innerHTML = html;
 }
 
+/* ================= OP OMSA SANTIAGO — FLOTA DE AUTOBUSES ================= */
+let flotaOmsa = [];
+let omsaRelojInterval = null;
+
+function formatoDuracionOmsa(ms){
+  if(ms < 0) ms = 0;
+  const horasTotales = ms / 3600000;
+  if(horasTotales >= 24){
+    const dias = Math.floor(horasTotales/24);
+    const horas = Math.floor(horasTotales%24);
+    return `${dias}d ${horas}h`;
+  }
+  const horas = Math.floor(horasTotales);
+  const minutos = Math.floor((ms % 3600000) / 60000);
+  return `${horas}h ${minutos}m`;
+}
+
+async function cargarFlotaOmsa(){
+  const cont = document.getElementById('omsaFlotaGrid');
+  if(!isLiveEnabled()){
+    if(cont) cont.innerHTML = '<div class="empty-state">El modo en vivo no está activo — conecta tu Google Sheet para usar la flota.</div>';
+    return;
+  }
+  try{
+    const res = await fetch(liveUrl + '?sheet=flotaomsa', {method:'GET'});
+    const data = await res.json();
+    if(Array.isArray(data)){
+      flotaOmsa = data.filter(b => b.eliminado !== 'si');
+      renderFlotaOmsa();
+    }
+  }catch(err){ console.error('No se pudo cargar la flota OMSA:', err); }
+  if(!omsaRelojInterval){
+    omsaRelojInterval = setInterval(()=>{
+      const pag = document.getElementById('page-omsa');
+      if(pag && pag.classList.contains('active')) renderFlotaOmsa();
+    }, 60000);
+  }
+}
+
+function renderFlotaOmsa(){
+  const cont = document.getElementById('omsaFlotaGrid');
+  if(!cont) return;
+  if(flotaOmsa.length === 0){
+    cont.innerHTML = '<div class="empty-state">Todavía no hay autobuses registrados en la flota. Agrega el primero arriba.</div>';
+    return;
+  }
+  const ahora = Date.now();
+  cont.innerHTML = '<div class="omsa-flota-grid">' + flotaOmsa.map(b=>{
+    const ok = String(b.estado).toLowerCase() === 'habilitado';
+    const ultimaVezBien = Number(b.ultimaVezBien) || ahora;
+    const tiempoFuera = ok ? '' : formatoDuracionOmsa(ahora - ultimaVezBien);
+    return `<div class="omsa-bus-card ${ok?'':'fuera-servicio'}" onclick="toggleEstadoBusOmsa('${attrJs(b.ficha)}')" title="Clic para cambiar el estado">
+      <div class="omsa-bus-icono">🚌</div>
+      <div class="omsa-bus-ficha">${escapeHtml(String(b.ficha))}</div>
+      <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'✔ Habilitado':'✕ Fuera de servicio'}</span>
+      ${ok ? '' : `<div class="omsa-bus-tiempo">Lleva ${tiempoFuera} así</div>`}
+      <button class="omsa-bus-eliminar" onclick="event.stopPropagation(); eliminarBusOmsa('${attrJs(b.ficha)}')">Quitar de la flota</button>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+async function agregarBusOmsa(){
+  const input = document.getElementById('omsaNuevaFicha');
+  const ficha = input.value.trim();
+  document.getElementById('err-omsaDup').style.display = 'none';
+  if(!ficha){ alert('Escribe el número de ficha del autobús.'); return; }
+  if(flotaOmsa.some(b => String(b.ficha).toLowerCase() === ficha.toLowerCase())){
+    document.getElementById('err-omsaDup').style.display = 'block';
+    return;
+  }
+  if(!isLiveEnabled()){ alert('El modo en vivo no está activo.'); return; }
+  const nuevo = { ficha, estado:'habilitado', ultimaVezBien: Date.now(), actualizadoPor: currentUser ? currentUser.nombre : '', lastModified: Date.now(), eliminado:'no' };
+  flotaOmsa.push(nuevo);
+  renderFlotaOmsa();
+  input.value = '';
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha: nuevo.ficha, estado: nuevo.estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor})
+    });
+    registrarAuditoria('Agregó autobús a la flota OMSA Santiago', ficha);
+  }catch(err){ console.error('No se pudo agregar el autobús:', err); }
+}
+
+async function toggleEstadoBusOmsa(ficha){
+  const bus = flotaOmsa.find(b => String(b.ficha) === String(ficha));
+  if(!bus) return;
+  const ok = String(bus.estado).toLowerCase() === 'habilitado';
+  const nuevoEstado = ok ? 'deshabilitado' : 'habilitado';
+  if(ok){
+    // se está deshabilitando: guardamos desde cuándo, para poder contar el tiempo fuera de servicio
+    bus.ultimaVezBien = Date.now();
+  } else {
+    // vuelve a estar habilitado: reinicia la marca de "última vez bien" a ahora mismo
+    bus.ultimaVezBien = Date.now();
+  }
+  bus.estado = nuevoEstado;
+  renderFlotaOmsa();
+  if(!isLiveEnabled()) return;
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'flotaomsa', action:'actualizarEstado', ficha: bus.ficha, estado: bus.estado, ultimaVezBien: bus.ultimaVezBien, actualizadoPor: currentUser ? currentUser.nombre : ''})
+    });
+    registrarAuditoria('Cambió el estado de un autobús OMSA', ficha + ' → ' + nuevoEstado);
+  }catch(err){ console.error('No se pudo actualizar el estado del autobús:', err); }
+}
+
+async function eliminarBusOmsa(ficha){
+  if(!confirm('¿Quitar el autobús "' + ficha + '" de la flota?')) return;
+  flotaOmsa = flotaOmsa.filter(b => String(b.ficha) !== String(ficha));
+  renderFlotaOmsa();
+  if(!isLiveEnabled()) return;
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'flotaomsa', action:'eliminar', ficha})
+    });
+    registrarAuditoria('Quitó autobús de la flota OMSA Santiago', ficha);
+  }catch(err){ console.error('No se pudo quitar el autobús:', err); }
+}
+
 
 /* ================= CHAT / MENSAJES INTERNOS (diseño profesional) ================= */
 let chatMensajes = [];
@@ -3515,13 +3724,16 @@ function showApp(){
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navMsg = document.getElementById('nav-mensajes'); if(navMsg) navMsg.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navGemelo = document.getElementById('nav-gemelo'); if(navGemelo) navGemelo.style.display = puedeEditarEstado() ? 'flex' : 'none';
+  const navOmsa = document.getElementById('nav-omsa'); if(navOmsa) navOmsa.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navSala = document.getElementById('nav-sala'); if(navSala) navSala.style.display = (puedeEditarEstado() && !isMasterUser()) ? 'flex' : 'none';
+  const btnCloudInicial = document.getElementById('btnCloudConfig'); if(btnCloudInicial) btnCloudInicial.style.display = isMasterUser() ? 'flex' : 'none';
   aplicarModoBasico();
   aplicarRestriccionProvincia();
   actualizarBotonNotifEmail();
   actualizarBotonNotifWhatsapp();
   actualizarNotificaciones();
   if(isLiveEnabled()){ sincronizarAhora(false); refrescarPermisosPropios(); cargarUsuariosEnLinea(); revisarSolicitudesCuenta(); iniciarHeartbeat(); startLivePolling(); cargarContactosChat(); cargarMensajesChat(); }
+  setTimeout(()=> revisarNuevasCriticasParaAlerta(), 3000);
   setTimeout(()=> iniciarOnboarding(false), 700);
 }
 
@@ -3755,6 +3967,8 @@ function logout(){
   chatContactos = [];
   chatConversacionActual = 'TODOS';
   chatMensajesPendientes = {};
+  detenerAlertaCriticaGlobal();
+  idsCriticasYaAlertadas = new Set();
   resetWizard();
   showPage('form');
   toggleAuthMode('login');
@@ -3777,6 +3991,7 @@ function showPage(name){
   document.getElementById('page-fallas').classList.toggle('active', name==='fallas');
   document.getElementById('page-mantenimiento').classList.toggle('active', name==='mantenimiento');
   document.getElementById('page-gemelo').classList.toggle('active', name==='gemelo');
+  document.getElementById('page-omsa').classList.toggle('active', name==='omsa');
   document.getElementById('page-sala').classList.toggle('active', name==='sala');
   document.getElementById('page-mensajes').classList.toggle('active', name==='mensajes');
   document.getElementById('nav-form').classList.toggle('active', name==='form');
@@ -3786,12 +4001,11 @@ function showPage(name){
   document.getElementById('nav-fallas').classList.toggle('active', name==='fallas');
   document.getElementById('nav-mantenimiento').classList.toggle('active', name==='mantenimiento');
   document.getElementById('nav-gemelo').classList.toggle('active', name==='gemelo');
+  document.getElementById('nav-omsa').classList.toggle('active', name==='omsa');
   document.getElementById('nav-sala').classList.toggle('active', name==='sala');
   document.getElementById('nav-mensajes').classList.toggle('active', name==='mensajes');
   if(name==='table'){
     renderAll();
-    const livePanel = document.getElementById('livePanel');
-    if(livePanel) livePanel.style.display = isMasterUser() ? 'flex' : 'none';
     updateLiveUI();
     if(isLiveEnabled()){ sincronizarAhora(false); startLivePolling(); }
   }
@@ -3818,6 +4032,10 @@ function showPage(name){
   if(name==='gemelo'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
     renderGemeloDigital();
+  }
+  if(name==='omsa'){
+    if(!puedeEditarEstado()){ showPage('form'); return; }
+    cargarFlotaOmsa();
   }
   if(name==='sala'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
@@ -4307,17 +4525,26 @@ function updateLiveUI(){
   const dot = document.getElementById('liveDot');
   const label = document.getElementById('liveLabel');
   const input = document.getElementById('liveUrlInput');
-  if(!dot) return;
+  const cloudDot = document.getElementById('cloudConfigDot');
   if(input && !input.value) input.value = liveUrl;
   if(isLiveEnabled()){
-    dot.style.background = '#3ddc84';
-    label.textContent = '🟢 Modo en vivo activo — sincronizando con Google Sheets';
+    if(dot) dot.style.background = '#3ddc84';
+    if(label) label.textContent = '🟢 Modo en vivo activo — sincronizando con Google Sheets';
+    if(cloudDot) cloudDot.style.background = '#3ddc84';
   } else {
-    dot.style.background = '#8a97a3';
-    label.textContent = 'Modo en vivo no configurado — los datos solo se guardan en este navegador';
+    if(dot) dot.style.background = '#8a97a3';
+    if(label) label.textContent = 'Modo en vivo no configurado — los datos solo se guardan en este navegador';
+    if(cloudDot) cloudDot.style.background = '#8a97a3';
   }
 }
 
+function abrirModalConfigNube(){
+  document.getElementById('liveConfigModal').style.display = 'flex';
+  updateLiveUI();
+}
+function cerrarModalConfigNube(){
+  document.getElementById('liveConfigModal').style.display = 'none';
+}
 function guardarUrlEnVivo(){
   const input = document.getElementById('liveUrlInput');
   const url = (input.value || '').trim();
@@ -4587,12 +4814,11 @@ async function refrescarPermisosPropios(){
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navMsg = document.getElementById('nav-mensajes'); if(navMsg) navMsg.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navGemelo = document.getElementById('nav-gemelo'); if(navGemelo) navGemelo.style.display = puedeEditarEstado() ? 'flex' : 'none';
+  const navOmsa = document.getElementById('nav-omsa'); if(navOmsa) navOmsa.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navSala = document.getElementById('nav-sala'); if(navSala) navSala.style.display = (puedeEditarEstado() && !isMasterUser()) ? 'flex' : 'none';
     aplicarModoBasico();
-    const livePanel = document.getElementById('livePanel');
-    if(livePanel && document.getElementById('page-table').classList.contains('active')){
-      livePanel.style.display = isMasterUser() ? 'flex' : 'none';
-    }
+    const btnCloud = document.getElementById('btnCloudConfig');
+    if(btnCloud) btnCloud.style.display = isMasterUser() ? 'flex' : 'none';
     renderAll();
     if(isMasterUser()){
       alert('🎉 Tu cuenta ahora tiene permisos de Administrador. Ya puedes usar Gestión de Usuarios, editar cualquier incidencia y más.');
@@ -4603,7 +4829,7 @@ async function refrescarPermisosPropios(){
 function startLivePolling(){
   if(livePollTimer) clearInterval(livePollTimer);
   if(!isLiveEnabled()) return;
-  livePollTimer = setInterval(()=>{ sincronizarAhora(false); refrescarPermisosPropios(); cargarUsuariosEnLinea(); revisarSolicitudesCuenta(); cargarMensajesChat(); }, 25000);
+  livePollTimer = setInterval(()=>{ sincronizarAhora(false); refrescarPermisosPropios(); cargarUsuariosEnLinea(); revisarSolicitudesCuenta(); cargarMensajesChat(); revisarNuevasCriticasParaAlerta(); }, 25000);
 }
 
 /* ================= PRESENCIA: USUARIOS EN LÍNEA ================= */
@@ -4963,6 +5189,96 @@ function incidenciasAltaPrioridad(){
   const vt = vtRecords.filter(r=> r.eliminado!=='si' && !estaResuelta(r,'vt') && edadEnHoras(r) > umbralCriticoHoras()).map(r=>Object.assign({_tabla:'vt'}, r));
   return bus.concat(vt);
 }
+
+/* ================= ALERTA CRÍTICA PERSISTENTE (voz en cualquier pestaña) ================= */
+let idsCriticasYaAlertadas = new Set();
+let idsCriticasPendientes = [];
+let alertaCriticaVozTimer = null;
+
+function revisarNuevasCriticasParaAlerta(){
+  if(!currentUser || !puedeEditarEstado()) return; // solo Fiscalizador y Administrador
+  const criticas = incidenciasAltaPrioridad();
+  let hayNuevas = false;
+  criticas.forEach(r=>{
+    if(!idsCriticasYaAlertadas.has(String(r.id))){
+      idsCriticasYaAlertadas.add(String(r.id));
+      idsCriticasPendientes.push(r);
+      hayNuevas = true;
+    }
+  });
+  if(hayNuevas) activarAlertaCriticaGlobal();
+}
+
+function activarAlertaCriticaGlobal(){
+  if(idsCriticasPendientes.length === 0) return;
+  const banner = document.getElementById('alertaCriticaBanner');
+  const texto = document.getElementById('alertaCriticaTexto');
+  const n = idsCriticasPendientes.length;
+  const primera = idsCriticasPendientes[0];
+  const lugar = primera.sistema || primera.estacion || '';
+  texto.textContent = n === 1
+    ? `🚨 INCIDENCIA CRÍTICA: ${lugar} — ${primera.falla||''} (sin resolver hace ${formatoEdadLarga(edadEnHoras(primera))})`
+    : `🚨 ${n} INCIDENCIAS CRÍTICAS sin resolver — la más reciente: ${lugar} (${primera.falla||''})`;
+  banner.style.display = 'flex';
+  iniciarVozCriticaLoop();
+}
+
+function iniciarVozCriticaLoop(){
+  detenerVozSinCerrarBanner();
+  const anunciarTodas = ()=>{
+    if(!('speechSynthesis' in window)) return;
+    idsCriticasPendientes.forEach(r=>{
+      const lugar = r.sistema || r.estacion || '';
+      const texto = `Atención: incidencia crítica sin resolver en ${lugar}. Falla: ${r.falla || 'no especificada'}. Lleva ${formatoEdadLarga(edadEnHoras(r))} sin atenderse.`;
+      try{
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-DO'; utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }catch(e){ /* voz no disponible, se ignora */ }
+    });
+  };
+  anunciarTodas();
+  alertaCriticaVozTimer = setInterval(anunciarTodas, 20000);
+}
+function detenerVozSinCerrarBanner(){
+  if(alertaCriticaVozTimer){ clearInterval(alertaCriticaVozTimer); alertaCriticaVozTimer = null; }
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+function detenerAlertaCriticaGlobal(){
+  detenerVozSinCerrarBanner();
+  idsCriticasPendientes = [];
+  document.getElementById('alertaCriticaBanner').style.display = 'none';
+}
+function pedirSilenciarAlertaCritica(){
+  if(isMasterUser()){
+    // El Administrador puede silenciar directamente, sin confirmar identidad
+    detenerAlertaCriticaGlobal();
+    return;
+  }
+  // Fiscalizador (y cualquier otro rol con acceso): debe confirmar usuario y contraseña
+  document.getElementById('silencioUsuarioInput').value = '';
+  document.getElementById('silencioPasswordInput').value = '';
+  document.getElementById('silencioError').style.display = 'none';
+  document.getElementById('confirmarSilencioModal').style.display = 'flex';
+}
+function cerrarModalSilencio(){
+  document.getElementById('confirmarSilencioModal').style.display = 'none';
+}
+async function confirmarSilenciarAlertaCritica(){
+  const usuario = document.getElementById('silencioUsuarioInput').value.trim();
+  const pass = document.getElementById('silencioPasswordInput').value;
+  const err = document.getElementById('silencioError');
+  if(!currentUser || !usuario || usuario.toLowerCase() !== currentUser.usuario.toLowerCase()){
+    err.textContent = 'El usuario no coincide con la cuenta abierta.'; err.style.display = 'block'; return;
+  }
+  const hash = await hashPassword(pass);
+  if(hash !== currentUser.passwordHash){
+    err.textContent = 'Contraseña incorrecta.'; err.style.display = 'block'; return;
+  }
+  document.getElementById('confirmarSilencioModal').style.display = 'none';
+  detenerAlertaCriticaGlobal();
+}
+
 async function actualizarResumenSalaFiscalizador(){
   const activas = records.filter(r=>r.eliminado!=='si').length + vtRecords.filter(r=>r.eliminado!=='si').length;
   const elActivas = document.getElementById('salaResumenActivas');
@@ -7048,6 +7364,7 @@ let ultimaActividadUsuario = Date.now();
 });
 setInterval(()=>{
   if(!currentUser) return;
+  if(!isMasterUser()) return; // Fiscalizador y Usuario: la sesión permanece siempre activa, nunca se cierra por inactividad
   if(Date.now() - ultimaActividadUsuario > INACTIVIDAD_LIMITE_MS){
     alert('Tu sesión se cerró automáticamente por inactividad (30 minutos sin uso).');
     logout();
