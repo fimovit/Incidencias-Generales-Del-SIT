@@ -298,6 +298,63 @@
   /* ---------- PANTALLA DE BIENVENIDA ---------- */
   #welcomeScreen{
     position:fixed;inset:0;z-index:200;display:none;
+    flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(0,114,160,.35), transparent 55%),
+      radial-gradient(circle at 80% 100%, rgba(240,102,36,.20), transparent 45%),
+      linear-gradient(155deg, var(--teal-dark) 0%, #001a24 100%);
+    overflow:hidden;
+  }
+  .welcome-header{ text-align:center; padding:40px 20px 22px 20px; flex-shrink:0; }
+  .welcome-logo-wrap-mini{ display:flex; align-items:center; justify-content:center; }
+  .welcome-logo-wrap-mini img{
+    width:110px; filter:drop-shadow(0 10px 22px rgba(0,0,0,.4));
+    animation: welcomeLogoIn .45s cubic-bezier(.16,1.2,.35,1) both;
+  }
+  @keyframes welcomeLogoIn{
+    0%{opacity:0;transform:scale(.5) rotate(-14deg);}
+    55%{opacity:1;transform:scale(1.08) rotate(3deg);}
+    100%{opacity:1;transform:scale(1) rotate(0deg);}
+  }
+  .welcome-header h2{
+    color:var(--white);font-size:23px;margin:16px 0 4px 0;
+    opacity:0; animation: welcomeTextIn .3s ease .15s forwards;
+  }
+  .welcome-header h2 span{color:var(--orange-2);}
+  .welcome-header p{
+    color:#bfe0ea;font-size:13.5px;margin:0;letter-spacing:.3px;
+    opacity:0; animation: welcomeTextIn .3s ease .25s forwards;
+  }
+  @keyframes welcomeTextIn{ to{opacity:1;transform:translateY(0);} from{transform:translateY(14px);} }
+
+  .welcome-hub-grid{ flex:1; display:flex; min-height:0; }
+  .welcome-hub-col{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; border-right:1px solid rgba(255,255,255,.08);
+    transition: background .2s ease; position:relative;
+    opacity:0; animation: welcomeTextIn .4s ease forwards;
+  }
+  .welcome-hub-col:nth-child(1){animation-delay:.3s;}
+  .welcome-hub-col:nth-child(2){animation-delay:.4s;}
+  .welcome-hub-col:nth-child(3){animation-delay:.5s;}
+  .welcome-hub-col:last-child{ border-right:none; }
+  .welcome-hub-col:hover{ background:rgba(255,255,255,.06); }
+  .whc-icono{
+    font-size:56px;margin-bottom:20px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3));
+    transition:transform .2s ease;
+  }
+  .welcome-hub-col:hover .whc-icono{ transform:translateY(-6px) scale(1.08); }
+  .whc-titulo{color:var(--white);font-size:20px;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;}
+  #hubIncidencias .whc-titulo{color:var(--orange-2);}
+  .whc-sub{color:#8fc2d4;font-size:12px;max-width:220px;text-align:center;line-height:1.5;padding:0 16px;}
+  @media(max-width:768px){
+    .welcome-hub-grid{ flex-direction:column; }
+    .welcome-hub-col{ border-right:none; border-bottom:1px solid rgba(255,255,255,.08); padding:24px 0; }
+  }
+
+  /* ---------- PANTALLA DE BIENVENIDA (usuarios que no son Administrador) ---------- */
+  #welcomeScreenAuto{
+    position:fixed;inset:0;z-index:200;display:none;
     align-items:center;justify-content:center;flex-direction:column;
     background:
       radial-gradient(circle at 50% 40%, rgba(0,114,160,.45), transparent 55%),
@@ -319,25 +376,25 @@
   }
   .welcome-logo-wrap img{
     width:260px;position:relative;z-index:2;
-    animation: welcomeLogoIn .4s cubic-bezier(.16,1.2,.35,1) both;
+    animation: welcomeLogoInAuto .4s cubic-bezier(.16,1.2,.35,1) both;
     filter:drop-shadow(0 18px 34px rgba(0,0,0,.45));
   }
-  @keyframes welcomeLogoIn{
+  @keyframes welcomeLogoInAuto{
     0%{opacity:0;transform:scale(.4) rotate(-14deg);}
     55%{opacity:1;transform:scale(1.08) rotate(3deg);}
     100%{opacity:1;transform:scale(1) rotate(0deg);}
   }
   .welcome-text{
     margin-top:38px;text-align:center;opacity:0;
-    animation: welcomeTextIn .3s ease .15s forwards;
+    animation: welcomeTextInAuto .3s ease .15s forwards;
   }
-  @keyframes welcomeTextIn{ to{opacity:1;transform:translateY(0);} from{transform:translateY(14px);} }
+  @keyframes welcomeTextInAuto{ to{opacity:1;transform:translateY(0);} from{transform:translateY(14px);} }
   .welcome-text h2{color:var(--white);font-size:24px;margin:0 0 6px 0;}
   .welcome-text h2 span{color:var(--orange-2);}
   .welcome-text p{color:#bfe0ea;font-size:13.5px;margin:0;letter-spacing:.3px;}
   .welcome-progress{
     margin-top:26px;width:220px;height:5px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;
-    opacity:0;animation: welcomeTextIn .25s ease .2s forwards;
+    opacity:0;animation: welcomeTextInAuto .25s ease .2s forwards;
   }
   .welcome-progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--orange), var(--orange-2));border-radius:4px;}
 
@@ -757,7 +814,7 @@
   .btn-del:hover{background:#c53030;color:var(--white);}
   @media(max-width:900px){.dash-grid{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}}
   @media print{
-    .sidebar, .filter-bar, .pagination-bar, .btn, .subtabs, .notif-widget, .online-widget, #loginScreen, #welcomeScreen, #editIncidenciaModal{display:none !important;}
+    .sidebar, .filter-bar, .pagination-bar, .btn, .subtabs, .notif-widget, .online-widget, #loginScreen, #welcomeScreen, #welcomeScreenAuto, #editIncidenciaModal{display:none !important;}
     .main{padding:0;}
     body{background:#fff;}
     table{font-size:10px;}
@@ -1032,7 +1089,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V3.4.0</div>
+<div id="versionLabel">V3.5.2</div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1086,7 +1143,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 3.4.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 3.5.2
     </div>
   </div>
 </div>
@@ -1152,6 +1209,33 @@
 
 <!-- ============ PANTALLA DE BIENVENIDA ============ -->
 <div id="welcomeScreen">
+  <div class="welcome-header">
+    <div class="welcome-logo-wrap-mini">
+      <img class="logo-blanco-img" alt="FIMOVIT">
+    </div>
+    <h2>¡Bienvenido, <span id="welcomeName">Usuario</span>!</h2>
+    <p>Selecciona a dónde deseas ir</p>
+  </div>
+  <div class="welcome-hub-grid">
+    <div class="welcome-hub-col" id="hubIncidencias" onclick="irAIncidencias()">
+      <div class="whc-icono">🚨</div>
+      <div class="whc-titulo">INCIDENCIAS</div>
+      <div class="whc-sub">Sistema de Gestión de Incidencias del SIT</div>
+    </div>
+    <div class="welcome-hub-col" id="hubReporteria" onclick="irAReporteria()">
+      <div class="whc-icono">📊</div>
+      <div class="whc-titulo">REPORTERÍA</div>
+      <div class="whc-sub">Próximamente</div>
+    </div>
+    <div class="welcome-hub-col" id="hubPresentaciones" onclick="irAPresentaciones()">
+      <div class="whc-icono">🖥️</div>
+      <div class="whc-titulo">PRESENTACIONES</div>
+      <div class="whc-sub">Próximamente</div>
+    </div>
+  </div>
+</div>
+
+<div id="welcomeScreenAuto">
   <div class="welcome-logo-wrap">
     <div class="welcome-ring r1"></div>
     <div class="welcome-ring r2"></div>
@@ -1159,10 +1243,10 @@
     <img class="logo-blanco-img" alt="FIMOVIT">
   </div>
   <div class="welcome-text">
-    <h2>¡Bienvenido, <span id="welcomeName">Usuario</span>!</h2>
+    <h2>¡Bienvenido, <span id="welcomeNameAuto">Usuario</span>!</h2>
     <p>Preparando tu panel de incidencias…</p>
   </div>
-  <div class="welcome-progress"><div class="welcome-progress-fill" id="welcomeBar"></div></div>
+  <div class="welcome-progress"><div class="welcome-progress-fill" id="welcomeBarAuto"></div></div>
 </div>
 
 <!-- ============ MODAL: EDITAR ESTADO DE INCIDENCIA ============ -->
@@ -3712,6 +3796,7 @@ function showLoginScreen(){
 function showApp(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('welcomeScreenAuto').style.display = 'none';
   document.getElementById('appShell').style.display = 'flex';
   document.getElementById('userNameLabel').textContent = currentUser.nombre;
   document.getElementById('userAvatar').textContent = currentUser.nombre.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join('');
@@ -3740,18 +3825,39 @@ function showApp(){
 function showWelcome(){
   const nombreCorto = currentUser.nombre.trim().split(/\s+/)[0];
   document.getElementById('loginScreen').style.display = 'none';
-  const screen = document.getElementById('welcomeScreen');
-  document.getElementById('welcomeName').textContent = nombreCorto;
-  screen.style.display = 'flex';
+  if(isMasterUser()){
+    const screen = document.getElementById('welcomeScreen');
+    document.getElementById('welcomeName').textContent = nombreCorto;
+    screen.style.display = 'flex';
+  } else {
+    const screen = document.getElementById('welcomeScreenAuto');
+    document.getElementById('welcomeNameAuto').textContent = nombreCorto;
+    screen.style.display = 'flex';
+    const bar = document.getElementById('welcomeBarAuto');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    void bar.offsetWidth;
+    bar.style.transition = 'width .6s ease';
+    requestAnimationFrame(()=>{ bar.style.width = '100%'; });
+    setTimeout(showApp, 700);
+  }
+}
 
-  const bar = document.getElementById('welcomeBar');
-  bar.style.transition = 'none';
-  bar.style.width = '0%';
-  void bar.offsetWidth;
-  bar.style.transition = 'width .6s ease';
-  requestAnimationFrame(()=>{ bar.style.width = '100%'; });
+// Pega aquí los enlaces reales cuando estén disponibles.
+// Mientras estén vacíos, esas columnas muestran un aviso de "próximamente" en vez de navegar.
+const URL_REPORTERIA = '';
+const URL_PRESENTACIONES = '';
 
-  setTimeout(showApp, 700);
+function irAIncidencias(){
+  showApp();
+}
+function irAReporteria(){
+  if(URL_REPORTERIA){ window.open(URL_REPORTERIA, '_blank'); }
+  else{ alert('📊 Reportería estará disponible próximamente.'); }
+}
+function irAPresentaciones(){
+  if(URL_PRESENTACIONES){ window.open(URL_PRESENTACIONES, '_blank'); }
+  else{ alert('🖥️ Presentaciones estará disponible próximamente.'); }
 }
 
 function toggleAuthMode(mode){
@@ -3916,7 +4022,8 @@ async function doLogin(){
     document.getElementById('loginError').style.display = 'block';
   }finally{
     // Si no se llegó a mostrar la bienvenida (error o credenciales inválidas), ocultamos el overlay aquí
-    if(!document.getElementById('welcomeScreen') || document.getElementById('welcomeScreen').style.display !== 'flex'){
+    if((!document.getElementById('welcomeScreen') || document.getElementById('welcomeScreen').style.display !== 'flex') &&
+       (!document.getElementById('welcomeScreenAuto') || document.getElementById('welcomeScreenAuto').style.display !== 'flex')){
       document.getElementById('loginLoadingOverlay').style.display = 'none';
     }
   }
