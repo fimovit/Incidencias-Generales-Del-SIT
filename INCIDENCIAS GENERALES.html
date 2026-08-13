@@ -339,105 +339,180 @@
   /* ---------- PANTALLA DE BIENVENIDA ---------- */
   #welcomeScreen{
     position:fixed;inset:0;z-index:200;display:none;
-    flex-direction:column;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(0,114,160,.35), transparent 55%),
-      radial-gradient(circle at 80% 100%, rgba(240,102,36,.20), transparent 45%),
-      linear-gradient(155deg, var(--teal-dark) 0%, #001a24 100%);
+    align-items:center;justify-content:center;
+    background:linear-gradient(180deg, #001018 0%, #002233 55%, #003D54 100%);
     overflow:hidden;
   }
-  .welcome-header{ text-align:center; padding:40px 20px 22px 20px; flex-shrink:0; }
-  .welcome-logo-wrap-mini{ display:flex; align-items:center; justify-content:center; }
-  .welcome-logo-wrap-mini img{
-    width:110px; filter:drop-shadow(0 10px 22px rgba(0,0,0,.4));
-    animation: welcomeLogoIn .45s cubic-bezier(.16,1.2,.35,1) both;
-  }
-  @keyframes welcomeLogoIn{
-    0%{opacity:0;transform:scale(.5) rotate(-14deg);}
-    55%{opacity:1;transform:scale(1.08) rotate(3deg);}
-    100%{opacity:1;transform:scale(1) rotate(0deg);}
-  }
-  .welcome-header h2{
-    color:var(--white);font-size:23px;margin:16px 0 4px 0;
-    opacity:0; animation: welcomeTextIn .3s ease .15s forwards;
-  }
-  .welcome-header h2 span{color:var(--orange-2);}
-  .welcome-header p{
-    color:#bfe0ea;font-size:13.5px;margin:0;letter-spacing:.3px;
-    opacity:0; animation: welcomeTextIn .3s ease .25s forwards;
-  }
-  @keyframes welcomeTextIn{ to{opacity:1;transform:translateY(0);} from{transform:translateY(14px);} }
+  .transporte-escena{ position:relative; width:100%; height:100%; perspective:900px; overflow:hidden; }
 
-  .welcome-hub-grid{ flex:1; display:flex; min-height:0; }
-  .welcome-hub-col{
-    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    cursor:pointer; border-right:1px solid rgba(255,255,255,.08);
-    transition: background .2s ease; position:relative;
-    opacity:0; animation: welcomeTextIn .4s ease forwards;
+  /* ---- Fondo: estrellas + resplandor + skyline ---- */
+  .te-estrellas{
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1.5px 1.5px at 25% 45%, rgba(255,255,255,.4), transparent),
+      radial-gradient(2px 2px at 40% 15%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 60% 30%, rgba(255,255,255,.4), transparent),
+      radial-gradient(2px 2px at 75% 12%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 90% 25%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.5px 1.5px at 15% 8%, rgba(255,255,255,.35), transparent);
+    opacity:.8;
   }
-  .welcome-hub-col:nth-child(1){animation-delay:.3s;}
-  .welcome-hub-col:nth-child(2){animation-delay:.4s;}
-  .welcome-hub-col:nth-child(3){animation-delay:.5s;}
-  .welcome-hub-col:last-child{ border-right:none; }
-  .welcome-hub-col:hover{ background:rgba(255,255,255,.06); }
-  .whc-icono{
-    font-size:56px;margin-bottom:20px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3));
-    transition:transform .2s ease;
+  .te-resplandor{
+    position:absolute; inset:0;
+    background: radial-gradient(600px 400px at 50% 38%, rgba(255,138,76,.15), transparent 70%);
   }
-  .welcome-hub-col:hover .whc-icono{ transform:translateY(-6px) scale(1.08); }
-  .whc-titulo{color:var(--white);font-size:20px;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;}
-  #hubIncidencias .whc-titulo{color:var(--orange-2);}
-  .whc-sub{color:#8fc2d4;font-size:12px;max-width:220px;text-align:center;line-height:1.5;padding:0 16px;}
-  @media(max-width:768px){
-    .welcome-hub-grid{ flex-direction:column; }
-    .welcome-hub-col{ border-right:none; border-bottom:1px solid rgba(255,255,255,.08); padding:24px 0; }
-  }
-
-  /* ---------- PANTALLA DE BIENVENIDA (usuarios que no son Administrador) ---------- */
-  #welcomeScreenAuto{
-    position:fixed;inset:0;z-index:200;display:none;
-    align-items:center;justify-content:center;flex-direction:column;
+  .te-skyline{
+    position:absolute; left:0; right:0; bottom:30%; height:120px;
     background:
-      radial-gradient(circle at 50% 40%, rgba(0,114,160,.45), transparent 55%),
-      radial-gradient(circle at 80% 85%, rgba(240,102,36,.25), transparent 45%),
-      linear-gradient(155deg, var(--teal-dark) 0%, #001a24 100%);
-    overflow:hidden;
+      linear-gradient(0deg, #00151f 0%, transparent 100%),
+      repeating-linear-gradient(90deg, #01202e 0px, #01202e 38px, transparent 38px, transparent 46px);
+    clip-path: polygon(0% 100%, 0% 40%, 4% 40%, 4% 55%, 9% 55%, 9% 20%, 14% 20%, 14% 60%, 20% 60%, 20% 35%, 26% 35%, 26% 70%, 32% 70%, 32% 15%, 38% 15%, 38% 50%, 45% 50%, 45% 65%, 52% 65%, 52% 25%, 58% 25%, 58% 58%, 64% 58%, 64% 40%, 70% 40%, 70% 68%, 77% 68%, 77% 30%, 83% 30%, 83% 55%, 89% 55%, 89% 45%, 95% 45%, 95% 62%, 100% 62%, 100% 100%);
+    opacity:.9;
   }
-  .welcome-logo-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
-  .welcome-ring{
-    position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.18);
-    animation: ringPulse 2.4s ease-out infinite;
+
+  /* ---- Teleférico: cable diagonal + cabina ---- */
+  .te-cable{
+    position:absolute; top:12%; left:-5%; width:110%; height:2px;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 10px, transparent 10px 18px);
+    transform:rotate(4deg); transform-origin:left center;
   }
-  .welcome-ring.r1{width:220px;height:220px;}
-  .welcome-ring.r2{width:220px;height:220px;animation-delay:.6s;}
-  .welcome-ring.r3{width:220px;height:220px;animation-delay:1.2s;}
-  @keyframes ringPulse{
-    0%{transform:scale(.8);opacity:.9;border-color:rgba(255,138,76,.55);}
-    100%{transform:scale(2.1);opacity:0;border-color:rgba(255,138,76,0);}
+  .te-telecabina{
+    position:absolute; top:12%; left:-8%;
+    animation: teMoverTelecabina 5s linear forwards;
   }
-  .welcome-logo-wrap img{
-    width:260px;position:relative;z-index:2;
-    animation: welcomeLogoInAuto .4s cubic-bezier(.16,1.2,.35,1) both;
-    filter:drop-shadow(0 18px 34px rgba(0,0,0,.45));
+  @keyframes teMoverTelecabina{
+    0%{ left:-8%; transform:translateY(0) rotate(4deg); }
+    100%{ left:104%; transform:translateY(38px) rotate(4deg); }
   }
-  @keyframes welcomeLogoInAuto{
-    0%{opacity:0;transform:scale(.4) rotate(-14deg);}
-    55%{opacity:1;transform:scale(1.08) rotate(3deg);}
-    100%{opacity:1;transform:scale(1) rotate(0deg);}
+  .te-tc-brazo{ width:2px; height:14px; background:rgba(255,255,255,.5); margin:0 auto; }
+  .te-tc-cabina{
+    width:26px; height:20px; border-radius:5px;
+    background:linear-gradient(160deg, var(--orange-2), var(--orange));
+    box-shadow:0 0 14px rgba(255,138,76,.7), 0 4px 10px rgba(0,0,0,.4);
+    border:1px solid rgba(255,255,255,.3);
   }
-  .welcome-text{
-    margin-top:38px;text-align:center;opacity:0;
-    animation: welcomeTextInAuto .3s ease .15s forwards;
+
+  /* ---- Monorriel: vía elevada + tren con luz ---- */
+  .te-via-mono{
+    position:absolute; top:42%; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, transparent, rgba(0,114,160,.6), rgba(0,114,160,.6), transparent);
+    box-shadow:0 0 8px rgba(0,114,160,.5);
   }
-  @keyframes welcomeTextInAuto{ to{opacity:1;transform:translateY(0);} from{transform:translateY(14px);} }
-  .welcome-text h2{color:var(--white);font-size:24px;margin:0 0 6px 0;}
-  .welcome-text h2 span{color:var(--orange-2);}
-  .welcome-text p{color:#bfe0ea;font-size:13.5px;margin:0;letter-spacing:.3px;}
-  .welcome-progress{
-    margin-top:26px;width:220px;height:5px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;
-    opacity:0;animation: welcomeTextInAuto .25s ease .2s forwards;
+  .te-monorriel{
+    position:absolute; top:calc(42% - 13px); left:-15%;
+    display:flex; align-items:center; gap:0;
+    animation: teMoverMonorriel 5s cubic-bezier(.4,0,.2,1) forwards;
   }
-  .welcome-progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--orange), var(--orange-2));border-radius:4px;}
+  @keyframes teMoverMonorriel{
+    0%{ left:-15%; }
+    100%{ left:105%; }
+  }
+  .te-mono-luz{
+    width:60px; height:3px; margin-right:-2px;
+    background:linear-gradient(90deg, transparent, rgba(160,220,255,.8));
+    filter:blur(1px);
+  }
+  .te-mono-cuerpo{
+    width:70px; height:16px; border-radius:9px 14px 9px 9px;
+    background:linear-gradient(160deg, #0A7BA3, var(--teal));
+    box-shadow:0 0 16px rgba(10,123,163,.65), 0 5px 12px rgba(0,0,0,.4);
+    border:1px solid rgba(255,255,255,.25);
+  }
+
+  /* ---- Piso con perspectiva 3D (efecto grilla synthwave) ---- */
+  .te-piso{
+    position:absolute; left:-25%; right:-25%; bottom:0; height:32%;
+    background:
+      repeating-linear-gradient(90deg, rgba(240,102,36,.35) 0px, rgba(240,102,36,.35) 2px, transparent 2px, transparent 60px),
+      repeating-linear-gradient(0deg, rgba(240,102,36,.28) 0px, rgba(240,102,36,.28) 2px, transparent 2px, transparent 34px),
+      linear-gradient(180deg, #001824, #000a10);
+    transform: rotateX(58deg);
+    transform-origin:bottom;
+  }
+
+  /* ---- Autobús: cuerpo + ventanas + ruedas ---- */
+  .te-autobus{
+    position:absolute; bottom:15%; left:-20%;
+    animation: teMoverAutobus 5s cubic-bezier(.3,.1,.25,1) forwards;
+  }
+  @keyframes teMoverAutobus{
+    0%{ left:-20%; transform:translateY(0); }
+    48%{ transform:translateY(-3px); }
+    52%{ transform:translateY(0); }
+    100%{ left:112%; transform:translateY(0); }
+  }
+  .te-bus-luz{
+    position:absolute; right:-40px; top:14px; width:46px; height:8px;
+    background:linear-gradient(90deg, rgba(255,220,150,.85), transparent);
+    filter:blur(1.5px);
+  }
+  .te-bus-cuerpo{
+    position:relative; width:96px; height:38px; border-radius:9px 9px 5px 5px;
+    background:linear-gradient(165deg, var(--teal-2), var(--teal));
+    box-shadow:0 0 22px rgba(0,114,160,.5), 0 8px 16px rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,255,.2);
+    display:flex; align-items:center; gap:6px; padding-left:10px;
+  }
+  .te-bus-ventana{ width:16px; height:14px; background:rgba(200,235,245,.85); border-radius:3px; box-shadow:0 0 6px rgba(200,235,245,.5); }
+  .te-bus-rueda{
+    position:absolute; bottom:-6px; width:14px; height:14px; border-radius:50%;
+    background:#111820; border:2px solid rgba(255,255,255,.25);
+  }
+  .te-bus-rueda.r1{ left:14px; }
+  .te-bus-rueda.r2{ right:14px; }
+
+  /* ---- Marca / texto de bienvenida ---- */
+  /* ---- Partículas que convergen para "formar" el logo ---- */
+  .te-particulas{ position:absolute; top:50%; left:50%; width:0; height:0; z-index:4; }
+  .te-particula{
+    position:absolute; top:0; left:0; border-radius:50%;
+    transform:translate(var(--px), var(--py)) scale(1);
+    opacity:0; box-shadow:0 0 10px 1px currentColor;
+    animation: teParticulaConverge .95s cubic-bezier(.25,.65,.3,1) forwards;
+  }
+  @keyframes teParticulaConverge{
+    0%{ transform:translate(var(--px), var(--py)) scale(1); opacity:1; }
+    75%{ opacity:1; }
+    100%{ transform:translate(0,0) scale(.1); opacity:0; }
+  }
+  .te-destello{
+    position:absolute; top:50%; left:50%; width:10px; height:10px; z-index:4;
+    transform:translate(-50%,-50%) scale(0); border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.95), rgba(255,138,76,.5) 45%, transparent 72%);
+    animation: teDestelloPop .6s ease 2.85s forwards;
+  }
+  @keyframes teDestelloPop{
+    0%{ transform:translate(-50%,-50%) scale(0); opacity:1; }
+    60%{ transform:translate(-50%,-50%) scale(26); opacity:.85; }
+    100%{ transform:translate(-50%,-50%) scale(34); opacity:0; }
+  }
+
+  .te-marca{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; z-index:5;
+    opacity:0; animation: teMarcaIn .7s cubic-bezier(.2,.8,.3,1) 2.9s forwards;
+  }
+  @keyframes teMarcaIn{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.55);}
+    65%{opacity:1; transform:translate(-50%,-50%) scale(1.08);}
+    100%{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  }
+  .te-logo-wrap{ animation: teLogoGlow 1.6s ease 2.9s; }
+  @keyframes teLogoGlow{
+    0%{ filter:drop-shadow(0 0 0 rgba(255,255,255,0)); }
+    30%{ filter:drop-shadow(0 0 26px rgba(255,255,255,.85)); }
+    100%{ filter:drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  }
+  .te-marca img{ width:150px; filter:drop-shadow(0 10px 26px rgba(0,0,0,.5)); margin-bottom:14px; }
+  .te-texto{ color:#fff; font-size:22px; font-weight:800; text-shadow:0 2px 10px rgba(0,0,0,.5); }
+  .te-texto span{ color:var(--orange-2); }
+  .te-subtexto{ color:#bfe0ea; font-size:13px; margin-top:4px; letter-spacing:.3px; }
+  @media(max-width:600px){
+    .te-bus-cuerpo{ width:76px; height:30px; }
+    .te-mono-cuerpo{ width:54px; height:13px; }
+    .te-marca img{ width:110px; }
+    .te-texto{ font-size:18px; }
+  }
 
   /* ---------- SPINNER DE CONEXIÓN (login) ---------- */
   .login-spinner{
@@ -875,7 +950,7 @@
   .btn-del:hover{background:#c53030;color:var(--white);}
   @media(max-width:900px){.dash-grid{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}}
   @media print{
-    .sidebar, .filter-bar, .pagination-bar, .btn, .subtabs, .notif-widget, .online-widget, #loginScreen, #welcomeScreen, #welcomeScreenAuto, #editIncidenciaModal{display:none !important;}
+    .sidebar, .filter-bar, .pagination-bar, .btn, .subtabs, .notif-widget, .online-widget, #loginScreen, #welcomeScreen, #editIncidenciaModal{display:none !important;}
     .main{padding:0;}
     body{background:#fff;}
     table{font-size:10px;}
@@ -1169,7 +1244,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.3.1</div>
+<div id="versionLabel">V4.5.0</div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1223,7 +1298,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.3.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.5.0
     </div>
   </div>
 </div>
@@ -1289,44 +1364,77 @@
 
 <!-- ============ PANTALLA DE BIENVENIDA ============ -->
 <div id="welcomeScreen">
-  <div class="welcome-header">
-    <div class="welcome-logo-wrap-mini">
-      <img class="logo-blanco-img" alt="FIMOVIT">
-    </div>
-    <h2>¡Bienvenido, <span id="welcomeName">Usuario</span>!</h2>
-    <p>Selecciona a dónde deseas ir</p>
-  </div>
-  <div class="welcome-hub-grid">
-    <div class="welcome-hub-col" id="hubIncidencias" onclick="irAIncidencias()">
-      <div class="whc-icono">🚨</div>
-      <div class="whc-titulo">INCIDENCIAS</div>
-      <div class="whc-sub">Sistema de Gestión de Incidencias del SIT</div>
-    </div>
-    <div class="welcome-hub-col" id="hubReporteria" onclick="irAReporteria()">
-      <div class="whc-icono">📊</div>
-      <div class="whc-titulo">REPORTERÍA</div>
-      <div class="whc-sub">Próximamente</div>
-    </div>
-    <div class="welcome-hub-col" id="hubPresentaciones" onclick="irAPresentaciones()">
-      <div class="whc-icono">🖥️</div>
-      <div class="whc-titulo">PRESENTACIONES</div>
-      <div class="whc-sub">Próximamente</div>
-    </div>
-  </div>
-</div>
+  <div class="transporte-escena">
+    <div class="te-estrellas"></div>
+    <div class="te-resplandor"></div>
+    <div class="te-skyline"></div>
 
-<div id="welcomeScreenAuto">
-  <div class="welcome-logo-wrap">
-    <div class="welcome-ring r1"></div>
-    <div class="welcome-ring r2"></div>
-    <div class="welcome-ring r3"></div>
-    <img class="logo-blanco-img" alt="FIMOVIT">
+    <!-- Teleférico: cable diagonal arriba -->
+    <div class="te-cable"></div>
+    <div class="te-telecabina">
+      <div class="te-tc-brazo"></div>
+      <div class="te-tc-cabina"></div>
+    </div>
+
+    <!-- Monorriel: vía elevada al medio -->
+    <div class="te-via-mono"></div>
+    <div class="te-monorriel">
+      <div class="te-mono-luz"></div>
+      <div class="te-mono-cuerpo"></div>
+    </div>
+
+    <!-- Piso con perspectiva (efecto 3D) + autobús -->
+    <div class="te-piso"></div>
+    <div class="te-autobus">
+      <div class="te-bus-luz"></div>
+      <div class="te-bus-cuerpo">
+        <div class="te-bus-ventana"></div>
+        <div class="te-bus-ventana"></div>
+        <div class="te-bus-ventana"></div>
+      </div>
+      <div class="te-bus-rueda r1"></div>
+      <div class="te-bus-rueda r2"></div>
+    </div>
+
+    <div class="te-particulas">
+      <div class="te-particula" style="--px:216px;--py:-6px;width:5px;height:5px;background:#F06624;animation-delay:2.09s;"></div>
+      <div class="te-particula" style="--px:260px;--py:37px;width:5px;height:5px;background:#FF8A4C;animation-delay:2.55s;"></div>
+      <div class="te-particula" style="--px:187px;--py:43px;width:8px;height:8px;background:#005879;animation-delay:2.09s;"></div>
+      <div class="te-particula" style="--px:239px;--py:90px;width:9px;height:9px;background:#0072A0;animation-delay:2.12s;"></div>
+      <div class="te-particula" style="--px:225px;--py:145px;width:5px;height:5px;background:#FFFFFF;animation-delay:2.37s;"></div>
+      <div class="te-particula" style="--px:190px;--py:221px;width:5px;height:5px;background:#F06624;animation-delay:2.36s;"></div>
+      <div class="te-particula" style="--px:90px;--py:159px;width:9px;height:9px;background:#FF8A4C;animation-delay:2.11s;"></div>
+      <div class="te-particula" style="--px:20px;--py:225px;width:6px;height:6px;background:#005879;animation-delay:2.11s;"></div>
+      <div class="te-particula" style="--px:-54px;--py:131px;width:5px;height:5px;background:#0072A0;animation-delay:2.35s;"></div>
+      <div class="te-particula" style="--px:-62px;--py:110px;width:6px;height:6px;background:#FFFFFF;animation-delay:2.32s;"></div>
+      <div class="te-particula" style="--px:-231px;--py:171px;width:8px;height:8px;background:#F06624;animation-delay:2.37s;"></div>
+      <div class="te-particula" style="--px:-195px;--py:96px;width:6px;height:6px;background:#FF8A4C;animation-delay:2.43s;"></div>
+      <div class="te-particula" style="--px:-276px;--py:95px;width:9px;height:9px;background:#005879;animation-delay:2.32s;"></div>
+      <div class="te-particula" style="--px:-277px;--py:46px;width:9px;height:9px;background:#0072A0;animation-delay:2.59s;"></div>
+      <div class="te-particula" style="--px:-279px;--py:18px;width:7px;height:7px;background:#FFFFFF;animation-delay:2.13s;"></div>
+      <div class="te-particula" style="--px:-185px;--py:-25px;width:5px;height:5px;background:#F06624;animation-delay:2.47s;"></div>
+      <div class="te-particula" style="--px:-348px;--py:-106px;width:7px;height:7px;background:#FF8A4C;animation-delay:2.24s;"></div>
+      <div class="te-particula" style="--px:-242px;--py:-106px;width:8px;height:8px;background:#005879;animation-delay:2.09s;"></div>
+      <div class="te-particula" style="--px:-173px;--py:-104px;width:5px;height:5px;background:#0072A0;animation-delay:2.08s;"></div>
+      <div class="te-particula" style="--px:-128px;--py:-186px;width:8px;height:8px;background:#FFFFFF;animation-delay:2.21s;"></div>
+      <div class="te-particula" style="--px:-86px;--py:-198px;width:5px;height:5px;background:#F06624;animation-delay:2.57s;"></div>
+      <div class="te-particula" style="--px:-13px;--py:-196px;width:8px;height:8px;background:#FF8A4C;animation-delay:2.08s;"></div>
+      <div class="te-particula" style="--px:62px;--py:-121px;width:6px;height:6px;background:#005879;animation-delay:2.27s;"></div>
+      <div class="te-particula" style="--px:160px;--py:-152px;width:6px;height:6px;background:#0072A0;animation-delay:2.3s;"></div>
+      <div class="te-particula" style="--px:249px;--py:-182px;width:8px;height:8px;background:#FFFFFF;animation-delay:2.53s;"></div>
+      <div class="te-particula" style="--px:207px;--py:-113px;width:7px;height:7px;background:#F06624;animation-delay:2.43s;"></div>
+      <div class="te-particula" style="--px:209px;--py:-65px;width:5px;height:5px;background:#FF8A4C;animation-delay:2.15s;"></div>
+      <div class="te-particula" style="--px:226px;--py:-42px;width:8px;height:8px;background:#005879;animation-delay:2.51s;"></div>
+    </div>
+    <div class="te-destello"></div>
+    <div class="te-marca">
+      <div class="te-logo-wrap">
+        <img class="logo-blanco-img" alt="FIMOVIT">
+      </div>
+      <div class="te-texto">¡Bienvenido, <span id="welcomeName">Usuario</span>!</div>
+      <div class="te-subtexto">Sistema de Gestión de Incidencias del SIT</div>
+    </div>
   </div>
-  <div class="welcome-text">
-    <h2>¡Bienvenido, <span id="welcomeNameAuto">Usuario</span>!</h2>
-    <p>Preparando tu panel de incidencias…</p>
-  </div>
-  <div class="welcome-progress"><div class="welcome-progress-fill" id="welcomeBarAuto"></div></div>
 </div>
 
 <!-- ============ MODAL: EDITAR ESTADO DE INCIDENCIA ============ -->
@@ -3965,7 +4073,6 @@ function showLoginScreen(){
 function showApp(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('welcomeScreen').style.display = 'none';
-  document.getElementById('welcomeScreenAuto').style.display = 'none';
   document.getElementById('appShell').style.display = 'flex';
   document.getElementById('userNameLabel').textContent = currentUser.nombre;
   document.getElementById('userAvatar').textContent = currentUser.nombre.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join('');
@@ -3999,39 +4106,10 @@ function showApp(){
 function showWelcome(){
   const nombreCorto = currentUser.nombre.trim().split(/\s+/)[0];
   document.getElementById('loginScreen').style.display = 'none';
-  if(isMasterUser()){
-    const screen = document.getElementById('welcomeScreen');
-    document.getElementById('welcomeName').textContent = nombreCorto;
-    screen.style.display = 'flex';
-  } else {
-    const screen = document.getElementById('welcomeScreenAuto');
-    document.getElementById('welcomeNameAuto').textContent = nombreCorto;
-    screen.style.display = 'flex';
-    const bar = document.getElementById('welcomeBarAuto');
-    bar.style.transition = 'none';
-    bar.style.width = '0%';
-    void bar.offsetWidth;
-    bar.style.transition = 'width .6s ease';
-    requestAnimationFrame(()=>{ bar.style.width = '100%'; });
-    setTimeout(showApp, 700);
-  }
-}
-
-// Pega aquí los enlaces reales cuando estén disponibles.
-// Mientras estén vacíos, esas columnas muestran un aviso de "próximamente" en vez de navegar.
-const URL_REPORTERIA = '';
-const URL_PRESENTACIONES = '';
-
-function irAIncidencias(){
-  showApp();
-}
-function irAReporteria(){
-  if(URL_REPORTERIA){ window.open(URL_REPORTERIA, '_blank'); }
-  else{ alert('📊 Reportería estará disponible próximamente.'); }
-}
-function irAPresentaciones(){
-  if(URL_PRESENTACIONES){ window.open(URL_PRESENTACIONES, '_blank'); }
-  else{ alert('🖥️ Presentaciones estará disponible próximamente.'); }
+  const screen = document.getElementById('welcomeScreen');
+  document.getElementById('welcomeName').textContent = nombreCorto;
+  screen.style.display = 'flex';
+  setTimeout(showApp, 5000);
 }
 
 function toggleAuthMode(mode){
@@ -4196,8 +4274,7 @@ async function doLogin(){
     document.getElementById('loginError').style.display = 'block';
   }finally{
     // Si no se llegó a mostrar la bienvenida (error o credenciales inválidas), ocultamos el overlay aquí
-    if((!document.getElementById('welcomeScreen') || document.getElementById('welcomeScreen').style.display !== 'flex') &&
-       (!document.getElementById('welcomeScreenAuto') || document.getElementById('welcomeScreenAuto').style.display !== 'flex')){
+    if(!document.getElementById('welcomeScreen') || document.getElementById('welcomeScreen').style.display !== 'flex'){
       document.getElementById('loginLoadingOverlay').style.display = 'none';
     }
   }
