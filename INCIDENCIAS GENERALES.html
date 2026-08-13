@@ -921,6 +921,12 @@
   .change-log-item{padding:6px 0;border-bottom:1px dashed #e1e6e9;}
   .change-log-item:last-child{border-bottom:none;}
   .change-log-item b{color:var(--teal-dark);}
+  .edit-modal-tab{
+    background:none;border:none;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:700;
+    color:#96a2a8;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s;
+  }
+  .edit-modal-tab:hover{color:var(--teal);}
+  .edit-modal-tab.active{color:var(--teal-dark);border-bottom-color:var(--orange);}
   /* ---------- GEMELO DIGITAL ---------- */
   .gemelo-leyenda{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:20px;font-size:12.5px;color:var(--gray-text);font-weight:600;}
   .gemelo-leyenda span{display:flex;align-items:center;gap:7px;}
@@ -1163,7 +1169,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V3.9.0</div>
+<div id="versionLabel">V4.3.1</div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1217,7 +1223,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 3.9.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.3.1
     </div>
   </div>
 </div>
@@ -1325,48 +1331,61 @@
 
 <!-- ============ MODAL: EDITAR ESTADO DE INCIDENCIA ============ -->
 <div id="editIncidenciaModal" style="display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,26,36,.55);backdrop-filter:blur(2px);">
-  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
     <div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg, var(--teal), var(--orange));border-radius:20px 20px 0 0;"></div>
-    <h2 style="color:var(--teal-dark);font-size:18px;margin:6px 0 4px 0;">✏️ Actualizar incidencia</h2>
-    <div id="editModalSummary" style="font-size:12.5px;color:var(--gray-text);background:var(--gray-light);border-radius:10px;padding:12px 14px;margin-bottom:18px;line-height:1.6;"></div>
+    <h2 style="color:var(--teal-dark);font-size:18px;margin:6px 0 4px 0;">📋 Incidencia</h2>
+    <div id="editModalSummary" style="font-size:12.5px;color:var(--gray-text);background:var(--gray-light);border-radius:10px;padding:12px 14px;margin-bottom:16px;line-height:1.6;"></div>
 
-    <div id="editChangeLogBox" style="display:none;">
-      <label style="margin-top:0;">📜 Historial de cambios</label>
-      <div class="change-log" id="editChangeLog"></div>
+    <div style="display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--gray-light);">
+      <button id="tabBtnResponder" class="edit-modal-tab active" onclick="cambiarTabModalIncidencia('responder')">💬 Responder</button>
+      <button id="tabBtnEditar" class="edit-modal-tab" onclick="cambiarTabModalIncidencia('editar')" style="display:none;">✏️ Editar datos</button>
     </div>
 
-    <div style="margin-top:14px;">
-      <label style="margin-top:0;">💬 Notas (visibles para admin/fiscalizador, no cambian el estado)</label>
-      <div class="change-log" id="editNotasBox" style="max-height:150px;"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <input type="text" id="editNuevaNotaInput" placeholder="Ej: Ya se pidió la pieza de repuesto…" style="flex:1;">
-        <button class="btn btn-secondary" style="white-space:nowrap;" onclick="agregarNotaIncidencia()">➕ Agregar</button>
+    <!-- ============ PESTAÑA: RESPONDER (no modifica los datos originales) ============ -->
+    <div id="tabContentResponder">
+      <div id="editChangeLogBox" style="display:none;">
+        <label style="margin-top:0;">📜 Historial de respuestas</label>
+        <div class="change-log" id="editChangeLog"></div>
+      </div>
+
+      <label class="req">Nuevo estado</label>
+      <select id="editEstadoSelect" onchange="onChangeEditEstado()"></select>
+      <div class="error-msg" id="err-editEstado">Debe seleccionar un estado.</div>
+
+      <div id="editResolucionBox" style="display:none;">
+        <label class="req">¿Cómo se solucionó?</label>
+        <textarea id="editResolucionInput" placeholder="Describa la solución aplicada"></textarea>
+        <div class="error-msg" id="err-editResolucion">Debe describir cómo se solucionó.</div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label style="margin-top:0;">💬 Notas <span style="text-transform:none;font-weight:400;color:#96a2a8;">(no cambian el estado)</span></label>
+        <div class="change-log" id="editNotasBox" style="max-height:130px;"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="editNuevaNotaInput" placeholder="Ej: Ya se pidió la pieza de repuesto…" style="flex:1;">
+          <button class="btn btn-secondary" style="white-space:nowrap;" onclick="agregarNotaIncidencia()">➕ Agregar</button>
+        </div>
+      </div>
+
+      <label>📷 Foto de la respuesta <span style="text-transform:none;font-weight:400;color:#96a2a8;">(opcional)</span></label>
+      <div id="editFotoPreview" style="margin-bottom:8px;"></div>
+      <input type="file" id="editFotoInput" accept="image/*">
+      <div id="editFotoEstado" style="font-size:11.5px;color:#96a2a8;margin-top:5px;"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="cerrarEditorIncidencia()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarEdicionIncidencia()">💬 Guardar respuesta</button>
       </div>
     </div>
 
-    <div id="editAdminFieldsBox" style="display:none;">
-      <div class="callout" style="margin-bottom:14px;">Como Administrador puedes editar todos los datos de esta incidencia, no solo el estado.</div>
+    <!-- ============ PESTAÑA: EDITAR DATOS (solo Administrador, corrige el reporte original) ============ -->
+    <div id="tabContentEditar" style="display:none;">
+      <div class="callout" style="margin-bottom:14px;">Aquí corriges los datos <b>originales</b> del reporte (fecha, sistema, falla, etc.). Esto no cuenta como una respuesta ni cambia el estado — para eso usa la pestaña "💬 Responder".</div>
       <div id="editAdminFieldsContainer"></div>
-    </div>
-
-    <label class="req">Nuevo estado</label>
-    <select id="editEstadoSelect" onchange="onChangeEditEstado()"></select>
-    <div class="error-msg" id="err-editEstado">Debe seleccionar un estado.</div>
-
-    <div id="editResolucionBox" style="display:none;">
-      <label class="req">¿Cómo se solucionó?</label>
-      <textarea id="editResolucionInput" placeholder="Describa la solución aplicada"></textarea>
-      <div class="error-msg" id="err-editResolucion">Debe describir cómo se solucionó.</div>
-    </div>
-
-    <label>📷 Foto de la incidencia <span style="text-transform:none;font-weight:400;color:#96a2a8;">(opcional)</span></label>
-    <div id="editFotoPreview" style="margin-bottom:8px;"></div>
-    <input type="file" id="editFotoInput" accept="image/*">
-    <div id="editFotoEstado" style="font-size:11.5px;color:#96a2a8;margin-top:5px;"></div>
-
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="cerrarEditorIncidencia()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarEdicionIncidencia()">💾 Guardar cambios</button>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="cerrarEditorIncidencia()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarEdicionDatos()">💾 Guardar datos corregidos</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1446,6 +1465,34 @@
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="cerrarModalSilencio()">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarSilenciarAlertaCritica()">Confirmar y silenciar</button>
+    </div>
+  </div>
+</div>
+
+<div id="reporteSantiagoModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.75);">
+  <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="cerrarModalReporteSantiago()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="color:var(--teal-dark);font-size:17px;margin:0 0 6px 0;">📄 Informe de Santiago (Word)</h2>
+    <p style="font-size:12.5px;color:var(--gray-text);margin:0 0 18px 0;line-height:1.5;">Genera un informe con tablas y gráficas de las incidencias del Validador/Torniquete de Santiago, para el rango de meses que elijas.</p>
+
+    <label class="req" style="margin-top:0;">Tipo de informe</label>
+    <div style="display:flex;gap:10px;margin-bottom:6px;">
+      <button type="button" id="btnTipoTorniquetes" class="radio-opt selected" style="flex:1;" onclick="seleccionarTipoReporteSantiago('torniquetes')">🔧 Torniquetes</button>
+      <button type="button" id="btnTipoToms" class="radio-opt" style="flex:1;" onclick="seleccionarTipoReporteSantiago('toms')">💳 TOMS (boletería)</button>
+    </div>
+    <div class="hint" style="margin-top:0;margin-bottom:10px;">Torniquetes: todas las fallas. TOMS: solo fallas de aplicación/lectura/autorización (software y boletería).</div>
+
+    <label class="req">Desde</label>
+    <input type="month" id="reporteSantiagoDesde">
+    <label class="req">Hasta</label>
+    <input type="month" id="reporteSantiagoHasta">
+    <div class="error-msg" id="err-reporteSantiagoRango">Selecciona un rango de meses válido (Desde no puede ser después de Hasta).</div>
+
+    <div id="reporteSantiagoProgreso" style="display:none;margin-top:14px;background:var(--teal-light);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--teal-dark);font-weight:700;text-align:center;"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="cerrarModalReporteSantiago()">Cancelar</button>
+      <button class="btn btn-primary" id="btnGenerarReporteSantiago" onclick="generarReporteSantiago()">📄 Generar informe</button>
     </div>
   </div>
 </div>
@@ -1937,8 +1984,9 @@
         <h1>Historial de Incidencias</h1>
         <div class="subtitle">Los registros se guardan de forma permanente en este equipo. El historial de "Incidencias Generales" ya viene precargado.</div>
       </div>
-      <button class="btn btn-primary" onclick="exportarExcel()">⬇ Exportar todo a Excel</button>
+      <button class="btn btn-primary" id="btnExportarExcel" style="display:none;" onclick="exportarExcel()">⬇ Exportar todo a Excel</button>
       <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+      <button class="btn btn-secondary modo-basico-oculto" id="btnAbrirReporteSantiago" style="display:none;" onclick="abrirModalReporteSantiago()">📄 Informe Santiago (Word)</button>
     </div>
 
     <div class="priority-banner" id="priorityBanner" style="display:none;">
@@ -2186,6 +2234,7 @@
         <option value="usuario">Usuario (solo registrar incidencias)</option>
         <option value="fiscalizador">Fiscalizador / Técnico (puede actualizar estado)</option>
         <option value="admin">Administrador (control total)</option>
+        <option value="admin_plus">Administrador Plus (control total + exportar datos)</option>
       </select>
 
       <div id="boxProvinciaAsignada">
@@ -2997,6 +3046,7 @@ async function cargarUsuariosAdmin(){
           <option value="usuario" ${permisoActual==='usuario'?'selected':''}>Usuario</option>
           <option value="fiscalizador" ${permisoActual==='fiscalizador'?'selected':''}>Fiscalizador / Técnico</option>
           <option value="admin" ${permisoActual==='admin'?'selected':''}>Administrador</option>
+          <option value="admin_plus" ${permisoActual==='admin_plus'?'selected':''}>Administrador Plus</option>
         </select>
         <button class="btn-sync" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='guardarPermisosUsuario(${JSON.stringify(u.usuario)}, document.getElementById("permSel_${i}").value)'>Guardar</button>
       </td>
@@ -3757,6 +3807,7 @@ async function cargarAuditoria(){
 
 function normalizarPermisoInput(v){
   const p = (v||'').trim().toLowerCase();
+  if(p === 'admin_plus' || p === 'administrador plus' || p === 'adminplus') return 'admin_plus';
   if(p === 'admin') return 'admin';
   if(p === 'fiscalizador' || p === 'tecnico' || p === 'técnico') return 'fiscalizador';
   return 'usuario';
@@ -3930,6 +3981,8 @@ function showApp(){
   const navMsg = document.getElementById('nav-mensajes'); if(navMsg) navMsg.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navGemelo = document.getElementById('nav-gemelo'); if(navGemelo) navGemelo.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navOmsa = document.getElementById('nav-omsa'); if(navOmsa) navOmsa.style.display = puedeEditarEstado() ? 'flex' : 'none';
+  const btnRepSant = document.getElementById('btnAbrirReporteSantiago'); if(btnRepSant) btnRepSant.style.display = puedeExportar() ? 'inline-block' : 'none';
+  const btnExcelExp = document.getElementById('btnExportarExcel'); if(btnExcelExp) btnExcelExp.style.display = puedeExportar() ? 'inline-block' : 'none';
   const navSala = document.getElementById('nav-sala'); if(navSala) navSala.style.display = (puedeEditarEstado() && !isMasterUser()) ? 'flex' : 'none';
   const btnCloudInicial = document.getElementById('btnCloudConfig'); if(btnCloudInicial) btnCloudInicial.style.display = isMasterUser() ? 'flex' : 'none';
   const miniStatsInicial = document.getElementById('miniStatsWrap'); if(miniStatsInicial) miniStatsInicial.style.display = esUsuarioBasico() ? 'none' : 'flex';
@@ -5046,6 +5099,8 @@ async function refrescarPermisosPropios(){
   const navMsg = document.getElementById('nav-mensajes'); if(navMsg) navMsg.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navGemelo = document.getElementById('nav-gemelo'); if(navGemelo) navGemelo.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navOmsa = document.getElementById('nav-omsa'); if(navOmsa) navOmsa.style.display = puedeEditarEstado() ? 'flex' : 'none';
+  const btnRepSant = document.getElementById('btnAbrirReporteSantiago'); if(btnRepSant) btnRepSant.style.display = puedeExportar() ? 'inline-block' : 'none';
+  const btnExcelExp = document.getElementById('btnExportarExcel'); if(btnExcelExp) btnExcelExp.style.display = puedeExportar() ? 'inline-block' : 'none';
   const navSala = document.getElementById('nav-sala'); if(navSala) navSala.style.display = (puedeEditarEstado() && !isMasterUser()) ? 'flex' : 'none';
     aplicarModoBasico();
     const btnCloud = document.getElementById('btnCloudConfig');
@@ -5127,8 +5182,13 @@ function renderOnlineWidget(activos){
 /* ================= HISTORIAL / DASHBOARD / EXPORTACIÓN ================= */
 function isMasterUser(){
   if(!currentUser) return false;
-  if(currentUser.permisos) return currentUser.permisos === 'admin';
+  if(currentUser.permisos) return currentUser.permisos === 'admin' || currentUser.permisos === 'admin_plus';
   return !!(currentUser.usuario && currentUser.usuario.trim().toLowerCase() === 'julio');
+}
+function puedeExportar(){
+  // Exclusivo de Administrador Plus: exportar Excel, generar informes Word, etc.
+  if(!currentUser) return false;
+  return currentUser.permisos === 'admin_plus';
 }
 function puedeEditarEstado(){
   if(!currentUser) return false;
@@ -5153,6 +5213,299 @@ function actualizarBotonNotifEmail(){
   const activo = currentUser.notificarEmail === 'si' || currentUser.notificarEmail === true;
   btn.textContent = activo ? '🔔 Notificarme por correo (activado)' : '🔕 Notificarme por correo';
   btn.classList.toggle('activo', activo);
+}
+
+/* ================= INFORME SANTIAGO (WORD) — Torniquetes / TOMS ================= */
+const FALLA_CATS_TODAS = ['FALLA EN TORNIQUETE','FALLA APLICACION AIPA','FALLA AUTORIZANDO','FALLA LECTURA QRs','FALLA LECTURA TARJETAS','FALLA MODULO AIPA','VALIDADORA BLOQUEADA','TORNIQUETE LIBERADO'];
+const FALLA_CATS_TOMS = ['FALLA APLICACION AIPA','FALLA AUTORIZANDO','FALLA LECTURA QRs','FALLA LECTURA TARJETAS','FALLA MODULO AIPA'];
+const ORDEN_PASILLOS = ['PASILLO / ENTRADA PMR','PASILLO / ENTRADA 01','PASILLO / ENTRADA 02','PASILLO / ENTRADA 03','PASILLO / ENTRADA 04','PASILLO / SALIDA PMR','PASILLO / SALIDA 01','PASILLO / SALIDA 02','PASILLO / SALIDA 03','PASILLO / SALIDA 04'];
+const NOMBRES_MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let tipoReporteSantiagoActual = 'torniquetes';
+
+function abrirModalReporteSantiago(){
+  const hoy = new Date();
+  const hasta = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
+  const desdeD = new Date(hoy.getFullYear(), hoy.getMonth()-2, 1);
+  const desde = `${desdeD.getFullYear()}-${String(desdeD.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('reporteSantiagoDesde').value = desde;
+  document.getElementById('reporteSantiagoHasta').value = hasta;
+  document.getElementById('err-reporteSantiagoRango').style.display = 'none';
+  document.getElementById('reporteSantiagoProgreso').style.display = 'none';
+  document.getElementById('reporteSantiagoModal').style.display = 'flex';
+}
+function cerrarModalReporteSantiago(){
+  document.getElementById('reporteSantiagoModal').style.display = 'none';
+}
+function seleccionarTipoReporteSantiago(tipo){
+  tipoReporteSantiagoActual = tipo;
+  document.getElementById('btnTipoTorniquetes').classList.toggle('selected', tipo==='torniquetes');
+  document.getElementById('btnTipoToms').classList.toggle('selected', tipo==='toms');
+}
+
+function pasilloLabelDesdeGate(gate){
+  if(!gate) return null;
+  const g = String(gate).toUpperCase().replace(/\s+/g,'');
+  const esEntrada = g.indexOf('ENT') === 0;
+  const esSalida = g.indexOf('SAL') === 0;
+  if(!esEntrada && !esSalida) return null;
+  const sufijo = g.replace(/^(ENT|SAL)-?/,'');
+  return `PASILLO / ${esEntrada?'ENTRADA':'SALIDA'} ${sufijo}`;
+}
+function categoriaFallaNormalizada(falla, categorias){
+  const f = String(falla||'').trim().toUpperCase();
+  return categorias.find(c => c === f) || null;
+}
+function mesesEnRango(desde, hasta){
+  const meses = [];
+  let [y,m] = desde.split('-').map(Number);
+  const [yh,mh] = hasta.split('-').map(Number);
+  let guard = 0;
+  while((y < yh || (y === yh && m <= mh)) && guard < 60){
+    meses.push({anio:y, mes:m});
+    m++; if(m>12){ m=1; y++; }
+    guard++;
+  }
+  return meses;
+}
+function registrosSantiagoFiltrados(categorias){
+  return vtRecords.filter(r=>
+    r.eliminado !== 'si' &&
+    String(r.provincia).trim() === 'Santiago' &&
+    categoriaFallaNormalizada(r.falla, categorias) !== null
+  );
+}
+function fechaAnioMes(rec){
+  const f = String(rec.fecha||'');
+  const m = f.match(/^(\d{4})-(\d{2})/);
+  if(m) return {anio:Number(m[1]), mes:Number(m[2])};
+  const d = new Date(Number(rec.id));
+  if(!isNaN(d.getTime())) return {anio:d.getFullYear(), mes:d.getMonth()+1};
+  return null;
+}
+
+/* ---- Gráficas: se dibujan en un canvas oculto y se exportan como imagen ---- */
+async function chartAImagenPNG(config, w, h){
+  const escala = 2; // renderiza al doble de resolución para que se vea nítido en Word, incluso si lo agrandan
+  const cont = document.createElement('div');
+  cont.style.cssText = `position:fixed;left:-9999px;top:0;width:${w}px;height:${h}px;background:#fff;`;
+  const canvas = document.createElement('canvas');
+  canvas.width = w*escala; canvas.height = h*escala;
+  canvas.style.width = w+'px'; canvas.style.height = h+'px';
+  cont.appendChild(canvas);
+  document.body.appendChild(cont);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(escala, escala);
+  config.options = Object.assign({}, config.options, {animation:false, responsive:false, devicePixelRatio:escala,
+    plugins: Object.assign({}, config.options && config.options.plugins, {
+      legend: Object.assign({labels:{font:{size:12}}}, config.options && config.options.plugins && config.options.plugins.legend),
+      title: Object.assign({font:{size:14, weight:'bold'}}, config.options && config.options.plugins && config.options.plugins.title)
+    })
+  });
+  const chart = new Chart(ctx, config);
+  await new Promise(r=>setTimeout(r, 60));
+  const dataUrl = canvas.toDataURL('image/png', 1.0);
+  chart.destroy();
+  document.body.removeChild(cont);
+  return dataUrl;
+}
+function dataUrlAUint8Array(dataUrl){
+  const base64 = dataUrl.split(',')[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+const COLORES_REPORTE = ['#005879','#F06624','#2e9e5b','#8338ec','#c0392b','#0072A0','#ff8a4c','#4A5568'];
+
+async function generarReporteSantiago(){
+  if(!puedeExportar()){ alert('Solo una cuenta de Administrador Plus puede exportar informes.'); return; }
+  const desde = document.getElementById('reporteSantiagoDesde').value;
+  const hasta = document.getElementById('reporteSantiagoHasta').value;
+  const errEl = document.getElementById('err-reporteSantiagoRango');
+  errEl.style.display = 'none';
+  if(!desde || !hasta || desde > hasta){ errEl.style.display = 'block'; return; }
+  if(typeof Chart === 'undefined'){
+    alert('No se pudo cargar Chart.js (necesario para las gráficas). Revisa tu conexión a internet e intenta de nuevo.');
+    return;
+  }
+
+  const btn = document.getElementById('btnGenerarReporteSantiago');
+  const progreso = document.getElementById('reporteSantiagoProgreso');
+  btn.disabled = true; progreso.style.display = 'block';
+  const marcarProgreso = (t)=>{ progreso.textContent = t; };
+
+  try{
+    marcarProgreso('Filtrando incidencias…');
+    const categorias = tipoReporteSantiagoActual === 'toms' ? FALLA_CATS_TOMS : FALLA_CATS_TODAS;
+    const tituloTipo = tipoReporteSantiagoActual === 'toms' ? 'TOMS (Boletería)' : 'Pasillos (Torniquetes)';
+    const todos = registrosSantiagoFiltrados(categorias);
+    const meses = mesesEnRango(desde, hasta);
+    if(meses.length === 0){ alert('Rango de meses inválido.'); return; }
+
+    const enRango = (r, offsetAnio)=>{
+      const fm = fechaAnioMes(r);
+      if(!fm) return false;
+      return meses.some(m => fm.anio === (m.anio+offsetAnio) && fm.mes === m.mes);
+    };
+    const registrosActuales = todos.filter(r=> enRango(r,0));
+    const registrosAnteriores = todos.filter(r=> enRango(r,-1));
+
+    const totalActual = registrosActuales.length;
+    const totalAnterior = registrosAnteriores.length;
+
+    marcarProgreso('Calculando resumen mensual…');
+    const countsActual = meses.map(m => registrosActuales.filter(r=>{ const fm=fechaAnioMes(r); return fm && fm.anio===m.anio && fm.mes===m.mes; }).length);
+    const countsAnterior = meses.map(m => registrosAnteriores.filter(r=>{ const fm=fechaAnioMes(r); return fm && fm.anio===(m.anio-1) && fm.mes===m.mes; }).length);
+    const etiquetasMeses = meses.map(m => NOMBRES_MES[m.mes-1]);
+
+    const imgTendencia = await chartAImagenPNG({
+      type:'line',
+      data:{ labels: etiquetasMeses, datasets:[
+        {label:'Año anterior', data:countsAnterior, borderColor:'#c0392b', backgroundColor:'#c0392b', tension:.2},
+        {label:'Año actual', data:countsActual, borderColor:'#7a1518', backgroundColor:'#7a1518', tension:.2}
+      ]},
+      options:{ plugins:{ title:{display:true, text:`Cantidad de Incidencias ${tituloTipo} Mensual`} }, scales:{ y:{beginAtZero:true} } }
+    }, 700, 380);
+
+    marcarProgreso('Calculando distribución por estación…');
+    const estacionDe = r => String(r.estacion||'—').toUpperCase();
+    const estacionesUnicas = Array.from(new Set(todos.map(estacionDe))).sort();
+    const totActualPorEstacion = estacionesUnicas.map(e=> registrosActuales.filter(r=>estacionDe(r)===e).length);
+    const totAnteriorPorEstacion = estacionesUnicas.map(e=> registrosAnteriores.filter(r=>estacionDe(r)===e).length);
+    const pctActual = totActualPorEstacion.map(v=> totalActual? Math.round((v/totalActual)*10000)/100 : 0);
+    const pctAnterior = totAnteriorPorEstacion.map(v=> totalAnterior? Math.round((v/totalAnterior)*10000)/100 : 0);
+
+    const imgDistribucion = await chartAImagenPNG({
+      type:'bar',
+      data:{ labels: estacionesUnicas, datasets:[
+        {label:'Periodo anterior', data:pctAnterior, backgroundColor:'#e53935'},
+        {label:'Periodo actual', data:pctActual, backgroundColor:'#7a1518'}
+      ]},
+      options:{ plugins:{title:{display:true, text:'Distribución Porcentual de Incidencias por Estación'}}, scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}}} }
+    }, 700, 380);
+
+    const dataMensualPorEstacion = estacionesUnicas.map(e => meses.map(m => registrosActuales.filter(r=>{ const fm=fechaAnioMes(r); return estacionDe(r)===e && fm && fm.anio===m.anio && fm.mes===m.mes; }).length));
+    const imgMensualEstacion = await chartAImagenPNG({
+      type:'bar',
+      data:{ labels: etiquetasMeses, datasets: estacionesUnicas.map((e,i)=>({label:e, data:dataMensualPorEstacion[i], backgroundColor: COLORES_REPORTE[i%COLORES_REPORTE.length]})) },
+      options:{ plugins:{title:{display:true, text:'Distribución Mensual de Incidencias por Estación'}}, scales:{y:{beginAtZero:true}} }
+    }, 700, 380);
+
+    // ---- Construcción del documento como HTML (Word lo abre nativamente, sin librerías externas) ----
+    marcarProgreso('Generando el documento…');
+    const esc = (s)=> String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    let filasMesHtml = '<tr><td class="etq">Año</td>' + etiquetasMeses.map(e=>`<th>${esc(e)}</th>`).join('') + '</tr>';
+    filasMesHtml += '<tr><td class="etq">Año anterior</td>' + countsAnterior.map(v=>`<td>${v}</td>`).join('') + '</tr>';
+    filasMesHtml += '<tr><td class="etq">Año actual</td>' + countsActual.map(v=>`<td>${v}</td>`).join('') + '</tr>';
+
+    let seccionesEstaciones = '';
+    let numSeccion = 2;
+    for(const est of estacionesUnicas){
+      marcarProgreso(`Generando detalle de ${est}…`);
+      const registrosEst = registrosActuales.filter(r=> estacionDe(r)===est);
+      const pasillosUsados = Array.from(new Set(registrosEst.map(r=>pasilloLabelDesdeGate(r.gate)).filter(Boolean)));
+      const pasillosOrdenados = ORDEN_PASILLOS.filter(p=>pasillosUsados.includes(p)).concat(pasillosUsados.filter(p=>!ORDEN_PASILLOS.includes(p)));
+      const pasillosFinal = pasillosOrdenados.length ? pasillosOrdenados : ['PASILLO / SIN GATE'];
+
+      const matriz = pasillosFinal.map(p => categorias.map(c => registrosEst.filter(r=>{
+        const pl = pasilloLabelDesdeGate(r.gate) || 'PASILLO / SIN GATE';
+        return pl === p && categoriaFallaNormalizada(r.falla, categorias) === c;
+      }).length));
+      const totalesPorPasillo = matriz.map(fila => fila.reduce((a,b)=>a+b,0));
+      const totalesPorCategoria = categorias.map((c,ci)=> matriz.reduce((a,fila)=>a+fila[ci],0));
+      const totalEstacion = totalesPorCategoria.reduce((a,b)=>a+b,0);
+
+      const imgEstacion = await chartAImagenPNG({
+        type:'bar',
+        data:{ labels: pasillosFinal.map(p=>p.replace('PASILLO / ','')), datasets: categorias.map((c,ci)=>({label:c, data: matriz.map(fila=>fila[ci]), backgroundColor: COLORES_REPORTE[ci%COLORES_REPORTE.length]})) },
+        options:{ plugins:{title:{display:true, text:`Distribución de Incidencias — ${est}`}}, scales:{y:{beginAtZero:true}} }
+      }, 760, 400);
+
+      const headerCats = categorias.map(c=>`<th>${esc(c)}</th>`).join('');
+      const filasPasillo = pasillosFinal.map((p,pi)=>
+        `<tr><td class="etq">${esc(p)}</td>${matriz[pi].map(v=>`<td>${v}</td>`).join('')}<td class="tot">${totalesPorPasillo[pi]}</td></tr>`
+      ).join('');
+      const filaTotal = `<tr class="fila-total"><td class="etq">TOTAL INCIDENCIAS</td>${totalesPorCategoria.map(v=>`<td>${v}</td>`).join('')}<td class="tot">${totalEstacion}</td></tr>`;
+
+      seccionesEstaciones += `
+        <div class="pagebreak"></div>
+        <h1>5.${numSeccion}. ESTACIÓN — ${esc(est)}</h1>
+        <p>Detalle de incidencias de ${esc(tituloTipo.toLowerCase())} en la estación ${esc(est)}, por pasillo y tipo de falla, en el periodo seleccionado. Total de incidencias: <b>${totalEstacion}</b>.</p>
+        <table>
+          <tr><th>PASILLO</th>${headerCats}<th style="background:#F06624;">TOTAL</th></tr>
+          ${filasPasillo}
+          ${filaTotal}
+        </table>
+        <img src="${imgEstacion}" style="width:6.2in;height:auto;">
+        <div class="caption">Gráfico ${3+numSeccion-1}. Distribución de Incidencias — ${esc(est)}.</div>
+      `;
+      numSeccion++;
+    }
+
+    const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset='utf-8'><title>Informe Santiago</title>
+<style>
+  @page { margin: 2cm; }
+  body{ font-family: Calibri, Arial, sans-serif; color:#333333; }
+  h1{ color:#003D54; font-size:16pt; border-bottom: 2.25pt solid #F06624; padding-bottom:6pt; margin-top:22pt; }
+  p{ font-size:11pt; line-height:1.5; color:#4A5568; }
+  table{ border-collapse: collapse; width:100%; margin:10pt 0 18pt 0; }
+  th{ background:#003D54; color:#ffffff; padding:6pt 4pt; font-size:8pt; text-transform:uppercase; border:1px solid #003D54; }
+  td{ padding:6pt 4pt; border:1px solid #dddddd; font-size:9.5pt; text-align:center; }
+  td.etq{ text-align:left; font-weight:bold; color:#003D54; background:#F7F8FA; }
+  td.tot{ font-weight:bold; background:#FFF3EC; }
+  tr.fila-total td{ font-weight:bold; background:#E8F4F8; }
+  .pagebreak{ page-break-before: always; }
+  .portada{ text-align:center; }
+  .portada h1{ border:none; color:#005879; font-size:34pt; margin-bottom:2pt; }
+  .portada .sub{ color:#4A5568; font-size:12pt; margin-bottom:20pt; }
+  .portada .titulo-informe{ color:#003D54; font-size:20pt; font-weight:bold; border-top:2.25pt solid #F06624; border-bottom:2.25pt solid #F06624; padding:10pt 0; margin:20pt 0; }
+  .portada .tipo{ color:#005879; font-size:14pt; margin-top:10pt; }
+  .portada .periodo{ color:#96A2A8; font-size:11pt; font-style:italic; margin-top:30pt; }
+  img{ display:block; margin:10pt auto 4pt auto; max-width:100%; }
+  .caption{ text-align:center; font-size:9pt; font-style:italic; color:#8A97A3; margin-bottom:16pt; }
+  .callout{ background:#E8F4F8; border-left: 3pt solid #005879; padding:8pt 12pt; font-size:10pt; color:#003D54; margin:10pt 0 16pt 0; }
+</style></head>
+<body>
+  <div class="portada">
+    <h1>FIMOVIT</h1>
+    <div class="sub">Fideicomiso de Movilidad y Transporte</div>
+    <div class="titulo-informe">Informe General Teleférico Línea 1 Santiago</div>
+    <div class="tipo">Incidencias de ${esc(tituloTipo)}</div>
+    <div class="periodo">Periodo: ${esc(NOMBRES_MES[meses[0].mes-1])} ${meses[0].anio} — ${esc(NOMBRES_MES[meses[meses.length-1].mes-1])} ${meses[meses.length-1].anio}</div>
+  </div>
+  <div class="pagebreak"></div>
+
+  <h1>5.1. Incidencias ${esc(tituloTipo)} Reportadas</h1>
+  <p>En el periodo seleccionado se reportaron un total de <b>${totalActual}</b> incidencias. En el mismo periodo del año anterior se reportaron <b>${totalAnterior}</b> incidencias.</p>
+  <div class="callout">Las tablas de este informe son completamente editables en Word. Las gráficas son imágenes de alta resolución — puedes moverlas, cambiarlas de tamaño y colocarlas donde quieras, pero para modificar los datos de una gráfica debes actualizar la tabla correspondiente y volver a generar el informe.</div>
+  <img src="${imgTendencia}" style="width:6.2in;height:auto;"><div class="caption">Gráfico 1. Cantidad de Incidencias ${esc(tituloTipo)} Mensual — Año actual vs. año anterior.</div>
+  <table>${filasMesHtml}</table>
+
+  <img src="${imgDistribucion}" style="width:6.2in;height:auto;"><div class="caption">Gráfico 2. Distribución Porcentual de Incidencias por Estación.</div>
+  <img src="${imgMensualEstacion}" style="width:6.2in;height:auto;"><div class="caption">Gráfico 3. Distribución Mensual de Incidencias por Estación.</div>
+
+  ${seccionesEstaciones}
+</body>
+</html>`;
+
+    const blob = new Blob(['\ufeff', htmlDoc], {type: 'application/msword'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Informe_Santiago_${tipoReporteSantiagoActual}_${desde}_a_${hasta}.doc`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    registrarAuditoria('Generó informe de Santiago', `${tipoReporteSantiagoActual} · ${desde} a ${hasta}`);
+    cerrarModalReporteSantiago();
+  }catch(err){
+    console.error('Error generando el informe:', err);
+    alert('Ocurrió un error generando el informe. Revisa la consola para más detalles.');
+  }finally{
+    btn.disabled = false; progreso.style.display = 'none';
+  }
 }
 
 async function toggleMiNotificacionEmail(){
@@ -5835,11 +6188,9 @@ function esEdicionLocalReciente(id){
 const ESTADOS_RESUELTOS = ['Resuelta','SOLUCIONADO','OK'];
 
 function opcionesEstadoPara(rec){
-  const vocabularioVt = ['FALLA PERSISTE','FUERA DE SERVICIO','SOLUCIONADO','OK'];
-  const vocabularioBus = ['Resuelta','Persistente','Fuera de Servicio','Pendiente'];
-  if(rec.sistema !== undefined) return vocabularioBus; // Santo Domingo (autobuses)
-  if(vocabularioVt.includes(rec.estado)) return vocabularioVt; // Validador/Torniquete
-  return vocabularioBus; // Santiago TOMS Boletería
+  // Mismos estados para ambos módulos (Sistema de Transporte y Validador/Torniquete),
+  // para que el seguimiento sea consistente sin importar de dónde venga la incidencia.
+  return ['Pendiente','Persistente','Fuera de Servicio','Resuelta'];
 }
 function esEstadoResuelto(estado){
   return ESTADOS_RESUELTOS.includes(estado);
@@ -5912,6 +6263,7 @@ async function abrirEditorIncidencia(tabla, id){
   const resumenPares = tabla === 'sistema'
     ? [['Fecha', rec.fecha],['Sistema', rec.sistema],['Ruta / Corredor', rec.detalle],['Falla', rec.falla]]
     : [['Fecha', rec.fecha],['Estación', rec.estacion],['Gate / TOM', rec.gate],['Falla', rec.falla]];
+  resumenPares.push(['Estado actual', rec.estado || '—']);
   if(rec.resueltoPor) resumenPares.push(['Resuelto por', rec.resueltoPor + (rec.horaResuelta ? ' — ' + rec.horaResuelta : '')]);
   document.getElementById('editModalSummary').innerHTML = resumenPares.map(p=>`<b>${escapeHtml(p[0])}:</b> ${escapeHtml(p[1]||'—')}<br>`).join('');
 
@@ -5928,11 +6280,12 @@ async function abrirEditorIncidencia(tabla, id){
   renderNotasIncidencia(rec);
 
   const esAdmin = isMasterUser();
-  document.getElementById('editAdminFieldsBox').style.display = esAdmin ? 'block' : 'none';
+  document.getElementById('tabBtnEditar').style.display = esAdmin ? 'inline-block' : 'none';
   if(esAdmin){
     if(usuariosCache.length === 0) await refrescarUsuariosCache();
     construirCamposAdmin(tabla, rec);
   }
+  cambiarTabModalIncidencia('responder');
 
   const opciones = opcionesEstadoPara(rec);
   const sel = document.getElementById('editEstadoSelect');
@@ -5951,6 +6304,13 @@ async function abrirEditorIncidencia(tabla, id){
     : '';
 
   document.getElementById('editIncidenciaModal').style.display = 'flex';
+}
+function cambiarTabModalIncidencia(tab){
+  const esResponder = tab === 'responder';
+  document.getElementById('tabContentResponder').style.display = esResponder ? 'block' : 'none';
+  document.getElementById('tabContentEditar').style.display = esResponder ? 'none' : 'block';
+  document.getElementById('tabBtnResponder').classList.toggle('active', esResponder);
+  document.getElementById('tabBtnEditar').classList.toggle('active', !esResponder);
 }
 function onChangeEditEstado(){
   const val = document.getElementById('editEstadoSelect').value;
@@ -5984,10 +6344,6 @@ async function guardarEdicionIncidencia(){
   const updates = {};
   const estadoAnterior = rec.estado;
 
-  if(isMasterUser()){
-    leerCamposAdmin(tabla, rec, updates);
-  }
-
   rec.estado = nuevoEstado;
   updates.estado = nuevoEstado;
 
@@ -6014,7 +6370,7 @@ async function guardarEdicionIncidencia(){
   rec.historialCambios.push({
     fecha: fechaHoraRD(),
     usuario: currentUser ? currentUser.nombre : 'Desconocido',
-    cambio: (estadoAnterior !== nuevoEstado) ? `Estado: "${estadoAnterior||'—'}" → "${nuevoEstado}"` : 'Datos actualizados'
+    cambio: (estadoAnterior !== nuevoEstado) ? `Estado: "${estadoAnterior||'—'}" → "${nuevoEstado}"` + (solucionTexto ? ` — ${solucionTexto}` : '') : (solucionTexto ? `Respuesta: ${solucionTexto}` : 'Respuesta registrada')
   });
   updates.historialCambios = JSON.stringify(rec.historialCambios);
 
@@ -6023,7 +6379,35 @@ async function guardarEdicionIncidencia(){
   marcarEdicionLocal(id);
 
   actualizarEstadoEnSheet(tabla, id, updates);
-  registrarAuditoria('Editó incidencia', tabla + ' #' + id + ' → estado: ' + nuevoEstado);
+  registrarAuditoria('Respondió incidencia', tabla + ' #' + id + ' → estado: ' + nuevoEstado);
+  cerrarEditorIncidencia();
+}
+
+async function guardarEdicionDatos(){
+  if(!editingRecord || !isMasterUser()) return;
+  const {tabla, id} = editingRecord;
+  const list = tabla === 'sistema' ? records : vtRecords;
+  const rec = list.find(r=>String(r.id)===String(id));
+  if(!rec) return;
+
+  const updates = {};
+  leerCamposAdmin(tabla, rec, updates);
+
+  if(!Array.isArray(rec.historialCambios)) rec.historialCambios = [];
+  rec.historialCambios.push({
+    fecha: fechaHoraRD(),
+    usuario: currentUser ? currentUser.nombre : 'Desconocido',
+    cambio: 'Se corrigieron los datos originales del reporte'
+  });
+  updates.historialCambios = JSON.stringify(rec.historialCambios);
+
+  if(tabla === 'sistema'){ saveRecords(); renderTableSistema(); }
+  else { saveVtRecords(); renderTableVt(); }
+  marcarEdicionLocal(id);
+
+  actualizarEstadoEnSheet(tabla, id, updates);
+  registrarAuditoria('Editó datos originales de incidencia', tabla + ' #' + id);
+  alert('✔ Datos corregidos guardados.');
   cerrarEditorIncidencia();
 }
 
@@ -7615,6 +7999,7 @@ function ensureBaselineLoaded(){
 
 
 function exportarExcel(){
+  if(!puedeExportar()){ alert('Solo una cuenta de Administrador Plus puede exportar datos.'); return; }
   if(records.length === 0 && vtRecords.length === 0){ alert('No hay incidencias registradas todavía.'); return; }
   const wb = XLSX.utils.book_new();
 
