@@ -1329,7 +1329,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.11.2 <span style="opacity:.55;">· JT</span></div>
+<div id="versionLabel">V4.12.0 <span style="opacity:.55;">· JT</span></div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1383,7 +1383,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.11.2
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.12.0
     </div>
   </div>
 </div>
@@ -3318,6 +3318,22 @@ async function fetchUsuarioRemoto(usuario){
   }
 }
 
+// La verificación de contraseña ocurre en el servidor (Apps Script) — el hash guardado
+// nunca llega al navegador, ni siquiera para compararlo aquí.
+async function verificarLoginServidor(usuario, passwordHash){
+  huboErrorRedUltimaConsulta = false;
+  if(!isLiveEnabled()) return null;
+  try{
+    const url = liveUrl + '?sheet=usuarios&action=verificarLogin&usuario=' + encodeURIComponent(usuario) + '&passwordHash=' + encodeURIComponent(passwordHash);
+    const res = await fetchConTimeout(url, {method:'GET'}, 12000);
+    return await res.json();
+  }catch(err){
+    console.error('No se pudo verificar el login remoto:', err);
+    huboErrorRedUltimaConsulta = true;
+    return null;
+  }
+}
+
 async function registrarUsuarioRemoto(userObj){
   if(!isLiveEnabled()) return;
   try{
@@ -4295,7 +4311,9 @@ async function initAuth(){
       return;
     }
     if(remoto){
-      currentUser = {usuario: remoto.usuario, nombre: remoto.nombre, passwordHash: remoto.passwordHash, permisos: remoto.permisos || 'usuario', email: remoto.email || '', notificarEmail: remoto.notificarEmail || 'no', provinciaAsignada: remoto.provinciaAsignada || '', whatsapp: remoto.whatsapp || '', notificarWhatsapp: remoto.notificarWhatsapp || 'no'};
+      // El hash guardado localmente (calculado en el último login exitoso en este dispositivo)
+      // se conserva — el servidor ya no lo devuelve en ninguna consulta normal.
+      currentUser = {usuario: remoto.usuario, nombre: remoto.nombre, passwordHash: u.passwordHash, permisos: remoto.permisos || 'usuario', email: remoto.email || '', notificarEmail: remoto.notificarEmail || 'no', provinciaAsignada: remoto.provinciaAsignada || '', whatsapp: remoto.whatsapp || '', notificarWhatsapp: remoto.notificarWhatsapp || 'no'};
       const idx = users.findIndex(x=>x.usuario.toLowerCase()===currentUser.usuario.toLowerCase());
       if(idx>=0) users[idx] = currentUser; else users.push(currentUser);
       saveUsers(users);
@@ -4471,11 +4489,15 @@ async function doLogin(){
     let remotoEncontrado = false;
 
     if(isLiveEnabled()){
-      const remoto = await fetchUsuarioRemoto(usuario);
-      if(remoto){
+      const resultado = await verificarLoginServidor(usuario, passwordHash);
+      if(resultado){
         remotoEncontrado = true;
-        if(remoto.passwordHash === passwordHash){
-          u = {usuario: remoto.usuario, nombre: remoto.nombre, passwordHash: remoto.passwordHash, permisos: remoto.permisos || 'usuario', email: remoto.email || '', notificarEmail: remoto.notificarEmail || 'no', provinciaAsignada: remoto.provinciaAsignada || '', whatsapp: remoto.whatsapp || '', notificarWhatsapp: remoto.notificarWhatsapp || 'no'};
+        if(resultado.ok && resultado.usuario){
+          const remoto = resultado.usuario;
+          // Guardamos el hash que EL PROPIO NAVEGADOR calculó (no el del servidor) solo en este
+          // dispositivo, para permitir iniciar sesión sin internet más adelante. El hash real
+          // guardado en el Sheet nunca se descarga ni se expone.
+          u = {usuario: remoto.usuario, nombre: remoto.nombre, passwordHash: passwordHash, permisos: remoto.permisos || 'usuario', email: remoto.email || '', notificarEmail: remoto.notificarEmail || 'no', provinciaAsignada: remoto.provinciaAsignada || '', whatsapp: remoto.whatsapp || '', notificarWhatsapp: remoto.notificarWhatsapp || 'no'};
           const users = loadUsers();
           const idx = users.findIndex(x=>x.usuario.toLowerCase()===u.usuario.toLowerCase());
           if(idx>=0) users[idx] = u; else users.push(u);
