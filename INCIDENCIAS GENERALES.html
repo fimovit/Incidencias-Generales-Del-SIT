@@ -1329,7 +1329,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.11.1 <span style="opacity:.55;">· JT</span></div>
+<div id="versionLabel">V4.11.2 <span style="opacity:.55;">· JT</span></div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1383,7 +1383,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.11.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.11.2
     </div>
   </div>
 </div>
@@ -1788,7 +1788,7 @@
 
       <!-- STEP: PROVINCIA -->
       <div class="step active" data-step="provincia" id="step-provincia">
-        <h2><span class="num-badge">1</span> Seleccione la provincia de la incidencia</h2>
+        <h2><span class="num-badge">1</span> <span id="tituloPasoProvincia">Seleccione la provincia de la incidencia</span></h2>
         <div class="option-grid">
           <div class="option-card big" id="provinciaCardSD" onclick="selectProvincia('Santo Domingo')"><span class="oi">🏙️</span>Santo Domingo<span class="desc lock-badge" id="lockBadgeSD" style="display:none;">🔒 Bloqueado para tu cuenta</span></div>
           <div class="option-card big" id="provinciaCardStgo" onclick="selectProvincia('Santiago')"><span class="oi">🌄</span>Santiago<span class="desc lock-badge" id="lockBadgeStgo" style="display:none;">🔒 Bloqueado para tu cuenta</span></div>
@@ -4758,6 +4758,9 @@ function resetWizard(){
   aplicarRestriccionProvincia();
 }
 function aplicarRestriccionProvincia(){
+  const tituloPaso = document.getElementById('tituloPasoProvincia');
+  if(tituloPaso) tituloPaso.textContent = esUsuarioBasico() ? 'Seleccione el sistema' : 'Seleccione la provincia de la incidencia';
+
   const cardSD = document.getElementById('provinciaCardSD');
   const cardStgo = document.getElementById('provinciaCardStgo');
   const cardOmsaSD = document.getElementById('provinciaCardOmsaSD');
