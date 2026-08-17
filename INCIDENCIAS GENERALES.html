@@ -1329,7 +1329,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.7.0 <span style="opacity:.55;">· JT</span></div>
+<div id="versionLabel">V4.11.1 <span style="opacity:.55;">· JT</span></div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1383,7 +1383,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.7.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.11.1
     </div>
   </div>
 </div>
@@ -1792,6 +1792,7 @@
         <div class="option-grid">
           <div class="option-card big" id="provinciaCardSD" onclick="selectProvincia('Santo Domingo')"><span class="oi">🏙️</span>Santo Domingo<span class="desc lock-badge" id="lockBadgeSD" style="display:none;">🔒 Bloqueado para tu cuenta</span></div>
           <div class="option-card big" id="provinciaCardStgo" onclick="selectProvincia('Santiago')"><span class="oi">🌄</span>Santiago<span class="desc lock-badge" id="lockBadgeStgo" style="display:none;">🔒 Bloqueado para tu cuenta</span></div>
+          <div class="option-card big" id="provinciaCardOmsaSD" onclick="selectProvincia('OMSA Santo Domingo')"><span class="oi">🚌</span>OP OMSA SANTO DOMINGO</div>
           <div class="option-card big option-card-disabled" id="provinciaCardOmsa" title="Próximamente">
             <span class="omsa-escena-mini">
               <span class="omsa-bus-verde">
@@ -1955,6 +1956,96 @@
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="goTo('reportada')">← Atrás</button>
           <button class="btn btn-primary" onclick="submitEstado()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- ==================== FLUJO OP OMSA SANTO DOMINGO ==================== -->
+      <div class="step" data-step="omsa-sd-fecha" id="step-omsa-sd-fecha">
+        <h2><span class="num-badge">2</span> Fecha de la incidencia</h2>
+        <label class="req">Fecha</label>
+        <input type="date" id="inpOmsaSdFecha">
+        <div class="error-msg" id="err-omsaSdFecha">Debe indicar la fecha de la incidencia.</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo('provincia')">← Atrás</button>
+          <button class="btn btn-primary" onclick="submitOmsaSdFecha()">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="omsa-sd-ruta" id="step-omsa-sd-ruta">
+        <h2><span class="num-badge">3</span> Seleccione la ruta</h2>
+        <div class="option-grid" id="gridOmsaSdRuta"></div>
+        <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('omsa-sd-fecha')">← Atrás</button><div></div></div>
+      </div>
+
+      <div class="step" data-step="omsa-sd-falla" id="step-omsa-sd-falla">
+        <h2><span class="num-badge">4</span> ¿Cuál es la falla?</h2>
+        <label class="req">Seleccione la falla</label>
+        <select id="inpOmsaSdFalla" onchange="onChangeOmsaSdFalla()">
+          <option value="">-- Seleccione --</option>
+          <option value="GPS">GPS</option>
+          <option value="SAM/VSAM">SAM/VSAM</option>
+          <option value="INTERNET">INTERNET</option>
+          <option value="NO ACEPTA EMV">NO ACEPTA EMV</option>
+          <option value="NO ACEPTA SDGO">NO ACEPTA SDGO</option>
+          <option value="NO ABRE TURNOCON TISCO">NO ABRE TURNOCON TISCO</option>
+          <option value="PANTALLA NEGRA EN VALIDADOR">PANTALLA NEGRA EN VALIDADOR</option>
+          <option value="Otras">Otras</option>
+        </select>
+        <div class="error-msg" id="err-omsaSdFalla">Debe seleccionar la falla.</div>
+        <div id="omsaSdFallaOtraBox" style="display:none;">
+          <label class="req">Especifique la falla</label>
+          <input type="text" id="inpOmsaSdFallaOtra" placeholder="Describa la falla">
+          <div class="error-msg" id="err-omsaSdFallaOtra">Debe describir la falla.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo('omsa-sd-ruta')">← Atrás</button>
+          <button class="btn btn-primary" onclick="submitOmsaSdFalla()">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="omsa-sd-veces" id="step-omsa-sd-veces">
+        <h2><span class="num-badge">5</span> ¿Cuántas veces ha ocurrido esta falla?</h2>
+        <label class="req">Número de veces</label>
+        <input type="number" id="inpOmsaSdVeces" min="1" placeholder="Ej: 1">
+        <div class="error-msg" id="err-omsaSdVeces">Indique un número válido (mínimo 1).</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo('omsa-sd-falla')">← Atrás</button>
+          <button class="btn btn-primary" onclick="submitOmsaSdVeces()">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="omsa-sd-reportada" id="step-omsa-sd-reportada">
+        <h2><span class="num-badge">6</span> ¿Ha sido reportada anteriormente?</h2>
+        <div class="radio-row">
+          <div class="radio-opt" id="omsa-sd-rep-si" onclick="selectOmsaSdReportada('Sí')">Sí</div>
+          <div class="radio-opt" id="omsa-sd-rep-no" onclick="selectOmsaSdReportada('No')">No</div>
+        </div>
+        <div class="error-msg" id="err-omsaSdReportada">Debe indicar si ha sido reportada anteriormente.</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo('omsa-sd-veces')">← Atrás</button>
+          <button class="btn btn-primary" onclick="submitOmsaSdReportada()">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="omsa-sd-estado" id="step-omsa-sd-estado">
+        <h2><span class="num-badge">7</span> Estado de la incidencia</h2>
+        <label class="req">Seleccione el estado</label>
+        <select id="inpOmsaSdEstado" onchange="toggleOmsaSdResuelta()">
+          <option value="">-- Seleccione --</option>
+          <option value="Resuelta">Resuelta</option>
+          <option value="Persistente">Persistente</option>
+          <option value="Fuera de Servicio">Fuera de Servicio</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+        <div class="error-msg" id="err-omsaSdEstado">Debe seleccionar el estado de la incidencia.</div>
+        <div id="omsaSdResueltaBox" style="display:none;">
+          <label class="req">¿Cómo se resolvió?</label>
+          <textarea id="inpOmsaSdResolucion" placeholder="Describa la solución aplicada"></textarea>
+          <div class="error-msg" id="err-omsaSdResolucion">Debe describir cómo se resolvió.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo('omsa-sd-reportada')">← Atrás</button>
+          <button class="btn btn-primary" onclick="submitOmsaSdEstado()">Siguiente → (Confirmar)</button>
         </div>
       </div>
 
@@ -2203,9 +2294,20 @@
       </div>
     </div>
 
+    <div class="card" id="historialSeleccionProvincia">
+      <h2 style="margin-bottom:16px;">📍 ¿Qué historial deseas ver?</h2>
+      <div class="option-grid">
+        <div class="option-card big" id="histCardSD" onclick="elegirProvinciaHistorial('sistema')"><span class="oi">🏙️</span>Santo Domingo</div>
+        <div class="option-card big" id="histCardStgo" onclick="elegirProvinciaHistorial('vt')"><span class="oi">🌄</span>Santiago</div>
+      </div>
+    </div>
+
+    <div id="historialContenido" style="display:none;">
+      <button class="btn btn-secondary" id="btnCambiarProvinciaHistorial" style="margin-bottom:16px;" onclick="volverASeleccionProvincia()">← Cambiar provincia</button>
+
     <div class="subtabs">
-      <button class="subtab-btn active" id="subtab-sistema" onclick="showSubtab('sistema')">🎫 Sistema de Transporte</button>
-      <button class="subtab-btn" id="subtab-vt" onclick="showSubtab('vt')">🚦 Validador / Torniquete</button>
+      <button class="subtab-btn active" id="subtab-sistema" onclick="showSubtab('sistema')">🏙️ Santo Domingo</button>
+      <button class="subtab-btn" id="subtab-vt" onclick="showSubtab('vt')">🌄 Santiago</button>
       <button class="subtab-btn modo-basico-oculto" id="subtab-criticas" onclick="showSubtab('criticas')">🚨 Incidencias Críticas</button>
       <button class="subtab-btn modo-basico-oculto" id="subtab-sla" onclick="showSubtab('sla')">📊 Indicadores SLA</button>
     </div>
@@ -2397,6 +2499,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- ============ PÁGINA: GESTIÓN DE USUARIOS (solo Admin) ============ -->
@@ -2472,6 +2575,7 @@
           <option value="">Sin restricción (ve las 3 opciones)</option>
           <option value="Santo Domingo">Santo Domingo</option>
           <option value="Santiago">Santiago</option>
+          <option value="OMSA Santo Domingo">OP OMSA SANTO DOMINGO</option>
           <option value="OP OMSA SANTIAGO">OP OMSA SANTIAGO</option>
         </select>
       </div>
@@ -2937,6 +3041,12 @@ const FLOW_VT = [
   {id:'vt-estacion',lbl:'Estación'},{id:'vt-gate',lbl:'Gate'},{id:'vt-falla',lbl:'Falla'},
   {id:'vt-veces',lbl:'Veces'},{id:'vt-reportada',lbl:'Reportada'},{id:'vt-estado',lbl:'Estado'},{id:'vt-resumen',lbl:'Enviar'}
 ];
+const FLOW_OMSA_SD = [
+  {id:'provincia',lbl:'Provincia'},{id:'omsa-sd-fecha',lbl:'Fecha'},{id:'omsa-sd-ruta',lbl:'Ruta'},
+  {id:'omsa-sd-falla',lbl:'Falla'},{id:'omsa-sd-veces',lbl:'Veces'},{id:'omsa-sd-reportada',lbl:'Reportada'},
+  {id:'omsa-sd-estado',lbl:'Estado'},{id:'resumen',lbl:'Enviar'}
+];
+const OMSA_SD_RUTAS = ['35- Corredor 27 de Febrero Oeste','31- Corredor Domingo Savio'];
 
 /* ================= ESTADO DE LA APP ================= */
 let formData = {};
@@ -3294,6 +3404,7 @@ async function cargarUsuariosAdmin(){
           <option value="" ${provinciaActual===''?'selected':''}>Sin restricción</option>
           <option value="Santo Domingo" ${provinciaActual==='Santo Domingo'?'selected':''}>Santo Domingo</option>
           <option value="Santiago" ${provinciaActual==='Santiago'?'selected':''}>Santiago</option>
+          <option value="OMSA Santo Domingo" ${provinciaActual==='OMSA Santo Domingo'?'selected':''}>OP OMSA SANTO DOMINGO</option>
           <option value="OP OMSA SANTIAGO" ${provinciaActual==='OP OMSA SANTIAGO'?'selected':''}>OP OMSA SANTIAGO</option>
         </select>
         <button class="btn-sync" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='guardarProvinciaUsuario(${JSON.stringify(u.usuario)}, document.getElementById("provSel_${i}").value)'>Guardar</button>
@@ -4496,6 +4607,8 @@ function showPage(name){
   if(name==='table'){
     renderAll();
     updateLiveUI();
+    volverASeleccionProvincia();
+    aplicarRestriccionHistorial();
     if(isLiveEnabled()){ sincronizarAhora(false); startLivePolling(); }
   }
   if(name==='users'){
@@ -4539,6 +4652,19 @@ function showPage(name){
     renderListaContactosChat();
     renderMensajesChatActual();
   }
+}
+function elegirProvinciaHistorial(subtab){
+  document.getElementById('historialSeleccionProvincia').style.display = 'none';
+  document.getElementById('historialContenido').style.display = 'block';
+  document.getElementById('subtab-sistema').style.display = (subtab === 'sistema') ? '' : 'none';
+  document.getElementById('subtab-vt').style.display = (subtab === 'vt') ? '' : 'none';
+  showSubtab(subtab);
+}
+function volverASeleccionProvincia(){
+  document.getElementById('historialContenido').style.display = 'none';
+  document.getElementById('historialSeleccionProvincia').style.display = 'block';
+  document.getElementById('subtab-sistema').style.display = '';
+  document.getElementById('subtab-vt').style.display = '';
 }
 function showSubtab(name){
   if(name === 'sla' && !puedeEditarEstado()) name = 'sistema'; // los Indicadores SLA no existen para el rol usuario (modo básico)
@@ -4634,21 +4760,22 @@ function resetWizard(){
 function aplicarRestriccionProvincia(){
   const cardSD = document.getElementById('provinciaCardSD');
   const cardStgo = document.getElementById('provinciaCardStgo');
+  const cardOmsaSD = document.getElementById('provinciaCardOmsaSD');
   const cardOmsa = document.getElementById('provinciaCardOmsa');
   const lockSD = document.getElementById('lockBadgeSD');
   const lockStgo = document.getElementById('lockBadgeStgo');
-  if(!cardSD || !cardStgo || !cardOmsa) return;
+  if(!cardSD || !cardStgo || !cardOmsaSD || !cardOmsa) return;
 
   const asignada = (esUsuarioBasico() && currentUser) ? (currentUser.provinciaAsignada || '') : '';
 
   function bloquear(card, badge, bloqueada, clickHandler){
-    card.style.display = '';
     if(bloqueada){
+      card.style.display = 'none';
       card.classList.add('option-card-disabled');
       card.onclick = null;
-      card.title = 'Bloqueado para tu cuenta';
-      if(badge) badge.style.display = '';
+      if(badge) badge.style.display = 'none';
     } else {
+      card.style.display = '';
       card.classList.remove('option-card-disabled');
       card.onclick = clickHandler;
       card.removeAttribute('title');
@@ -4658,14 +4785,40 @@ function aplicarRestriccionProvincia(){
 
   bloquear(cardSD, lockSD, !!asignada && asignada !== 'Santo Domingo', ()=> selectProvincia('Santo Domingo'));
   bloquear(cardStgo, lockStgo, !!asignada && asignada !== 'Santiago', ()=> selectProvincia('Santiago'));
-  // OP OMSA SANTIAGO siempre se muestra deshabilitada (aún no tiene funcionalidad), sin importar la provincia asignada.
+  bloquear(cardOmsaSD, null, !!asignada && asignada !== 'OMSA Santo Domingo', ()=> selectProvincia('OMSA Santo Domingo'));
+  // OP OMSA SANTIAGO no tiene funcionalidad propia, pero también se oculta si hay una restricción activa
+  // hacia OTRO sistema, para que una cuenta restringida solo vea su propio sistema y nada más.
+  cardOmsa.style.display = (!!asignada && asignada !== 'OP OMSA SANTIAGO') ? 'none' : '';
 
   // Esta función es la ÚNICA que decide a qué paso ir, para no pisarse con otras llamadas a goTo().
-  if(asignada === 'Santo Domingo' || asignada === 'Santiago'){
+  if(asignada === 'Santo Domingo' || asignada === 'Santiago' || asignada === 'OMSA Santo Domingo'){
     selectProvincia(asignada);
   } else {
     goTo('provincia');
   }
+}
+
+function aplicarRestriccionHistorial(){
+  const btnCambiar = document.getElementById('btnCambiarProvinciaHistorial');
+  const cardSD = document.getElementById('histCardSD');
+  const cardStgo = document.getElementById('histCardStgo');
+  if(!btnCambiar || !cardSD || !cardStgo) return;
+
+  const asignada = (esUsuarioBasico() && currentUser) ? (currentUser.provinciaAsignada || '') : '';
+
+  if(!asignada){
+    btnCambiar.style.display = '';
+    cardSD.style.display = '';
+    cardStgo.style.display = '';
+    return;
+  }
+
+  // Cuentas restringidas: solo ven el historial de su propio sistema, sin poder cambiar.
+  const subtabDestino = (asignada === 'Santiago') ? 'vt' : 'sistema'; // Santo Domingo y OMSA Santo Domingo comparten el historial 'sistema'
+  btnCambiar.style.display = 'none';
+  cardSD.style.display = (subtabDestino === 'sistema') ? '' : 'none';
+  cardStgo.style.display = (subtabDestino === 'vt') ? '' : 'none';
+  elegirProvinciaHistorial(subtabDestino);
 }
 function hideAllErrors(){ document.querySelectorAll('.error-msg').forEach(e=> e.style.display='none'); }
 
@@ -4688,6 +4841,11 @@ function selectProvincia(prov){
   if(prov === 'Santo Domingo'){
     currentFlow = FLOW_SD_DIRECTO;
     goTo('fecha-sistema');
+  } else if(prov === 'OMSA Santo Domingo'){
+    currentFlow = FLOW_OMSA_SD;
+    formData.provincia = 'Santo Domingo'; // se guarda junto al historial de Santo Domingo
+    formData.tipoReporte = 'OP OMSA Santo Domingo';
+    goTo('omsa-sd-fecha');
   } else {
     currentFlow = FLOW_TOMS;
     goTo('sd-tipo');
@@ -4799,6 +4957,74 @@ function submitEstado(){
   goTo('resumen');
 }
 
+/* ==================== FLUJO OP OMSA SANTO DOMINGO ==================== */
+function submitOmsaSdFecha(){
+  const fecha = document.getElementById('inpOmsaSdFecha').value;
+  document.getElementById('err-omsaSdFecha').style.display = fecha ? 'none':'block';
+  if(!fecha) return;
+  formData.fecha = fecha;
+  buildOptionGrid('gridOmsaSdRuta', OMSA_SD_RUTAS, (ruta)=>{
+    formData.sistema = ruta;
+    goTo('omsa-sd-falla');
+  });
+  goTo('omsa-sd-ruta');
+}
+function onChangeOmsaSdFalla(){
+  const val = document.getElementById('inpOmsaSdFalla').value;
+  document.getElementById('omsaSdFallaOtraBox').style.display = (val === 'Otras') ? 'block' : 'none';
+}
+function submitOmsaSdFalla(){
+  const val = document.getElementById('inpOmsaSdFalla').value;
+  document.getElementById('err-omsaSdFalla').style.display = val ? 'none':'block';
+  if(!val) return;
+  if(val === 'Otras'){
+    const otra = document.getElementById('inpOmsaSdFallaOtra').value.trim();
+    document.getElementById('err-omsaSdFallaOtra').style.display = otra ? 'none':'block';
+    if(!otra) return;
+    formData.falla = otra;
+  } else {
+    formData.falla = val;
+  }
+  goTo('omsa-sd-veces');
+}
+function submitOmsaSdVeces(){
+  const v = document.getElementById('inpOmsaSdVeces').value;
+  document.getElementById('err-omsaSdVeces').style.display = (v && Number(v) >= 1) ? 'none':'block';
+  if(!v || Number(v) < 1) return;
+  formData.veces = v;
+  goTo('omsa-sd-reportada');
+}
+function selectOmsaSdReportada(val){
+  formData.reportada = val;
+  document.getElementById('omsa-sd-rep-si').classList.toggle('selected', val==='Sí');
+  document.getElementById('omsa-sd-rep-no').classList.toggle('selected', val==='No');
+}
+function submitOmsaSdReportada(){
+  document.getElementById('err-omsaSdReportada').style.display = formData.reportada ? 'none':'block';
+  if(!formData.reportada) return;
+  goTo('omsa-sd-estado');
+}
+function toggleOmsaSdResuelta(){
+  const estado = document.getElementById('inpOmsaSdEstado').value;
+  document.getElementById('omsaSdResueltaBox').style.display = (estado==='Resuelta') ? 'block' : 'none';
+}
+function submitOmsaSdEstado(){
+  const estado = document.getElementById('inpOmsaSdEstado').value;
+  document.getElementById('err-omsaSdEstado').style.display = estado ? 'none':'block';
+  if(!estado) return;
+  if(estado === 'Resuelta'){
+    const res = document.getElementById('inpOmsaSdResolucion').value.trim();
+    document.getElementById('err-omsaSdResolucion').style.display = res ? 'none':'block';
+    if(!res) return;
+    formData.resolucion = res;
+  } else { formData.resolucion = 'N/A'; }
+  formData.estado = estado;
+  formData.detalle = 'N/A';
+  formData.ficha = 'N/A';
+  buildResumen();
+  goTo('resumen');
+}
+
 /* ==================== FLUJO SANTIAGO - TOMS BOLETERÍA ==================== */
 function goBackFromTomFecha(){
   goTo('sd-tipo');
@@ -4867,7 +5093,16 @@ function submitTomComentarios(){
 }
 function buildResumen(){
   let rows;
-  if(formData.sistema){
+  if(formData.tipoReporte === 'OP OMSA Santo Domingo'){
+    // Flujo OP OMSA Santo Domingo -> se guarda en el historial de Sistema de Transporte
+    rows = [
+      ['Provincia', formData.provincia],['Tipo de reporte', formData.tipoReporte],
+      ['Fecha de la incidencia', formData.fecha],['Ruta', formData.sistema],
+      ['Falla', formData.falla],['Veces ha ocurrido', formData.veces],
+      ['Reportada anteriormente', formData.reportada],['Estado', formData.estado],['Resolución', formData.resolucion],
+      ['Registrado por', currentUser ? currentUser.nombre : 'Desconocido']
+    ];
+  } else if(formData.sistema){
     // Flujo Santo Domingo (autobuses)
     rows = [
       ['Provincia', formData.provincia],
@@ -4892,7 +5127,8 @@ function buildResumen(){
   document.getElementById('resumenBox').innerHTML = rows.map(r=>`<div class="summary-row"><b>${r[0]}</b><span>${r[1]||''}</span></div>`).join('');
 }
 function goBackFromResumen(){
-  if(formData.sistema) goTo('estado');
+  if(formData.tipoReporte === 'OP OMSA Santo Domingo') goTo('omsa-sd-estado');
+  else if(formData.sistema) goTo('estado');
   else goTo('tom-comentarios');
 }
 function finalizarIncidencia(){
@@ -5956,7 +6192,7 @@ function irAResultadoBusqueda(tabla, id){
   document.getElementById('busquedaGlobalResultados').style.display = 'none';
   document.getElementById('busquedaGlobalInput').value = '';
   showPage('table');
-  showSubtab(tabla);
+  elegirProvinciaHistorial(tabla);
   setTimeout(()=>{
     const fila = document.getElementById('row-' + tabla + '-' + id);
     if(fila){ fila.scrollIntoView({behavior:'smooth', block:'center'}); fila.style.outline = '3px solid var(--orange)'; setTimeout(()=> fila.style.outline='', 2000); }
@@ -6298,7 +6534,7 @@ function irAIncidenciaDesdeNotif(tabla){
   document.getElementById('notifPanel').style.display = 'none';
   marcarNotificacionesVistas();
   showPage('table');
-  showSubtab(tabla);
+  elegirProvinciaHistorial(tabla);
 }
 
 function verTodasNotificaciones(){
