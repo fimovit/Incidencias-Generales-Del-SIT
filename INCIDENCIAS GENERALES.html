@@ -727,7 +727,7 @@
   .clock{padding:14px 22px 0 22px;font-size:11px;color:#7fb4c7;}
 
   /* ---------- MAIN ---------- */
-  .main{flex:1;padding:30px 40px 60px 40px;max-width:1180px;overflow-y:auto;min-height:0;}
+  .main{flex:1;padding:30px 40px 60px 40px;max-width:1180px;margin:0 auto;overflow-y:auto;min-height:0;width:100%;}
   .page{display:none;}
   .page.active{display:block;animation:pageIn .35s ease;}
   @keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -805,35 +805,58 @@
   .hint{font-size:11.5px;color:#96a2a8;margin-top:5px;}
   .error-msg{color:var(--orange);font-size:12px;margin-top:6px;display:none;font-weight:700;}
 
-  .option-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(210px,1fr));gap:16px;margin-top:6px;perspective:900px;}
+  .option-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(210px,1fr));gap:18px;margin-top:6px;perspective:1400px;}
   .option-card{
-    background:var(--white);
+    position:relative;overflow:hidden;
+    background:linear-gradient(150deg, #ffffff 0%, #f3f8fa 100%);
     border:1.5px solid #eef2f4;
-    border-radius:14px;padding:18px 16px;text-align:left;cursor:pointer;
+    border-radius:16px;padding:18px 16px;text-align:left;cursor:pointer;
     font-size:13.5px;font-weight:700;color:var(--teal-dark);
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    box-shadow:0 1px 2px rgba(0,61,84,.05);
+    transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease, border-color .3s ease;
+    box-shadow:0 3px 10px rgba(0,61,84,.08);
     display:flex;align-items:center;gap:12px;
   }
-  .option-card .oi{font-size:22px;flex-shrink:0;}
+  .option-card::after{
+    content:'';position:absolute;top:-60%;left:-75%;width:45%;height:240%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,.75), transparent);
+    transform:rotate(25deg) translateX(-160%);
+    transition:transform .9s ease;
+    pointer-events:none;
+  }
+  .option-card .oi{font-size:22px;flex-shrink:0;transition:transform .45s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 4px 8px rgba(0,0,0,.15));}
   .option-card:hover{
     border-color:var(--teal-2);
-    transform:translateY(-3px);
-    box-shadow:0 10px 24px rgba(0,88,121,.14);
+    transform:translateY(-10px) translateZ(24px) rotateX(7deg) rotateY(-7deg) scale(1.02);
+    box-shadow:0 30px 55px rgba(0,88,121,.30), 0 10px 22px rgba(240,102,36,.16);
+    z-index:2;
   }
-  .option-card:active{transform:translateY(-1px);}
-  .option-card.big{padding:32px 20px;font-size:16px;text-align:center;flex-direction:column;gap:12px;}
-  .option-card.big .oi{font-size:36px;}
-  .option-card.selected{border-color:var(--orange);background:var(--orange-light);}
+  .option-card:hover::after{ transform:rotate(25deg) translateX(190%); }
+  .option-card:hover .oi{ transform:translateZ(46px) scale(1.2) translateY(-4px); }
+  .option-card:active{transform:translateY(-4px) scale(1.01);}
+  .option-card.big{padding:36px 20px;font-size:16px;text-align:center;flex-direction:column;gap:14px;
+    animation:optionCardBreathe 3.6s ease-in-out infinite;
+  }
+  .option-card.big:nth-child(2){ animation-delay:.4s; }
+  .option-card.big:nth-child(3){ animation-delay:.8s; }
+  @keyframes optionCardBreathe{
+    0%,100%{ box-shadow:0 3px 10px rgba(0,61,84,.08); }
+    50%{ box-shadow:0 10px 26px rgba(0,88,121,.16), 0 3px 10px rgba(240,102,36,.08); }
+  }
+  .option-card.big:hover{ animation-play-state:paused; }
+  .option-card.big .oi{font-size:42px;}
+  .option-card.selected{border-color:var(--orange);background:linear-gradient(150deg, var(--white), var(--orange-light));}
   .option-card .desc{display:block;font-weight:400;font-size:11.5px;color:var(--gray-text);margin-top:2px;}
   .option-card-disabled{
     cursor:not-allowed;background:#eef1f3;border-color:#dfe3e6;color:#9aa5ab;
-    opacity:.9;
+    opacity:.9;animation:none;
   }
   .option-card-disabled:hover{
     transform:none;box-shadow:0 1px 2px rgba(0,61,84,.05);
     border-color:#dfe3e6;
   }
+  .option-card-disabled:hover .oi{ transform:none; }
+  .option-card-disabled::after{ display:none; }
   .option-card-disabled .desc{color:#c53030;font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:10.5px;}
   .lock-badge{color:#c53030;font-weight:700;text-transform:uppercase;letter-spacing:.3px;font-size:10px;}
   .omsa-escena-mini{ position:relative; display:inline-block; width:100px; height:44px; vertical-align:middle; overflow:hidden; }
@@ -976,6 +999,15 @@
   }
   .btn-sync:hover{transform:translateY(-2px);}
   .btn-sync:active{transform:translateY(4px);box-shadow:0 2px 0 #c8501a;}
+  .btn-guardar{
+    background:linear-gradient(135deg, var(--teal-2), var(--teal));color:#fff;
+    border:none;padding:9px 20px;border-radius:20px;font-weight:700;font-size:12px;
+    cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(0,88,121,.28);
+    transition:.18s ease;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn-guardar::before{content:'✔';font-size:11px;}
+  .btn-guardar:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,88,121,.35);}
+  .btn-guardar:active{transform:translateY(0);box-shadow:0 3px 8px rgba(0,88,121,.3);}
   .subtab-btn{
     padding:11px 20px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;
     border:1.5px solid var(--teal-light);background:var(--white);color:var(--teal);transition:.15s;
@@ -1013,6 +1045,7 @@
   .charts-row{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:24px;}
   .chart-card{background:var(--white);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,61,84,.05), 0 6px 16px rgba(0,61,84,.05);}
   .chart-card h3{margin:0 0 12px 0;font-size:14px;color:var(--teal-dark);}
+  .chart-hint{font-size:10px;font-weight:400;color:#96a2a8;margin-left:6px;}
   .chart-card canvas{max-height:230px;}
 
   .table-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
@@ -1021,6 +1054,8 @@
   td{padding:9px 9px;border-bottom:1px solid var(--gray-light);color:var(--gray-text);}
   tr:nth-child(even) td{background:var(--gray-light);}
   tr:hover td{background:var(--teal-light);}
+  tr.fila-clicable{cursor:pointer;}
+  tr.fila-clicable:hover td{background:var(--teal-light);}
   .table-wrap{overflow-x:auto;max-height:60vh;overflow-y:auto;border-radius:12px;box-shadow:0 1px 3px rgba(0,61,84,.05);}
   .empty-state{text-align:center;padding:60px 20px;color:#8a97a3;background:var(--white);border-radius:12px;}
   .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:700;}
@@ -1079,6 +1114,19 @@
   /* ---------- HISTORIAL DE CAMBIOS (dentro del modal) ---------- */
   .change-log{max-height:140px;overflow-y:auto;background:var(--gray-light);border-radius:10px;padding:10px 12px;margin:14px 0;font-size:11.5px;color:var(--gray-text);}
   .change-log-item{padding:6px 0;border-bottom:1px dashed #e1e6e9;}
+  .fdi-card{
+    background:var(--gray-light);border:1.5px solid #e7edf0;border-radius:12px;
+    padding:14px 16px;margin-bottom:12px;cursor:pointer;transition:.15s ease;
+  }
+  .fdi-card:hover{border-color:var(--teal-2);background:var(--teal-light);transform:translateY(-1px);}
+  .fdi-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .fdi-num{font-size:11px;font-weight:800;color:#96a2a8;text-transform:uppercase;letter-spacing:.4px;}
+  .fdi-estado{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:3px 10px;border-radius:12px;}
+  .fdi-fila{display:flex;gap:8px;padding:4px 0;font-size:12.5px;align-items:baseline;}
+  .fdi-lbl{color:#8a97a3;font-weight:700;flex-shrink:0;min-width:150px;}
+  .fdi-val{color:var(--teal-dark);font-weight:600;}
+  .fdi-solucion{flex-direction:column;gap:2px;}
+  .fdi-solucion .fdi-val{font-weight:500;line-height:1.5;}
   .change-log-item:last-child{border-bottom:none;}
   .change-log-item b{color:var(--teal-dark);}
   .edit-modal-tab{
@@ -1087,6 +1135,11 @@
   }
   .edit-modal-tab:hover{color:var(--teal);}
   .edit-modal-tab.active{color:var(--teal-dark);border-bottom-color:var(--orange);}
+  .link-toggle-btn{
+    background:none;border:none;color:var(--teal-2);font-size:12.5px;font-weight:700;
+    cursor:pointer;padding:8px 0;margin-top:12px;display:block;text-align:left;
+  }
+  .link-toggle-btn:hover{color:var(--teal-dark);text-decoration:underline;}
   /* ---------- GEMELO DIGITAL ---------- */
   .gemelo-leyenda{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:20px;font-size:12.5px;color:var(--gray-text);font-weight:600;}
   .gemelo-leyenda span{display:flex;align-items:center;gap:7px;}
@@ -1244,6 +1297,10 @@
     table{font-size:11px;}
     th, td{padding:8px 6px;}
     .auth-card{padding:26px 22px;}
+    #btnCloudConfig, #notifWidget{ top:64px; width:40px; height:40px; font-size:16px; }
+    #notifWidget{ right:16px; }
+    #btnCloudConfig{ right:64px; }
+    .notif-panel-flotante{ top:112px; }
   }
   @media(max-width:420px){
     .dash-grid{grid-template-columns:1fr;}
@@ -1329,7 +1386,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.13.0</div>
+<div id="versionLabel">V4.22.0</div>
 
 <div id="loginScreen">
   <div class="login-status-chip">🟢 Sistema en línea</div>
@@ -1383,7 +1440,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.13.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.22.0
     </div>
   </div>
 </div>
@@ -1536,23 +1593,23 @@
 
     <!-- ============ PESTAÑA: RESPONDER (no modifica los datos originales) ============ -->
     <div id="tabContentResponder">
-      <div id="editChangeLogBox" style="display:none;">
-        <label style="margin-top:0;">📜 Historial de respuestas</label>
-        <div class="change-log" id="editChangeLog"></div>
-      </div>
-
-      <label class="req">Nuevo estado</label>
+      <label class="req" style="margin-top:0;">Nuevo estado</label>
       <select id="editEstadoSelect" onchange="onChangeEditEstado()"></select>
       <div class="error-msg" id="err-editEstado">Debe seleccionar un estado.</div>
 
-      <div id="editResolucionBox" style="display:none;">
-        <label class="req">¿Cómo se solucionó?</label>
-        <textarea id="editResolucionInput" placeholder="Describa la solución aplicada"></textarea>
-        <div class="error-msg" id="err-editResolucion">Debe describir cómo se solucionó.</div>
+      <label class="req" id="lblEditRespuesta">Tu respuesta</label>
+      <textarea id="editResolucionInput" placeholder="Describe la actualización o cómo se solucionó..."></textarea>
+      <div class="error-msg" id="err-editResolucion">Debe escribir tu respuesta.</div>
+
+      <button type="button" onclick="toggleExtraRespuesta('foto')" class="link-toggle-btn">📷 Adjuntar una foto</button>
+      <div id="editFotoExtraBox" style="display:none;margin-top:8px;">
+        <div id="editFotoPreview" style="margin-bottom:8px;"></div>
+        <input type="file" id="editFotoInput" accept="image/*">
+        <div id="editFotoEstado" style="font-size:11.5px;color:#96a2a8;margin-top:5px;"></div>
       </div>
 
-      <div style="margin-top:14px;">
-        <label style="margin-top:0;">💬 Notas <span style="text-transform:none;font-weight:400;color:#96a2a8;">(no cambian el estado)</span></label>
+      <button type="button" onclick="toggleExtraRespuesta('notas')" class="link-toggle-btn">💬 Agregar una nota rápida <span style="text-transform:none;font-weight:400;">(no cambia el estado)</span></button>
+      <div id="editNotasExtraBox" style="display:none;margin-top:8px;">
         <div class="change-log" id="editNotasBox" style="max-height:130px;"></div>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <input type="text" id="editNuevaNotaInput" placeholder="Ej: Ya se pidió la pieza de repuesto…" style="flex:1;">
@@ -1560,10 +1617,10 @@
         </div>
       </div>
 
-      <label>📷 Foto de la respuesta <span style="text-transform:none;font-weight:400;color:#96a2a8;">(opcional)</span></label>
-      <div id="editFotoPreview" style="margin-bottom:8px;"></div>
-      <input type="file" id="editFotoInput" accept="image/*">
-      <div id="editFotoEstado" style="font-size:11.5px;color:#96a2a8;margin-top:5px;"></div>
+      <div id="editChangeLogBox" style="display:none;margin-top:14px;">
+        <button type="button" onclick="toggleExtraRespuesta('historial')" class="link-toggle-btn">📜 Ver respuestas anteriores</button>
+        <div class="change-log" id="editChangeLog" style="display:none;margin-top:8px;"></div>
+      </div>
 
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="cerrarEditorIncidencia()">Cancelar</button>
@@ -1644,6 +1701,36 @@
 <div id="alertaCriticaBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:700;background:linear-gradient(90deg,#c0392b,#e53935);color:#fff;padding:12px 18px;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;box-shadow:0 4px 16px rgba(0,0,0,.35);animation:priorityPulse 1.4s ease-in-out infinite;">
   <span id="alertaCriticaTexto" style="font-weight:800;font-size:13px;text-align:center;">🚨 INCIDENCIA CRÍTICA</span>
   <button onclick="pedirSilenciarAlertaCritica()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);color:#fff;padding:7px 16px;border-radius:16px;cursor:pointer;font-weight:800;font-size:12px;white-space:nowrap;">🔇 Silenciar</button>
+</div>
+
+<div id="alertaPersonalizadaModal" style="display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center;background:rgba(0,26,36,.6);">
+  <div style="background:var(--white);border-radius:18px;padding:30px 28px;width:100%;max-width:380px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
+    <div id="alertaPersonalizadaIcono" style="font-size:40px;margin-bottom:12px;">ℹ️</div>
+    <div id="alertaPersonalizadaTexto" style="font-size:14px;color:var(--teal-dark);white-space:pre-line;line-height:1.6;margin-bottom:22px;font-weight:600;"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="cerrarAlertaPersonalizada()">Entendido</button>
+  </div>
+</div>
+
+<div id="confirmarPersonalizadoModal" style="display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center;background:rgba(0,26,36,.6);">
+  <div style="background:var(--white);border-radius:18px;padding:30px 28px;width:100%;max-width:400px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">❓</div>
+    <div id="confirmarPersonalizadoTexto" style="font-size:14px;color:var(--teal-dark);white-space:pre-line;line-height:1.6;margin-bottom:22px;font-weight:600;"></div>
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-secondary" onclick="resolverConfirmarPersonalizado(false)">Cancelar</button>
+      <button class="btn btn-primary" onclick="resolverConfirmarPersonalizado(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="promptPersonalizadoModal" style="display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center;background:rgba(0,26,36,.6);">
+  <div style="background:var(--white);border-radius:18px;padding:30px 28px;width:100%;max-width:400px;box-shadow:0 30px 60px rgba(0,0,0,.4);">
+    <div id="promptPersonalizadoTexto" style="font-size:14px;color:var(--teal-dark);white-space:pre-line;line-height:1.6;margin-bottom:14px;font-weight:600;text-align:center;"></div>
+    <input type="text" id="promptPersonalizadoInput" style="width:100%;">
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="resolverPromptPersonalizado(null)">Cancelar</button>
+      <button class="btn btn-primary" onclick="resolverPromptPersonalizado(document.getElementById('promptPersonalizadoInput').value)">Aceptar</button>
+    </div>
+  </div>
 </div>
 
 <div id="confirmarSilencioModal" style="display:none;position:fixed;inset:0;z-index:710;align-items:center;justify-content:center;background:rgba(0,26,36,.8);">
@@ -2332,8 +2419,8 @@
         <div class="dash-card orange"><div class="lbl">Última actualización</div><div class="val" style="font-size:14px;" id="dashUpdate1">—</div></div>
       </div>
       <div class="charts-row modo-basico-oculto">
-        <div class="chart-card"><h3>Incidencias por sistema</h3><canvas id="chartSistema1"></canvas></div>
-        <div class="chart-card"><h3>Distribución por estado</h3><canvas id="chartEstado1"></canvas></div>
+        <div class="chart-card"><h3>Incidencias por sistema <span class="chart-hint">👆 clic para ver detalle</span></h3><canvas id="chartSistema1"></canvas></div>
+        <div class="chart-card"><h3>Distribución por estado <span class="chart-hint">👆 clic para ver detalle</span></h3><canvas id="chartEstado1"></canvas></div>
       </div>
       <div class="chart-card modo-basico-oculto" style="margin-bottom:22px;"><h3>Tendencia — últimos 14 días</h3><canvas id="chartTendencia1"></canvas></div>
 
@@ -2392,8 +2479,8 @@
         <div class="dash-card orange"><div class="lbl">Última actualización</div><div class="val" style="font-size:14px;" id="dashUpdate2">—</div></div>
       </div>
       <div class="charts-row modo-basico-oculto">
-        <div class="chart-card"><h3>Incidencias por estación</h3><canvas id="chartSistema2"></canvas></div>
-        <div class="chart-card"><h3>Distribución por estado</h3><canvas id="chartEstado2"></canvas></div>
+        <div class="chart-card"><h3>Incidencias por estación <span class="chart-hint">👆 clic para ver detalle</span></h3><canvas id="chartSistema2"></canvas></div>
+        <div class="chart-card"><h3>Distribución por estado <span class="chart-hint">👆 clic para ver detalle</span></h3><canvas id="chartEstado2"></canvas></div>
       </div>
       <div class="chart-card modo-basico-oculto" style="margin-bottom:22px;"><h3>Tendencia — últimos 14 días</h3><canvas id="chartTendencia2"></canvas></div>
 
@@ -2616,7 +2703,7 @@
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <input type="number" id="inpUmbralCritico" min="0.1" step="0.01" style="width:120px;" placeholder="24">
         <span style="font-size:13px;color:var(--gray-text);">horas</span>
-        <button class="btn btn-primary" onclick="aplicarUmbralCritico()">Guardar</button>
+        <button class="btn-guardar" onclick="aplicarUmbralCritico()">Guardar</button>
       </div>
       <div class="hint" style="margin-top:8px;">Acepta decimales para fracciones de hora — ej: 1 hora 40 minutos = <b>1.67</b>, 30 minutos = <b>0.5</b>, 45 minutos = <b>0.75</b>.</div>
     </div>
@@ -2689,7 +2776,7 @@
   <div class="page" id="page-fallas">
     <div class="topbar">
       <h1>📈 Fallas Recurrentes</h1>
-      <div class="subtitle">Qué sistema/estación y qué tipo de falla se repiten más — útil para priorizar mantenimiento.</div>
+      <div class="subtitle">Qué sistema/estación y qué tipo de falla se repiten más — útil para priorizar mantenimiento. Haz clic en una fila para ver los registros.</div>
     </div>
     <div class="card">
       <h2><span class="num-badge">🎫</span> Sistema de Transporte — Top fallas</h2>
@@ -2715,6 +2802,23 @@
       <h2 style="margin-bottom:10px;"><span class="num-badge">📺</span> Vista de Sala de Control</h2>
       <p class="subtitle" style="margin-bottom:16px;">Pantalla de solo lectura, letra grande, que rota automáticamente — ideal para un monitor fijo en la oficina.</p>
       <button class="btn btn-primary" onclick="abrirModoKiosko()">🖥️ Abrir vista de sala de control</button>
+    </div>
+  </div>
+
+  <div id="fallasDetalleModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.65);">
+    <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+      <button onclick="cerrarFallasDetalle()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+      <h2 id="fallasDetalleTitulo" style="color:var(--teal-dark);font-size:17px;margin:0 0 4px 0;padding-right:30px;">—</h2>
+      <p id="fallasDetalleSubtitulo" style="font-size:12.5px;color:var(--gray-text);margin:0 0 16px 0;"></p>
+      <div id="fallasDetalleLista"></div>
+    </div>
+  </div>
+
+  <div id="rondaMantDetalleModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.65);">
+    <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:460px;max-height:80vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+      <button onclick="cerrarRondaMantDetalle()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+      <h2 style="color:var(--teal-dark);font-size:17px;margin:0 0 16px 0;padding-right:30px;">🗂️ Ronda de inspección</h2>
+      <div id="rondaMantDetalleLista"></div>
     </div>
   </div>
 
@@ -2792,20 +2896,32 @@
       </div>
     </div>
 
-    <div class="gemelo-leyenda">
-      <span><span class="gemelo-dot ok"></span> Sin incidencias activas</span>
-      <span><span class="gemelo-dot alerta"></span> Incidencia activa (reciente)</span>
-      <span><span class="gemelo-dot critico"></span> Crítica (+umbral configurado)</span>
+    <div class="card" id="gemeloSeleccionProvincia">
+      <h2 style="margin-bottom:16px;">📍 ¿Qué gemelo digital deseas ver?</h2>
+      <div class="option-grid">
+        <div class="option-card big" onclick="elegirProvinciaGemelo('sd')"><span class="oi">🏙️</span>Santo Domingo</div>
+        <div class="option-card big" onclick="elegirProvinciaGemelo('stgo')"><span class="oi">🌄</span>Santiago</div>
+      </div>
     </div>
 
-    <div class="card" style="margin-bottom:22px;">
-      <h2 style="margin-bottom:14px;">🌄 Santiago — Validador / Torniquete</h2>
-      <div id="gemeloSantiagoBody"></div>
-    </div>
+    <div id="gemeloContenido" style="display:none;">
+      <button class="btn btn-secondary" id="btnCambiarProvinciaGemelo" style="margin-bottom:16px;" onclick="volverASeleccionGemelo()">← Cambiar provincia</button>
 
-    <div class="card">
-      <h2 style="margin-bottom:14px;">🏙️ Santo Domingo — Sistema de Transporte</h2>
-      <div id="gemeloSantoDomingoBody"></div>
+      <div class="gemelo-leyenda">
+        <span><span class="gemelo-dot ok"></span> Sin incidencias activas</span>
+        <span><span class="gemelo-dot alerta"></span> Incidencia activa (reciente)</span>
+        <span><span class="gemelo-dot critico"></span> Crítica (+umbral configurado)</span>
+      </div>
+
+      <div class="card" id="gemeloCardStgo" style="margin-bottom:22px;">
+        <h2 style="margin-bottom:14px;">🌄 Santiago — Validador / Torniquete</h2>
+        <div id="gemeloSantiagoBody"></div>
+      </div>
+
+      <div class="card" id="gemeloCardSD">
+        <h2 style="margin-bottom:14px;">🏙️ Santo Domingo — Sistema de Transporte</h2>
+        <div id="gemeloSantoDomingoBody"></div>
+      </div>
     </div>
   </div>
 
@@ -3024,6 +3140,55 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
   document.head.appendChild(link);
 });
 
+/* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
+function mostrarAlertaPersonalizada(mensaje){
+  const texto = String(mensaje);
+  const textoEl = document.getElementById('alertaPersonalizadaTexto');
+  const iconoEl = document.getElementById('alertaPersonalizadaIcono');
+  if(!textoEl || !iconoEl){ window.originalAlert ? window.originalAlert(texto) : null; return; }
+  textoEl.textContent = texto;
+  let icono = 'ℹ️';
+  if(/✔|✅|éxito|exitosa|completa|guardad|creado|listo|correcta/i.test(texto)) icono = '✅';
+  else if(/error|no se pudo|falló|incorrect|no se encontr/i.test(texto)) icono = '⚠️';
+  else if(/🚨|crítica|urgente/i.test(texto)) icono = '🚨';
+  iconoEl.textContent = icono;
+  document.getElementById('alertaPersonalizadaModal').style.display = 'flex';
+}
+function cerrarAlertaPersonalizada(){
+  document.getElementById('alertaPersonalizadaModal').style.display = 'none';
+}
+window.originalAlert = window.alert;
+window.alert = mostrarAlertaPersonalizada;
+
+let _resolverConfirmarPersonalizado = null;
+function confirmarPersonalizado(mensaje){
+  return new Promise(resolve=>{
+    document.getElementById('confirmarPersonalizadoTexto').textContent = String(mensaje);
+    document.getElementById('confirmarPersonalizadoModal').style.display = 'flex';
+    _resolverConfirmarPersonalizado = resolve;
+  });
+}
+function resolverConfirmarPersonalizado(valor){
+  document.getElementById('confirmarPersonalizadoModal').style.display = 'none';
+  if(_resolverConfirmarPersonalizado){ _resolverConfirmarPersonalizado(valor); _resolverConfirmarPersonalizado = null; }
+}
+
+let _resolverPromptPersonalizado = null;
+function promptPersonalizado(mensaje, valorInicial){
+  return new Promise(resolve=>{
+    document.getElementById('promptPersonalizadoTexto').textContent = String(mensaje);
+    const input = document.getElementById('promptPersonalizadoInput');
+    input.value = valorInicial || '';
+    document.getElementById('promptPersonalizadoModal').style.display = 'flex';
+    setTimeout(()=> input.focus(), 50);
+    _resolverPromptPersonalizado = resolve;
+  });
+}
+function resolverPromptPersonalizado(valor){
+  document.getElementById('promptPersonalizadoModal').style.display = 'none';
+  if(_resolverPromptPersonalizado){ _resolverPromptPersonalizado(valor); _resolverPromptPersonalizado = null; }
+}
+
 /* ================= DATOS DE OPCIONES ================= */
 const CORREDORES_REFORMADOS = ["Corredor Charles de Gaulle (CCG)","Corredor Núñez de Cáceres (CNC)","Corredor Winston Churchill (CWC)","Corredor Independencia (CIN)"];
 const TELEFERICO = ["E01 - LOS ALCARRIZOS","E02 - LAS TORONJAS","E03 - PUENTE BLANCO","E04 - LOS AMERICANOS"];
@@ -3113,9 +3278,9 @@ function toggleModoCapacitacion(){
   else activarModoCapacitacion();
 }
 
-function activarModoCapacitacion(){
+async function activarModoCapacitacion(){
   if(modoCapacitacionActivo) return;
-  const continuar = confirm('🎓 Vas a entrar al Modo Capacitación.\n\nVas a ver datos de EJEMPLO (ficticios) para practicar. Nada de lo que hagas aquí se guardará ni se enviará a tu Google Sheet real.\n\n¿Continuar?');
+  const continuar = await confirmarPersonalizado('🎓 Vas a entrar al Modo Capacitación.\n\nVas a ver datos de EJEMPLO (ficticios) para practicar. Nada de lo que hagas aquí se guardará ni se enviará a tu Google Sheet real.\n\n¿Continuar?');
   if(!continuar) return;
 
   capacitacionBackup = {
@@ -3424,7 +3589,7 @@ async function cargarUsuariosAdmin(){
           <option value="admin" ${permisoActual==='admin'?'selected':''}>Administrador</option>
           <option value="admin_plus" ${permisoActual==='admin_plus'?'selected':''}>Administrador Plus</option>
         </select>
-        <button class="btn-sync" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='guardarPermisosUsuario(${JSON.stringify(u.usuario)}, document.getElementById("permSel_${i}").value)'>Guardar</button>
+        <button class="btn-guardar" style="padding:6px 14px;font-size:11px;margin-left:6px;" onclick='guardarPermisosUsuario(${JSON.stringify(u.usuario)}, document.getElementById("permSel_${i}").value)'>Guardar</button>
       </td>
       <td>
         <select id="provSel_${i}" style="width:auto;padding:6px 10px;" ${permisoActual!=='usuario' ? 'title="Solo tiene efecto real en cuentas con permiso Usuario"' : ''}>
@@ -3434,7 +3599,7 @@ async function cargarUsuariosAdmin(){
           <option value="OMSA Santo Domingo" ${provinciaActual==='OMSA Santo Domingo'?'selected':''}>OP OMSA SANTO DOMINGO</option>
           <option value="OP OMSA SANTIAGO" ${provinciaActual==='OP OMSA SANTIAGO'?'selected':''}>OP OMSA SANTIAGO</option>
         </select>
-        <button class="btn-sync" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='guardarProvinciaUsuario(${JSON.stringify(u.usuario)}, document.getElementById("provSel_${i}").value)'>Guardar</button>
+        <button class="btn-guardar" style="padding:6px 14px;font-size:11px;margin-left:6px;" onclick='guardarProvinciaUsuario(${JSON.stringify(u.usuario)}, document.getElementById("provSel_${i}").value)'>Guardar</button>
       </td>
       <td>${escapeHtml(u.fechaCreacion||'')}</td>
       <td>
@@ -3489,7 +3654,7 @@ async function agregarEmailNotificacion(){
 }
 
 async function eliminarEmailNotificacion(email){
-  if(!confirm('¿Quitar "' + email + '" de la lista de notificaciones?')) return;
+  if(!(await confirmarPersonalizado('¿Quitar "' + email + '" de la lista de notificaciones?'))) return;
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -3545,7 +3710,7 @@ async function agregarWhatsappNotificacion(){
 }
 
 async function eliminarWhatsappNotificacion(numero){
-  if(!confirm('¿Quitar "' + numero + '" de la lista de notificaciones por WhatsApp?')) return;
+  if(!(await confirmarPersonalizado('¿Quitar "' + numero + '" de la lista de notificaciones por WhatsApp?'))) return;
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -3689,10 +3854,10 @@ function renderTablaMantenimiento(){
     return;
   }
   tabla.style.display = 'table'; empty.style.display = 'none';
-  tbody.innerHTML = mantenimientoRegistros.map(r=>{
+  tbody.innerHTML = mantenimientoRegistros.map((r,i)=>{
     const colorEstado = r.estado === 'OK' ? 'var(--teal)' : 'var(--orange)';
     const icono = r.estado === 'OK' ? '✅' : '⚠️';
-    return `<tr>
+    return `<tr class="fila-clicable" onclick="verDetalleRondaMantenimiento(${i})">
       <td>${escapeHtml(String(r.fecha||''))}</td>
       <td>${escapeHtml(String(r.estacion||''))}</td>
       <td>${escapeHtml(String(r.torniquetes||'—'))}</td>
@@ -3702,6 +3867,30 @@ function renderTablaMantenimiento(){
       <td>${escapeHtml(String(r.registradoPor||''))}</td>
     </tr>`;
   }).join('');
+}
+
+function verDetalleRondaMantenimiento(indice){
+  const r = mantenimientoRegistros[indice];
+  if(!r) return;
+  const esOk = r.estado === 'OK';
+  const cont = document.getElementById('rondaMantDetalleLista');
+  cont.innerHTML = `<div class="fdi-card" style="cursor:default;">
+    <div class="fdi-header">
+      <span class="fdi-num">Ronda de inspección</span>
+      <span class="fdi-estado" style="background:${esOk?'#e3f6ea':'#fdecea'};color:${esOk?'#2e9e5b':'#e53935'};">${esOk?'✅ Todo en orden':'⚠️ Con problemas'}</span>
+    </div>
+    <div class="fdi-fila"><span class="fdi-lbl">📅 Fecha</span><span class="fdi-val">${escapeHtml(String(r.fecha||'—'))}</span></div>
+    <div class="fdi-fila"><span class="fdi-lbl">📍 Estación</span><span class="fdi-val">${escapeHtml(String(r.estacion||'—'))}</span></div>
+    <div class="fdi-fila"><span class="fdi-lbl">🚧 Torniquetes revisados</span><span class="fdi-val">${escapeHtml(String(r.torniquetes||'—'))}</span></div>
+    <div class="fdi-fila"><span class="fdi-lbl">♿ Accesos PMR revisados</span><span class="fdi-val">${escapeHtml(String(r.pmr||'—'))}</span></div>
+    ${!esOk ? `<div class="fdi-fila fdi-solucion"><span class="fdi-lbl">⚠️ Problemas encontrados en PMR</span><span class="fdi-val">${escapeHtml(String(r.problemasPmr||'—'))}</span></div>` : ''}
+    <div class="fdi-fila fdi-solucion"><span class="fdi-lbl">📝 Observaciones</span><span class="fdi-val">${escapeHtml(String(r.observaciones||'Sin observaciones adicionales.'))}</span></div>
+    <div class="fdi-fila"><span class="fdi-lbl">👤 Registrado por</span><span class="fdi-val">${escapeHtml(String(r.registradoPor||'—'))}</span></div>
+  </div>`;
+  document.getElementById('rondaMantDetalleModal').style.display = 'flex';
+}
+function cerrarRondaMantDetalle(){
+  document.getElementById('rondaMantDetalleModal').style.display = 'none';
 }
 
 function calcularPrediccionMantenimiento(){
@@ -3722,11 +3911,47 @@ function calcularPrediccionMantenimiento(){
     return;
   }
   cont.innerHTML = alertas.map(([lugar, veces])=>
-    `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--orange-light);border-radius:10px;padding:12px 16px;margin-bottom:10px;">
+    `<div class="fila-clicable" style="display:flex;justify-content:space-between;align-items:center;background:var(--orange-light);border-radius:10px;padding:12px 16px;margin-bottom:10px;" onclick="verIncidenciasEstacionMantenimiento('${attrJs(lugar)}')">
       <span style="font-weight:700;color:var(--teal-dark);">⚠️ ${escapeHtml(lugar)}</span>
       <span style="font-weight:800;color:var(--orange);">${veces} incidencias en 30 días</span>
     </div>`
   ).join('');
+}
+
+function verIncidenciasEstacionMantenimiento(lugar){
+  const ahora = Date.now();
+  const dias30 = 30*24*60*60*1000;
+  const lista = vtRecords.filter(r=>{
+    if(r.eliminado === 'si' || r.provincia !== 'Santiago') return false;
+    const ts = Number(r.id);
+    if(isNaN(ts) || (ahora-ts) > dias30) return false;
+    const clave = (r.estacion||'—') + (r.gate ? ' · '+r.gate : '');
+    return clave === lugar;
+  }).sort((a,b)=> Number(b.id) - Number(a.id));
+
+  document.getElementById('fallasDetalleTitulo').textContent = `${lugar} — últimos 30 días`;
+  document.getElementById('fallasDetalleSubtitulo').textContent = `${lista.length} incidencia(s) registrada(s) — haz clic en una para ver la ficha completa`;
+
+  const cont = document.getElementById('fallasDetalleLista');
+  cont.innerHTML = lista.map((r,i)=>{
+    const resuelta = estaResuelta(r, 'vt');
+    return `<div class="fdi-card" onclick="cerrarFallasDetalleYAbrirIncidencia('vt','${attrJs(r.id)}')">
+      <div class="fdi-header">
+        <span class="fdi-num">#${i+1}</span>
+        <span class="fdi-estado" style="background:${resuelta?'#e3f6ea':'#fdecea'};color:${resuelta?'#2e9e5b':'#e53935'};">${escapeHtml(r.estado||'—')}</span>
+      </div>
+      <div class="fdi-fila"><span class="fdi-lbl">🛠️ Falla</span><span class="fdi-val">${escapeHtml(r.falla||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">📅 Hora de reporte</span><span class="fdi-val">${escapeHtml(r.registradoEl || r.fecha || '—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">👤 Reportado por</span><span class="fdi-val">${escapeHtml(r.registradoPor||'—')}</span></div>
+      ${resuelta ? `
+      <div class="fdi-fila"><span class="fdi-lbl">✅ Hora de solución</span><span class="fdi-val">${escapeHtml(r.horaResuelta||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">🔧 Solucionado por</span><span class="fdi-val">${escapeHtml(r.resueltoPor||'—')}</span></div>
+      <div class="fdi-fila fdi-solucion"><span class="fdi-lbl">💬 Cómo se solucionó</span><span class="fdi-val">${escapeHtml(r.comentario||'—')}</span></div>
+      ` : `<div class="fdi-fila"><span class="fdi-lbl">⏳ Situación</span><span class="fdi-val" style="color:#e53935;font-weight:700;">Todavía sin resolver</span></div>`}
+    </div>`;
+  }).join('') || '<div class="empty-state">No se encontraron incidencias.</div>';
+
+  document.getElementById('fallasDetalleModal').style.display = 'flex';
 }
 
 /* ================= GEMELO DIGITAL ================= */
@@ -3898,7 +4123,7 @@ async function toggleEstadoBusOmsa(ficha){
 }
 
 async function eliminarBusOmsa(ficha){
-  if(!confirm('¿Quitar el autobús "' + ficha + '" de la flota?')) return;
+  if(!(await confirmarPersonalizado('¿Quitar el autobús "' + ficha + '" de la flota?'))) return;
   flotaOmsa = flotaOmsa.filter(b => String(b.ficha) !== String(ficha));
   renderFlotaOmsa();
   if(!isLiveEnabled()) return;
@@ -4265,10 +4490,10 @@ async function guardarProvinciaUsuario(usuario, nuevaProvincia){
 }
 
 async function cambiarPasswordUsuario(usuario){
-  const nueva = prompt('Nueva contraseña para "' + usuario + '" (mínimo 4 caracteres):');
+  const nueva = await promptPersonalizado('Nueva contraseña para "' + usuario + '" (mínimo 4 caracteres):');
   if(nueva === null) return;
   if(!nueva || nueva.length < 4){ alert('La contraseña debe tener al menos 4 caracteres.'); return; }
-  const confirmacion = prompt('Confirma la nueva contraseña:');
+  const confirmacion = await promptPersonalizado('Confirma la nueva contraseña:');
   if(confirmacion !== nueva){ alert('Las contraseñas no coinciden.'); return; }
 
   const passwordHash = await hashPassword(nueva);
@@ -4288,7 +4513,7 @@ async function eliminarUsuarioAdmin(usuario){
     alert('No puedes eliminar la cuenta principal de Administrador.');
     return;
   }
-  if(!confirm('¿Eliminar permanentemente al usuario "' + usuario + '"? Esta acción no se puede deshacer.')) return;
+  if(!(await confirmarPersonalizado('¿Eliminar permanentemente al usuario "' + usuario + '"? Esta acción no se puede deshacer.'))) return;
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -4667,6 +4892,7 @@ function showPage(name){
   }
   if(name==='gemelo'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
+    volverASeleccionGemelo();
     renderGemeloDigital();
   }
   if(name==='omsa'){
@@ -4698,6 +4924,17 @@ function volverASeleccionProvincia(){
   document.getElementById('historialSeleccionProvincia').style.display = 'block';
   document.getElementById('subtab-sistema').style.display = '';
   document.getElementById('subtab-vt').style.display = '';
+}
+
+function elegirProvinciaGemelo(cual){
+  document.getElementById('gemeloSeleccionProvincia').style.display = 'none';
+  document.getElementById('gemeloContenido').style.display = 'block';
+  document.getElementById('gemeloCardSD').style.display = (cual === 'sd') ? 'block' : 'none';
+  document.getElementById('gemeloCardStgo').style.display = (cual === 'stgo') ? 'block' : 'none';
+}
+function volverASeleccionGemelo(){
+  document.getElementById('gemeloContenido').style.display = 'none';
+  document.getElementById('gemeloSeleccionProvincia').style.display = 'block';
 }
 function showSubtab(name){
   if(name === 'sla' && !puedeEditarEstado()) name = 'sistema'; // los Indicadores SLA no existen para el rol usuario (modo básico)
@@ -6003,7 +6240,7 @@ async function toggleMiNotificacionEmail(){
 
   let email = currentUser.email || '';
   if(activar && !email){
-    email = prompt('Ingresa tu correo electrónico para recibir las notificaciones:');
+    email = await promptPersonalizado('Ingresa tu correo electrónico para recibir las notificaciones:');
     if(!email || !email.includes('@')){ alert('Debes ingresar un correo válido para activar esta opción.'); return; }
   }
 
@@ -6046,7 +6283,7 @@ async function toggleMiNotificacionWhatsapp(){
 
   let whatsapp = currentUser.whatsapp || '';
   if(activar && !whatsapp){
-    whatsapp = prompt('Ingresa tu número de WhatsApp (con código de país, ej: +18091234567):');
+    whatsapp = await promptPersonalizado('Ingresa tu número de WhatsApp (con código de país, ej: +18091234567):');
     if(!whatsapp || whatsapp.replace(/\D/g,'').length < 8){ alert('Debes ingresar un número válido para activar esta opción.'); return; }
   }
 
@@ -6403,7 +6640,7 @@ async function revisarSolicitudesCuenta(){
   }catch(err){ console.error('No se pudo revisar solicitudes de cuenta:', err); }
 }
 async function aprobarSolicitudCuenta(usuario, nombre){
-  if(!confirm('¿Aprobar la cuenta de "' + nombre + '" (usuario: ' + usuario + ')? Se creará con permiso "Usuario" — luego puedes ascenderla desde Gestión de Usuarios si hace falta.')) return;
+  if(!(await confirmarPersonalizado('¿Aprobar la cuenta de "' + nombre + '" (usuario: ' + usuario + ')? Se creará con permiso "Usuario" — luego puedes ascenderla desde Gestión de Usuarios si hace falta.'))) return;
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -6418,7 +6655,7 @@ async function aprobarSolicitudCuenta(usuario, nombre){
   setTimeout(cargarUsuariosAdmin, 1200);
 }
 async function rechazarSolicitudCuenta(usuario, nombre){
-  if(!confirm('¿Rechazar la solicitud de "' + nombre + '"? No se creará ninguna cuenta.')) return;
+  if(!(await confirmarPersonalizado('¿Rechazar la solicitud de "' + nombre + '"? No se creará ninguna cuenta.'))) return;
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -6616,9 +6853,9 @@ function renderAll(){
   if(gemeloVisible && gemeloVisible.classList.contains('active')) renderGemeloDigital();
 }
 
-function eliminarIncidenciaSistema(id){
+async function eliminarIncidenciaSistema(id){
   if(!isMasterUser()) return;
-  if(!confirm('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.')) return;
+  if(!(await confirmarPersonalizado('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.'))) return;
   const rec = records.find(r=>r.id===id);
   if(rec) rec.eliminado = 'si';
   saveRecords();
@@ -6627,9 +6864,9 @@ function eliminarIncidenciaSistema(id){
   actualizarEstadoEnSheet('sistema', id, {eliminado: 'si'});
   registrarAuditoria('Envió a papelera', 'Sistema de Transporte #' + id);
 }
-function eliminarIncidenciaVt(id){
+async function eliminarIncidenciaVt(id){
   if(!isMasterUser()) return;
-  if(!confirm('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.')) return;
+  if(!(await confirmarPersonalizado('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.'))) return;
   const rec = vtRecords.find(r=>r.id===id);
   if(rec) rec.eliminado = 'si';
   saveVtRecords();
@@ -6649,9 +6886,9 @@ function restaurarIncidencia(tabla, id){
   actualizarEstadoEnSheet(tabla, id, {eliminado: 'no'});
   registrarAuditoria('Restauró de la papelera', (tabla==='sistema'?'Sistema de Transporte':'Validador/Torniquete') + ' #' + id);
 }
-function eliminarDefinitivamente(tabla, id){
+async function eliminarDefinitivamente(tabla, id){
   if(!isMasterUser()) return;
-  if(!confirm('¿ELIMINAR DEFINITIVAMENTE esta incidencia? Esta acción NO se puede deshacer, ni siquiera desde la papelera.')) return;
+  if(!(await confirmarPersonalizado('¿ELIMINAR DEFINITIVAMENTE esta incidencia? Esta acción NO se puede deshacer, ni siquiera desde la papelera.'))) return;
   if(tabla === 'sistema'){
     records = records.filter(r=>r.id!==id);
     saveRecords();
@@ -6780,10 +7017,13 @@ async function abrirEditorIncidencia(tabla, id){
   sel.innerHTML = '<option value="">-- Seleccione --</option>' + opciones.map(o=>`<option value="${o}" ${o===rec.estado?'selected':''}>${o}</option>`).join('');
 
   const yaResuelto = esEstadoResuelto(rec.estado);
-  document.getElementById('editResolucionBox').style.display = yaResuelto ? 'block' : 'none';
+  document.getElementById('lblEditRespuesta').textContent = yaResuelto ? '¿Cómo se solucionó?' : 'Tu respuesta';
   document.getElementById('editResolucionInput').value = (tabla === 'sistema' ? rec.resolucion : rec.comentario) || '';
   document.getElementById('err-editEstado').style.display = 'none';
   document.getElementById('err-editResolucion').style.display = 'none';
+  document.getElementById('editFotoExtraBox').style.display = 'none';
+  document.getElementById('editNotasExtraBox').style.display = 'none';
+  document.getElementById('editChangeLog').style.display = 'none';
 
   document.getElementById('editFotoInput').value = '';
   document.getElementById('editFotoEstado').textContent = '';
@@ -6802,8 +7042,18 @@ function cambiarTabModalIncidencia(tab){
 }
 function onChangeEditEstado(){
   const val = document.getElementById('editEstadoSelect').value;
-  document.getElementById('editResolucionBox').style.display = esEstadoResuelto(val) ? 'block' : 'none';
+  const esResuelta = esEstadoResuelto(val);
+  document.getElementById('lblEditRespuesta').textContent = esResuelta ? '¿Cómo se solucionó?' : 'Tu respuesta';
   document.getElementById('err-editEstado').style.display = 'none';
+}
+function toggleExtraRespuesta(cual){
+  const mapa = {
+    foto: {box:'editFotoExtraBox'},
+    notas: {box:'editNotasExtraBox'},
+    historial: {box:'editChangeLog'}
+  };
+  const box = document.getElementById(mapa[cual].box);
+  box.style.display = (box.style.display === 'none') ? 'block' : 'none';
 }
 function cerrarEditorIncidencia(){
   document.getElementById('editIncidenciaModal').style.display = 'none';
@@ -7038,7 +7288,7 @@ async function aplicarCambioEstadoLote(tabla){
   const seleccionados = idsSeleccionados(tabla);
   if(seleccionados.length === 0) return;
   const nuevoEstado = document.getElementById(tabla === 'sistema' ? 'bulkEstadoSistema' : 'bulkEstadoVt').value;
-  if(!confirm(`¿Cambiar el estado de ${seleccionados.length} incidencia(s) a "${nuevoEstado}"?`)) return;
+  if(!(await confirmarPersonalizado(`¿Cambiar el estado de ${seleccionados.length} incidencia(s) a "${nuevoEstado}"?`))) return;
   const list = tabla === 'sistema' ? records : vtRecords;
   seleccionados.forEach(idStr=>{
     const rec = list.find(r=> String(r.id) === idStr);
@@ -7058,7 +7308,7 @@ async function enviarPapeleraLote(tabla){
   if(!isMasterUser()) return;
   const seleccionados = idsSeleccionados(tabla);
   if(seleccionados.length === 0) return;
-  if(!confirm(`¿Enviar ${seleccionados.length} incidencia(s) a la papelera?`)) return;
+  if(!(await confirmarPersonalizado(`¿Enviar ${seleccionados.length} incidencia(s) a la papelera?`))) return;
   const list = tabla === 'sistema' ? records : vtRecords;
   seleccionados.forEach(idStr=>{
     const rec = list.find(r=> String(r.id) === idStr);
@@ -7128,7 +7378,7 @@ function renderFallasRecurrentes(){
   if(topSistema.length === 0){ tableSis.style.display='none'; emptySis.style.display='block'; }
   else{
     tableSis.style.display='table'; emptySis.style.display='none';
-    tbodySis.innerHTML = topSistema.map((f,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(f.ubicacion)}</td><td>${escapeHtml(f.falla)}</td><td><b>${f.veces}</b></td></tr>`).join('');
+    tbodySis.innerHTML = topSistema.map((f,i)=>`<tr class="fila-clicable" onclick="verIncidenciasFalla('sistema','${attrJs(f.ubicacion)}','${attrJs(f.falla)}')"><td>${i+1}</td><td>${escapeHtml(f.ubicacion)}</td><td>${escapeHtml(f.falla)}</td><td><b>${f.veces}</b></td></tr>`).join('');
   }
 
   const tbodyVt = document.getElementById('tableBodyFallasVt');
@@ -7137,8 +7387,47 @@ function renderFallasRecurrentes(){
   if(topVt.length === 0){ tableVt.style.display='none'; emptyVt.style.display='block'; }
   else{
     tableVt.style.display='table'; emptyVt.style.display='none';
-    tbodyVt.innerHTML = topVt.map((f,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(f.ubicacion)}</td><td>${escapeHtml(f.falla)}</td><td><b>${f.veces}</b></td></tr>`).join('');
+    tbodyVt.innerHTML = topVt.map((f,i)=>`<tr class="fila-clicable" onclick="verIncidenciasFalla('vt','${attrJs(f.ubicacion)}','${attrJs(f.falla)}')"><td>${i+1}</td><td>${escapeHtml(f.ubicacion)}</td><td>${escapeHtml(f.falla)}</td><td><b>${f.veces}</b></td></tr>`).join('');
   }
+}
+
+function verIncidenciasFalla(tabla, ubicacion, falla){
+  const campoUbicacion = tabla === 'sistema' ? 'sistema' : 'estacion';
+  const lista = (tabla === 'sistema' ? records : vtRecords)
+    .filter(r=> r.eliminado !== 'si' && r.falla === falla && (r[campoUbicacion]||'—') === ubicacion)
+    .sort((a,b)=> Number(b.id) - Number(a.id));
+
+  document.getElementById('fallasDetalleTitulo').textContent = `${ubicacion} — ${falla}`;
+  document.getElementById('fallasDetalleSubtitulo').textContent = `${lista.length} incidencia(s) registrada(s) — haz clic en una para ver la ficha completa`;
+
+  const cont = document.getElementById('fallasDetalleLista');
+  cont.innerHTML = lista.map((r,i)=>{
+    const resuelta = estaResuelta(r, tabla);
+    const solucion = tabla === 'sistema' ? r.resolucion : r.comentario;
+    return `<div class="fdi-card" onclick="cerrarFallasDetalleYAbrirIncidencia('${tabla}','${attrJs(r.id)}')">
+      <div class="fdi-header">
+        <span class="fdi-num">#${i+1}</span>
+        <span class="fdi-estado" style="background:${resuelta?'#e3f6ea':'#fdecea'};color:${resuelta?'#2e9e5b':'#e53935'};">${escapeHtml(r.estado||'—')}</span>
+      </div>
+      <div class="fdi-fila"><span class="fdi-lbl">🛠️ Falla</span><span class="fdi-val">${escapeHtml(r.falla||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">📅 Hora de reporte</span><span class="fdi-val">${escapeHtml(r.registradoEl || r.fecha || '—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">👤 Reportado por</span><span class="fdi-val">${escapeHtml(r.registradoPor||'—')}</span></div>
+      ${resuelta ? `
+      <div class="fdi-fila"><span class="fdi-lbl">✅ Hora de solución</span><span class="fdi-val">${escapeHtml(r.horaResuelta||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">🔧 Solucionado por</span><span class="fdi-val">${escapeHtml(r.resueltoPor||'—')}</span></div>
+      <div class="fdi-fila fdi-solucion"><span class="fdi-lbl">💬 Cómo se solucionó</span><span class="fdi-val">${escapeHtml(solucion||'—')}</span></div>
+      ` : `<div class="fdi-fila"><span class="fdi-lbl">⏳ Situación</span><span class="fdi-val" style="color:#e53935;font-weight:700;">Todavía sin resolver</span></div>`}
+    </div>`;
+  }).join('') || '<div class="empty-state">No se encontraron incidencias.</div>';
+
+  document.getElementById('fallasDetalleModal').style.display = 'flex';
+}
+function cerrarFallasDetalle(){
+  document.getElementById('fallasDetalleModal').style.display = 'none';
+}
+function cerrarFallasDetalleYAbrirIncidencia(tabla, id){
+  cerrarFallasDetalle();
+  abrirEditorIncidencia(tabla, id);
 }
 
 /* ================= MODO KIOSKO / SALA DE CONTROL ================= */
@@ -7939,9 +8228,9 @@ function actualizarQrKiosko(){
     img.style.display = 'none';
   }
 }
-function configurarQrKiosko(){
+async function configurarQrKiosko(){
   const actual = kioskoConfig.qrUrl || '';
-  const nuevo = prompt('Enlace al que apuntará el código QR (déjalo vacío para quitarlo):', actual);
+  const nuevo = await promptPersonalizado('Enlace al que apuntará el código QR (déjalo vacío para quitarlo):', actual);
   if(nuevo === null) return;
   kioskoConfig.qrUrl = nuevo.trim();
   guardarConfigKioskoStorage(kioskoConfig);
@@ -8383,8 +8672,8 @@ function renderTableSistema(){
   const activosSistema = records.filter(r=>r.eliminado!=='si');
   const bySistema = countBy(activosSistema, 'sistema');
   const byEstado = countBy(activosSistema, 'estado');
-  drawBarChart('chartSistema1', 'chartSistema1_ref', bySistema, '#005879');
-  drawDoughnut('chartEstado1', 'chartEstado1_ref', byEstado);
+  drawBarChart('chartSistema1', 'chartSistema1_ref', bySistema, '#005879', (valor)=> mostrarListaPorCampo('sistema','sistema',valor));
+  drawDoughnut('chartEstado1', 'chartEstado1_ref', byEstado, (valor)=> mostrarListaPorCampo('sistema','estado',valor));
   const tend1 = tendenciaPorDia(activosSistema, 14);
   drawLineChart('chartTendencia1', 'chartTendencia1_ref', tend1.etiquetas, tend1.valores, '#005879');
 }
@@ -8444,29 +8733,75 @@ function renderTableVt(){
   const activosVt = vtRecords.filter(r=>r.eliminado!=='si');
   const byEstacion = countBy(activosVt, 'estacion');
   const byEstado = countBy(activosVt, 'estado');
-  drawBarChart('chartSistema2', 'chartSistema2_ref', byEstacion, '#F06624');
-  drawDoughnut('chartEstado2', 'chartEstado2_ref', byEstado);
+  drawBarChart('chartSistema2', 'chartSistema2_ref', byEstacion, '#F06624', (valor)=> mostrarListaPorCampo('vt','estacion',valor));
+  drawDoughnut('chartEstado2', 'chartEstado2_ref', byEstado, (valor)=> mostrarListaPorCampo('vt','estado',valor));
   const tend2 = tendenciaPorDia(activosVt, 14);
   drawLineChart('chartTendencia2', 'chartTendencia2_ref', tend2.etiquetas, tend2.valores, '#F06624');
 }
 
-function drawBarChart(canvasId, refName, dataObj, color){
+function drawBarChart(canvasId, refName, dataObj, color, onClickLabel){
   const ctx = document.getElementById(canvasId).getContext('2d');
   if(window[refName]) window[refName].destroy();
   window[refName] = new Chart(ctx, {
     type:'bar',
     data:{ labels:Object.keys(dataObj), datasets:[{label:'Incidencias', data:Object.values(dataObj), backgroundColor:color, borderRadius:6}] },
-    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{beginAtZero:true, ticks:{precision:0}} } }
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{beginAtZero:true, ticks:{precision:0}} },
+      onHover:(evt, elements)=>{ evt.native.target.style.cursor = (onClickLabel && elements.length) ? 'pointer' : 'default'; },
+      onClick:(evt, elements)=>{
+        if(!onClickLabel || elements.length===0) return;
+        onClickLabel(Object.keys(dataObj)[elements[0].index]);
+      }
+    }
   });
 }
-function drawDoughnut(canvasId, refName, dataObj){
+function drawDoughnut(canvasId, refName, dataObj, onClickLabel){
   const ctx = document.getElementById(canvasId).getContext('2d');
   if(window[refName]) window[refName].destroy();
   window[refName] = new Chart(ctx, {
     type:'doughnut',
     data:{ labels:Object.keys(dataObj), datasets:[{data:Object.values(dataObj), backgroundColor:['#005879','#F06624','#0072A0','#FF8A4C','#8fc2d4','#c53030']}] },
-    options:{ responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:10}}}} }
+    options:{ responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:10}}}},
+      onHover:(evt, elements)=>{ evt.native.target.style.cursor = (onClickLabel && elements.length) ? 'pointer' : 'default'; },
+      onClick:(evt, elements)=>{
+        if(!onClickLabel || elements.length===0) return;
+        onClickLabel(Object.keys(dataObj)[elements[0].index]);
+      }
+    }
   });
+}
+
+function mostrarListaPorCampo(tabla, campo, valor){
+  const lista = (tabla === 'sistema' ? records : vtRecords)
+    .filter(r=> r.eliminado !== 'si' && String(r[campo]||'—') === valor)
+    .sort((a,b)=> Number(b.id) - Number(a.id));
+
+  const etiquetaCampo = campo === 'estado' ? 'Estado' : (tabla==='sistema' ? 'Sistema' : 'Estación');
+  document.getElementById('fallasDetalleTitulo').textContent = `${etiquetaCampo}: ${valor}`;
+  document.getElementById('fallasDetalleSubtitulo').textContent = `${lista.length} incidencia(s) — haz clic en una para ver la ficha completa`;
+
+  const cont = document.getElementById('fallasDetalleLista');
+  cont.innerHTML = lista.map((r,i)=>{
+    const resuelta = estaResuelta(r, tabla);
+    const solucion = tabla === 'sistema' ? r.resolucion : r.comentario;
+    const ubic = tabla === 'sistema' ? (r.sistema||'—') : ((r.estacion||'—') + (r.gate?' · '+r.gate:''));
+    return `<div class="fdi-card" onclick="cerrarFallasDetalleYAbrirIncidencia('${tabla}','${attrJs(r.id)}')">
+      <div class="fdi-header">
+        <span class="fdi-num">#${i+1}</span>
+        <span class="fdi-estado" style="background:${resuelta?'#e3f6ea':'#fdecea'};color:${resuelta?'#2e9e5b':'#e53935'};">${escapeHtml(r.estado||'—')}</span>
+      </div>
+      <div class="fdi-fila"><span class="fdi-lbl">📍 Ubicación</span><span class="fdi-val">${escapeHtml(ubic)}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">🛠️ Falla</span><span class="fdi-val">${escapeHtml(r.falla||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">📅 Hora de reporte</span><span class="fdi-val">${escapeHtml(r.registradoEl||r.fecha||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">👤 Reportado por</span><span class="fdi-val">${escapeHtml(r.registradoPor||'—')}</span></div>
+      ${resuelta ? `
+      <div class="fdi-fila"><span class="fdi-lbl">✅ Hora de solución</span><span class="fdi-val">${escapeHtml(r.horaResuelta||'—')}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">🔧 Solucionado por</span><span class="fdi-val">${escapeHtml(r.resueltoPor||'—')}</span></div>
+      <div class="fdi-fila fdi-solucion"><span class="fdi-lbl">💬 Cómo se solucionó</span><span class="fdi-val">${escapeHtml(solucion||'—')}</span></div>
+      ` : `<div class="fdi-fila"><span class="fdi-lbl">⏳ Situación</span><span class="fdi-val" style="color:#e53935;font-weight:700;">Todavía sin resolver</span></div>`}
+    </div>`;
+  }).join('') || '<div class="empty-state">No se encontraron incidencias.</div>';
+
+  document.getElementById('fallasDetalleModal').style.display = 'flex';
 }
 
 /* ================= (Historial precargado eliminado: los datos ahora viven únicamente en Google Sheets) ================= */
