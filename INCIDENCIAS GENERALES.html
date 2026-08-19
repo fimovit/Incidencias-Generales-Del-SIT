@@ -1386,7 +1386,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.23.0</div>
+<div id="versionLabel">V4.24.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1459,7 +1459,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.23.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.24.0
     </div>
   </div>
 </div>
@@ -3160,49 +3160,41 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 });
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
-/* ================= AVISO DE NUEVA VERSIÓN (con registro de cambios y barra de progreso) ================= */
-const VERSION_ACTUAL = 'V4.23.0'; // debe coincidir siempre con el texto de #versionLabel
-const VERSION_VISTA_KEY = 'fimovit_version_vista';
-const CAMBIOS_POR_VERSION = {
-  'V4.23.0': [
-    'Nuevo: aviso de nueva versión disponible, con lista de cambios y barra de progreso (como este mismo que estás viendo).'
-  ],
-  'V4.22.0': [
-    'Las gráficas de "Distribución por estado" e "Incidencias por sistema/estación" ahora son clicables — muestran la lista de incidencias exactas al hacer clic.'
-  ],
-  'V4.21.0': [
-    'Botones "Guardar" de Gestión de Usuarios modernizados (nuevo estilo, sin el efecto de botón antiguo).'
-  ],
-  'V4.20.0': [
-    'La ventana de "Responder" a una incidencia ahora es más simple y directa — foto, notas e historial quedan opcionales, ocultos hasta que los necesites.'
-  ],
-  'V4.19.0': [
-    'Mantenimiento: ahora puedes hacer clic en las alertas de "posible mantenimiento preventivo" y en el historial de rondas de inspección para ver el detalle completo.'
-  ],
-  'V4.18.0': [
-    'Fallas Recurrentes: haz clic en cualquier fila para ver la lista completa de esas incidencias, con toda su información clara.'
-  ]
-};
-function verificarVersionNueva(){
-  const vistaAnteriormente = localStorage.getItem(VERSION_VISTA_KEY);
-  if(vistaAnteriormente === null){
-    // Primera vez que esta persona usa el sistema: no la bombardeamos con novedades de versiones pasadas.
-    localStorage.setItem(VERSION_VISTA_KEY, VERSION_ACTUAL);
-    return;
-  }
-  if(vistaAnteriormente === VERSION_ACTUAL) return;
-  const cambios = CAMBIOS_POR_VERSION[VERSION_ACTUAL] || ['Mejoras y correcciones generales.'];
-  mostrarModalNuevaVersion(VERSION_ACTUAL, cambios);
+/* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
+const VERSION_ACTUAL = 'V4.24.0'; // debe coincidir siempre con el texto de #versionLabel
+let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
+let versionCheckIntervalo = null;
+
+async function verificarVersionRemota(){
+  if(!isLiveEnabled()) return;
+  try{
+    const res = await fetchConTimeout(liveUrl + '?sheet=version', {method:'GET'}, 10000);
+    const data = await res.json();
+    if(!data || !data.version) return;
+    const remota = String(data.version).trim();
+    if(!remota || remota === VERSION_ACTUAL) return;
+    if(remota === versionRemotaDescartada) return; // ya la cerró con "Más tarde" en esta sesión
+    if(document.getElementById('nuevaVersionModal').style.display === 'flex') return; // ya está abierta
+    const cambios = String(data.cambios || 'Mejoras y correcciones generales.')
+      .split('|').map(c=>c.trim()).filter(Boolean);
+    mostrarModalNuevaVersion(remota, cambios);
+  }catch(err){ console.error('No se pudo verificar la versión remota:', err); }
+}
+function iniciarVerificacionVersion(){
+  verificarVersionRemota();
+  if(versionCheckIntervalo) clearInterval(versionCheckIntervalo);
+  versionCheckIntervalo = setInterval(verificarVersionRemota, 60000); // cada 60 segundos, incluso con la sesión ya abierta
 }
 function mostrarModalNuevaVersion(version, cambios){
   document.getElementById('nuevaVersionNumero').textContent = version;
-  document.getElementById('nuevaVersionLista').innerHTML = cambios.map(c=>`<div style="margin-bottom:9px;">✔ ${c}</div>`).join('');
+  document.getElementById('nuevaVersionLista').innerHTML = cambios.map(c=>`<div style="margin-bottom:9px;">✔ ${escapeHtml(c)}</div>`).join('');
   document.getElementById('nuevaVersionProgresoWrap').style.display = 'none';
   document.getElementById('nuevaVersionBotones').style.display = 'flex';
   document.getElementById('nuevaVersionModal').style.display = 'flex';
+  document.getElementById('nuevaVersionModal').dataset.version = version;
 }
 function posponerNuevaVersion(){
-  // No marcamos la versión como "vista" — así vuelve a preguntar la próxima vez que entre.
+  versionRemotaDescartada = document.getElementById('nuevaVersionModal').dataset.version || null;
   document.getElementById('nuevaVersionModal').style.display = 'none';
 }
 async function instalarNuevaVersion(){
@@ -3217,8 +3209,7 @@ async function instalarNuevaVersion(){
     texto.textContent = msg;
     await new Promise(r=>setTimeout(r, 480));
   }
-  localStorage.setItem(VERSION_VISTA_KEY, VERSION_ACTUAL);
-  setTimeout(()=> location.reload(), 350);
+  location.reload();
 }
 
 function mostrarAlertaPersonalizada(mensaje){
@@ -4677,7 +4668,7 @@ function showApp(){
   if(isLiveEnabled()){ sincronizarAhora(false); refrescarPermisosPropios(); cargarUsuariosEnLinea(); revisarSolicitudesCuenta(); iniciarHeartbeat(); startLivePolling(); cargarContactosChat(); cargarMensajesChat(); }
   setTimeout(()=> revisarNuevasCriticasParaAlerta(), 3000);
   setTimeout(()=> iniciarOnboarding(false), 700);
-  setTimeout(()=> verificarVersionNueva(), 1500);
+  setTimeout(()=> iniciarVerificacionVersion(), 1500);
 }
 
 function showWelcome(){
@@ -4900,6 +4891,7 @@ async function doRegister(){
 function logout(){
   detenerHeartbeat();
   if(livePollTimer) clearInterval(livePollTimer);
+  if(versionCheckIntervalo) clearInterval(versionCheckIntervalo);
   localStorage.removeItem(SESSION_KEY);
   currentUser = null;
   chatMensajes = [];
