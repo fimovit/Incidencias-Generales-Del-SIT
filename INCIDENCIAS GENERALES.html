@@ -1386,7 +1386,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.25.0</div>
+<div id="versionLabel">V4.27.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1459,7 +1459,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.25.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.27.0
     </div>
   </div>
 </div>
@@ -2852,10 +2852,10 @@
       <button class="btn btn-primary" onclick="abrirModalRondaMantenimiento()">📝 Registrar ronda de inspección</button>
     </div>
 
-    <div class="card" style="margin-bottom:22px;">
-      <h2 style="margin-bottom:6px;">🖨️ Hoja de Inspección Impresa</h2>
-      <div class="subtitle" style="margin-bottom:16px;">Genera una hoja de una sola página con las 4 estaciones del teleférico, sus torniquetes y TOMS, para imprimir y marcar a mano durante la ronda física.</div>
-      <button class="btn btn-primary" onclick="exportarHojaInspeccionWord()">📄 Exportar hoja de inspección (Word)</button>
+    <div class="card" id="actaAdminPlusCard" style="margin-bottom:22px;display:none;">
+      <h2 style="margin-bottom:6px;">🖨️ Acta de Inspección de Operaciones</h2>
+      <div class="subtitle" style="margin-bottom:16px;">Genera el acta oficial (FIMOVIT / INTRANT) para imprimir, llenar a mano y firmar/sellar durante la inspección física.</div>
+      <button class="btn btn-primary" onclick="exportarHojaInspeccionWord()">📄 Exportar Acta de Inspección (Word)</button>
 
       <div style="margin-top:22px;padding-top:18px;border-top:1px solid #eef2f4;">
         <label style="margin-top:0;">📎 Subir hoja escaneada (ya llena y firmada)</label>
@@ -2874,6 +2874,21 @@
           <div class="empty-state" id="emptyStateEscaneos">Todavía no se ha subido ninguna hoja escaneada.</div>
         </div>
       </div>
+    </div>
+
+    <div class="card" id="actaConstruccionPlaceholder" style="margin-bottom:22px;display:none;">
+      <div style="text-align:center;margin-bottom:10px;">
+        <h2 style="margin-bottom:4px;">🚧 Sección en construcción</h2>
+        <p class="subtitle">El Acta de Inspección de Operaciones no está disponible para tu cuenta — mientras tanto, ¡juega!</p>
+      </div>
+      <div style="display:flex;justify-content:center;gap:26px;margin-bottom:8px;font-weight:800;color:var(--teal-dark);font-size:14px;">
+        <span>🏆 Puntos: <span id="mcScore">0</span></span>
+        <span>⭐ Récord: <span id="mcHighScore">0</span></span>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <canvas id="mcCanvas" width="700" height="200" style="max-width:100%;border-radius:16px;border:2px solid var(--teal-light);cursor:pointer;background:linear-gradient(180deg,#cdeefb,#ffffff 75%);"></canvas>
+      </div>
+      <p style="text-align:center;font-size:11.5px;color:#96a2a8;margin-top:8px;">Toca la pantalla, haz clic, o presiona la barra espaciadora para saltar 🚌🚡🚝</p>
     </div>
 
     <div class="card" style="margin-bottom:22px;">
@@ -3190,7 +3205,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.25.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.27.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -3833,6 +3848,152 @@ function mantTorniquetesNormales(){
 function mantAccesosPmr(){
   return VT_GATES_BASE.filter(g=> g.includes('PMR'));
 }
+/* ================= JUEGO "EN CONSTRUCCIÓN" (mientras la cuenta no tiene acceso al Acta) ================= */
+const MC_ANCHO = 700, MC_ALTO = 200, MC_SUELO_Y = 165;
+let mcCtx = null;
+let mcRunning = false;
+let mcAnimFrame = null;
+let mcPersonaje = { y: 0, vy: 0 };
+let mcObstaculos = [];
+let mcVelocidad = 4.5;
+let mcScoreCruda = 0;
+let mcTiempoUltimoObstaculo = 0;
+let mcEstado = 'inicio'; // 'inicio' | 'jugando' | 'terminado'
+const MC_TIPOS_OBSTACULO = [ {emoji:'🚌', ancho:40}, {emoji:'🚡', ancho:30}, {emoji:'🚝', ancho:44} ];
+
+function mcIniciarJuego(){
+  const canvas = document.getElementById('mcCanvas');
+  if(!canvas) return;
+  mcCtx = canvas.getContext('2d');
+  mcPersonaje = { y: 0, vy: 0 };
+  mcObstaculos = [];
+  mcVelocidad = 4.5;
+  mcScoreCruda = 0;
+  mcTiempoUltimoObstaculo = 0;
+  mcEstado = 'inicio';
+  document.getElementById('mcScore').textContent = '0';
+  document.getElementById('mcHighScore').textContent = localStorage.getItem('fimovit_mc_highscore') || '0';
+
+  canvas.onclick = mcSaltarOIniciar;
+  canvas.ontouchstart = (e)=>{ e.preventDefault(); mcSaltarOIniciar(); };
+  document.removeEventListener('keydown', mcTeclaPresionada);
+  document.addEventListener('keydown', mcTeclaPresionada);
+
+  mcDibujarFrame();
+}
+function mcDetenerJuego(){
+  if(mcAnimFrame) cancelAnimationFrame(mcAnimFrame);
+  mcAnimFrame = null;
+  mcRunning = false;
+  document.removeEventListener('keydown', mcTeclaPresionada);
+}
+function mcTeclaPresionada(e){
+  if(e.code === 'Space' || e.code === 'ArrowUp'){
+    e.preventDefault();
+    mcSaltarOIniciar();
+  }
+}
+function mcSaltarOIniciar(){
+  if(mcEstado === 'inicio'){
+    mcEstado = 'jugando'; mcRunning = true; mcBucleJuego();
+    return;
+  }
+  if(mcEstado === 'terminado'){
+    mcIniciarJuego();
+    mcEstado = 'jugando'; mcRunning = true; mcBucleJuego();
+    return;
+  }
+  if(mcPersonaje.y === 0 && mcPersonaje.vy === 0){ mcPersonaje.vy = -11; }
+}
+function mcBucleJuego(){
+  if(!mcRunning) return;
+
+  mcPersonaje.vy += 0.55;
+  mcPersonaje.y += mcPersonaje.vy;
+  if(mcPersonaje.y >= 0){ mcPersonaje.y = 0; mcPersonaje.vy = 0; }
+
+  mcTiempoUltimoObstaculo++;
+  const intervaloNecesario = Math.max(42, 85 - Math.floor(mcScoreCruda/40));
+  if(mcTiempoUltimoObstaculo > intervaloNecesario){
+    mcTiempoUltimoObstaculo = 0;
+    const tipo = MC_TIPOS_OBSTACULO[Math.floor(Math.random()*MC_TIPOS_OBSTACULO.length)];
+    mcObstaculos.push(Object.assign({x: MC_ANCHO + 20}, tipo));
+  }
+
+  mcObstaculos.forEach(o=> o.x -= mcVelocidad);
+  mcObstaculos = mcObstaculos.filter(o=> o.x > -50);
+  mcVelocidad += 0.0025;
+  mcScoreCruda += 1;
+  document.getElementById('mcScore').textContent = Math.floor(mcScoreCruda/5);
+
+  const personajeX = 60, personajeAncho = 26;
+  const personajeYReal = mcPersonaje.y;
+  for(const o of mcObstaculos){
+    const solapaX = o.x < personajeX + personajeAncho - 6 && o.x + o.ancho > personajeX + 6;
+    const solapaY = personajeYReal > -30; // solo choca si el personaje sigue cerca del suelo
+    if(solapaX && solapaY){ mcTerminarJuego(); return; }
+  }
+
+  mcDibujarFrame();
+  mcAnimFrame = requestAnimationFrame(mcBucleJuego);
+}
+function mcTerminarJuego(){
+  mcRunning = false;
+  mcEstado = 'terminado';
+  const puntajeFinal = Math.floor(mcScoreCruda/5);
+  const record = Number(localStorage.getItem('fimovit_mc_highscore') || 0);
+  if(puntajeFinal > record){
+    localStorage.setItem('fimovit_mc_highscore', puntajeFinal);
+    document.getElementById('mcHighScore').textContent = puntajeFinal;
+  }
+  mcDibujarFrame();
+}
+function mcDibujarFrame(){
+  const ctx = mcCtx;
+  if(!ctx) return;
+  ctx.clearRect(0,0,MC_ANCHO,MC_ALTO);
+
+  const grad = ctx.createLinearGradient(0,0,0,MC_ALTO);
+  grad.addColorStop(0, '#cdeefb'); grad.addColorStop(1, '#ffffff');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,MC_ANCHO,MC_ALTO);
+
+  ctx.font = '24px sans-serif';
+  ctx.fillText('☀️', MC_ANCHO-56, 38);
+  ctx.font = '20px sans-serif';
+  ctx.globalAlpha = .7;
+  ctx.fillText('☁️', 90, 34);
+  ctx.fillText('☁️', 320, 50);
+  ctx.fillText('☁️', 540, 30);
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+  ctx.setLineDash([16,10]);
+  ctx.beginPath(); ctx.moveTo(0, MC_SUELO_Y); ctx.lineTo(MC_ANCHO, MC_SUELO_Y); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.font = '32px sans-serif';
+  ctx.fillText('👷', 46, MC_SUELO_Y - 2 + mcPersonaje.y);
+
+  mcObstaculos.forEach(o=>{
+    ctx.font = '28px sans-serif';
+    ctx.fillText(o.emoji, o.x, MC_SUELO_Y - 2);
+  });
+
+  ctx.textAlign = 'center';
+  if(mcEstado === 'inicio'){
+    ctx.fillStyle = 'rgba(0,61,84,.85)'; ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('Toca o presiona espacio para empezar', MC_ANCHO/2, MC_ALTO/2);
+  }
+  if(mcEstado === 'terminado'){
+    ctx.fillStyle = 'rgba(197,48,48,.92)'; ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('💥 ¡Chocaste! Puntos: ' + Math.floor(mcScoreCruda/5), MC_ANCHO/2, MC_ALTO/2 - 10);
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('Toca o presiona espacio para volver a intentar', MC_ANCHO/2, MC_ALTO/2 + 14);
+  }
+  ctx.textAlign = 'left';
+}
+
 function abrirModalRondaMantenimiento(){
   inicializarFormularioMantenimiento();
   document.getElementById('rondaMantModal').style.display = 'flex';
@@ -3843,53 +4004,79 @@ function cerrarModalRondaMantenimiento(){
 
 /* ================= HOJA DE INSPECCIÓN IMPRESA (Word, una sola página) ================= */
 function exportarHojaInspeccionWord(){
-  const esc = (s)=> String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const categoriasToms = ['FALLA EN TORNIQUETE','FALLA APLICACION AIPA','FALLA AUTORIZANDO','FALLA LECTURA QRs','FALLA LECTURA TARJETAS','FALLA MODULO AIPA'];
-
-  const estacionesHtml = VT_ESTACIONES.map(estacion=>{
-    const esTerminal = estacion.indexOf('TERMINAL CENTRAL') !== -1;
-    const gates = VT_GATES_BASE.concat(esTerminal ? VT_GATES_EXTRA : []);
-    const gatesHtml = gates.map(g=>`<div class="hi-check">☐ ${esc(g)}</div>`).join('');
-    const tomsHtml = categoriasToms.map(c=>`<div class="hi-check">☐ ${esc(c)}</div>`).join('');
-    return `
-      <div class="hi-estacion">
-        <div class="hi-estacion-titulo">📍 ${esc(estacion)}</div>
-        <div class="hi-subtitulo">Torniquetes / Accesos PMR</div>
-        <div class="hi-grid">${gatesHtml}</div>
-        <div class="hi-subtitulo">TOMS (Boletería)</div>
-        <div class="hi-grid">${tomsHtml}</div>
-        <div class="hi-firma">Firma: ______________________&nbsp;&nbsp;&nbsp;Hora: ________</div>
-      </div>`;
-  }).join('');
+  if(!puedeExportar()){ alert('Solo una cuenta de Administrador Plus puede exportar el Acta de Inspección.'); return; }
+  const filaVaciaUnidad = `<tr><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td></tr>`;
+  const filasUnidades = filaVaciaUnidad.repeat(8);
+  const filaVaciaEvento = `<tr><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td><td class="ai-fila-vacia">&nbsp;</td></tr>`;
+  const filasEventos = filaVaciaEvento.repeat(4);
 
   const htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-<head><meta charset='utf-8'><title>Hoja de Inspección</title>
+<head><meta charset='utf-8'><title>Acta de Inspección Operaciones</title>
 <style>
-  @page{ size:letter landscape; margin:1cm; }
-  body{ font-family:Calibri, Arial, sans-serif; color:#333; }
-  .hi-header{ text-align:center; margin-bottom:8pt; }
-  .hi-header h1{ color:#003D54; font-size:16pt; margin:0; }
-  .hi-header p{ color:#4A5568; font-size:9.5pt; margin:2pt 0 0 0; }
-  .hi-datos{ display:flex; justify-content:space-between; font-size:9.5pt; color:#003D54; margin-bottom:10pt; border-bottom:1.5pt solid #F06624; padding-bottom:6pt; }
-  .hi-cuadricula{ display:grid; grid-template-columns:1fr 1fr; gap:10pt; }
-  .hi-estacion{ border:1pt solid #ccc; border-radius:6pt; padding:8pt 10pt; }
-  .hi-estacion-titulo{ background:#003D54; color:#fff; font-weight:bold; font-size:10.5pt; padding:4pt 8pt; border-radius:4pt; margin-bottom:6pt; }
-  .hi-subtitulo{ font-size:8.5pt; font-weight:bold; color:#F06624; text-transform:uppercase; margin:6pt 0 3pt 0; }
-  .hi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2pt 8pt; }
-  .hi-check{ font-size:8.8pt; color:#333; }
-  .hi-firma{ font-size:8.3pt; color:#555; margin-top:8pt; border-top:.75pt dashed #999; padding-top:5pt; }
+  @page{ size:letter portrait; margin:1.4cm; }
+  body{ font-family:Calibri, Arial, sans-serif; color:#000; font-size:10pt; }
+  .ai-header-tabla{ width:100%; border-collapse:collapse; margin-bottom:10pt; border-bottom:2pt solid #003D54; padding-bottom:8pt; }
+  .ai-header-tabla td{ border:none !important; padding:0; vertical-align:middle; }
+  .ai-intrant-txt{ font-weight:bold; color:#0a2f5c; font-size:13pt; border:1.5pt solid #0a2f5c; border-radius:4pt; padding:4pt 8pt; display:inline-block; margin-left:12pt; }
+  .ai-direccion{ text-align:right; font-size:8pt; color:#333; line-height:1.6; }
+  .ai-titulo{ text-align:center; font-size:15pt; font-weight:bold; letter-spacing:.5pt; margin:6pt 0 12pt 0; }
+  table.ai-tabla{ width:100%; border-collapse:collapse; margin-bottom:10pt; table-layout:fixed; }
+  .ai-tabla td, .ai-tabla th{ border:1pt solid #333; padding:3pt 5pt; font-size:8pt; vertical-align:middle; word-wrap:break-word; overflow-wrap:break-word; }
+  .ai-tabla td.ai-fila-vacia{ height:20pt; }
+  .ai-seccion-titulo{ font-weight:bold; font-size:10pt; margin:10pt 0 4pt 0; }
+  .ai-lbl{ font-weight:bold; background:#f2f2f2; width:32%; }
+  .ai-ubicacion{ text-align:right; font-weight:bold; font-size:11pt; margin-bottom:4pt; }
+  .ai-th{ background:#003D54; color:#fff; font-weight:bold; text-align:center; }
+  .ai-comentarios{ border:1pt solid #333; min-height:70pt; padding:6pt; }
+  .ai-nota{ text-align:right; font-size:8pt; font-style:italic; color:#333; margin-top:6pt; }
 </style></head>
 <body>
-  <div class="hi-header">
-    <h1>FIMOVIT — Hoja de Inspección de Mantenimiento Preventivo</h1>
-    <p>Validador / Torniquete — Teleférico Santiago Línea 1</p>
+  <div class="ai-header">
+    <div class="ai-logos">
+      <img src="${LOGO_COLOR}" width="130" height="46" style="width:130px;height:46px;">
+      <div class="ai-intrant-txt">INTRANT</div>
+    </div>
+    <div class="ai-direccion">
+      <p style="margin:0;">Avenida Bolívar # 195, Torre Corporativa Bolívar 195</p>
+      <p style="margin:0;">La Esperilla, Santo Domingo</p>
+      <p style="margin:0;">Tel: 809-683-2055</p>
+      <p style="margin:0;">www.fimovit.gob.do</p>
+    </div>
   </div>
-  <div class="hi-datos">
-    <span>Fecha: ______________________</span>
-    <span>Realizado por: ______________________</span>
-    <span>Turno: ______________________</span>
-  </div>
-  <div class="hi-cuadricula">${estacionesHtml}</div>
+
+  <div class="ai-titulo">ACTA DE INSPECCION OPERACIONES</div>
+
+  <div class="ai-seccion-titulo">DATOS GENERALES INSPECCION</div>
+  <div class="ai-ubicacion">Ubicación / Estación: ______________________</div>
+  <table>
+    <tr><td class="ai-lbl">Fecha dd/mm/yyyy:</td><td>&nbsp;</td><td class="ai-lbl">Operador:</td><td>&nbsp;</td><td class="ai-lbl">Dirección del Operador:</td><td>&nbsp;</td></tr>
+  </table>
+  <table>
+    <tr><td class="ai-lbl">Nombre representante de Fimovit:</td><td>&nbsp;</td><td class="ai-lbl">Firma:</td><td>&nbsp;</td></tr>
+    <tr><td class="ai-lbl">Nombre representante Portal:</td><td>&nbsp;</td><td class="ai-lbl">Firma:</td><td>&nbsp;</td></tr>
+    <tr><td class="ai-lbl">Nombre representante del Operador:</td><td>&nbsp;</td><td class="ai-lbl">Firma:</td><td>&nbsp;</td></tr>
+    <tr><td class="ai-lbl">Nombre representante del Intrant:</td><td>&nbsp;</td><td class="ai-lbl">Firma:</td><td>&nbsp;</td></tr>
+  </table>
+
+  <div class="ai-seccion-titulo">ESTADO COMPONENTES DE LAS UNIDADES EVALUADAS</div>
+  <table>
+    <tr>
+      <th class="ai-th">Ficha</th><th class="ai-th">Estatus del router</th><th class="ai-th">Conexión de Datos</th>
+      <th class="ai-th">GPS</th><th class="ai-th">Torniquete</th><th class="ai-th">Lectora Mifare</th><th class="ai-th">Lectora EMV</th>
+    </tr>
+    ${filasUnidades}
+  </table>
+
+  <div class="ai-seccion-titulo">EVENTOS IDENTIFICADOS</div>
+  <table>
+    <tr><th class="ai-th">Evento</th><th class="ai-th">Acciones tomadas</th><th class="ai-th">Ficha Autobús / ID Equipo</th></tr>
+    ${filasEventos}
+  </table>
+
+  <div class="ai-seccion-titulo">Comentarios</div>
+  <div class="ai-comentarios">&nbsp;</div>
+
+  <div class="ai-nota">Esta acta debe ser firmada y sellada por el Operador</div>
 </body>
 </html>`;
 
@@ -3897,7 +4084,7 @@ function exportarHojaInspeccionWord(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Hoja_Inspeccion_Mantenimiento_${new Date().toISOString().slice(0,10)}.doc`;
+  a.download = `Acta_Inspeccion_Operaciones_${new Date().toISOString().slice(0,10)}.doc`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
@@ -3922,6 +4109,7 @@ async function cargarEscaneos(){
   }catch(err){ console.error('No se pudieron cargar los escaneos:', err); }
 }
 async function subirEscaneoInspeccion(){
+  if(!puedeExportar()){ alert('Solo una cuenta de Administrador Plus puede subir hojas escaneadas.'); return; }
   const fecha = document.getElementById('escaneoFechaInput').value;
   const archivo = document.getElementById('escaneoArchivoInput').files[0];
   const estadoEl = document.getElementById('escaneoSubidaEstado');
@@ -5066,6 +5254,7 @@ setInterval(tickClock, 1000); tickClock();
 /* ================= NAVEGACIÓN DE PÁGINAS ================= */
 function showPage(name){
   cerrarSidebarMovil();
+  if(name !== 'mantenimiento') mcDetenerJuego();
   document.getElementById('page-form').classList.toggle('active', name==='form');
   document.getElementById('page-table').classList.toggle('active', name==='table');
   document.getElementById('page-users').classList.toggle('active', name==='users');
@@ -5112,8 +5301,11 @@ function showPage(name){
   }
   if(name==='mantenimiento'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
+    const esAdminPlus = puedeExportar();
+    document.getElementById('actaAdminPlusCard').style.display = esAdminPlus ? 'block' : 'none';
+    document.getElementById('actaConstruccionPlaceholder').style.display = esAdminPlus ? 'none' : 'block';
+    if(esAdminPlus){ cargarEscaneos(); mcDetenerJuego(); } else { setTimeout(()=> mcIniciarJuego(), 50); }
     cargarMantenimiento();
-    cargarEscaneos();
   }
   if(name==='gemelo'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
