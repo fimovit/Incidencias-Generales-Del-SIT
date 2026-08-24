@@ -1577,7 +1577,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.50.0</div>
+<div id="versionLabel">V4.51.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1650,7 +1650,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.50.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.51.0
     </div>
   </div>
 </div>
@@ -2877,6 +2877,7 @@
       <div class="subtitle" style="margin-bottom:18px;" id="versionTomSubtitulo"></div>
 
       <div id="versionTomActualBox" style="background:var(--gray-light);border-radius:14px;padding:16px 18px;margin-bottom:20px;"></div>
+      <div id="versionTomSeguimientoBox" style="display:none;"></div>
 
       <h3 style="font-size:14px;color:var(--teal-dark);margin-bottom:10px;">➕ Registrar nueva actualización</h3>
       <label style="margin-top:0;">Versión</label>
@@ -3488,7 +3489,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.50.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.51.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -4372,8 +4373,10 @@ function renderDetalleVersionTom(){
   const ultima = registros[0] || null;
 
   const actualBox = document.getElementById('versionTomActualBox');
+  const seguimientoBox = document.getElementById('versionTomSeguimientoBox');
   if(!ultima){
     actualBox.innerHTML = `<div class="empty-state">Todavía no se ha registrado ninguna versión para ${tipo === 'torniquete' ? 'este torniquete' : 'esta TOM'}.</div>`;
+    seguimientoBox.style.display = 'none';
   } else {
     const esPrueba = ultima.estadoPrueba === 'prueba';
     actualBox.innerHTML = `
@@ -4387,6 +4390,30 @@ function renderDetalleVersionTom(){
           ${esPrueba ? '✅ Marcar como satisfactoria' : '🧪 Poner en prueba de nuevo'}
         </button>
       </div>`;
+
+    // El seguimiento de la prueba solo tiene sentido mientras la versión SIGUE en prueba.
+    if(esPrueba){
+      seguimientoBox.style.display = 'block';
+      const notas = (ultima.notasSeguimiento || '').split('|||').filter(Boolean).map(entrada=>{
+        const [fecha, autor, texto] = entrada.split('::');
+        return {fecha, autor, texto};
+      }).reverse();
+      const listaHtml = notas.length === 0
+        ? '<div class="empty-state" style="padding:14px;">Todavía no hay apuntes de cómo va la prueba.</div>'
+        : notas.map(n=>`<div class="fdi-card" style="cursor:default;">
+            <div class="fdi-fila"><span class="fdi-lbl">📅 ${escapeHtml(n.fecha||'—')}</span><span class="fdi-val">${escapeHtml(n.autor||'—')}</span></div>
+            <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(n.texto||'')}</span></div>
+          </div>`).join('');
+      seguimientoBox.innerHTML = `
+        <h3 style="font-size:14px;color:var(--orange);margin:20px 0 10px 0;">🧪 Seguimiento de la prueba</h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input type="text" id="versionTomNuevaNota" placeholder="Ej: Hasta hoy funciona bien, sin fallas..." style="flex:1;">
+          <button class="btn-guardar" style="white-space:nowrap;" onclick="agregarNotaVersionTom('${attrJs(ultima.id)}')">➕ Agregar apunte</button>
+        </div>
+        <div id="versionTomListaNotas">${listaHtml}</div>`;
+    } else {
+      seguimientoBox.style.display = 'none';
+    }
   }
 
   const histCont = document.getElementById('versionTomHistorial');
@@ -4426,6 +4453,23 @@ async function guardarVersionTom(){
   }catch(err){
     console.error('Error al registrar la versión:', err);
     alert('Ocurrió un error al registrar la versión.');
+  }
+}
+async function agregarNotaVersionTom(id){
+  const input = document.getElementById('versionTomNuevaNota');
+  const nota = input.value.trim();
+  if(!nota){ alert('Escribe el apunte antes de agregarlo.'); return; }
+  if(!isLiveEnabled()){ alert('El modo en vivo no está activo.'); return; }
+  try{
+    await fetch(liveUrl, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'agregarNotaVersionTom', id, nota, fecha: fechaHoraRD(), autor: currentUser ? currentUser.nombre : ''})
+    });
+    await cargarVersionesToms();
+    renderDetalleVersionTom();
+  }catch(err){
+    console.error('Error al agregar el apunte:', err);
+    alert('Ocurrió un error al agregar el apunte.');
   }
 }
 async function cambiarEstadoPruebaTomActual(id, nuevoEstado){
