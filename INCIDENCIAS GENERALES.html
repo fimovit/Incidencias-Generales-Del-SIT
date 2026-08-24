@@ -1453,10 +1453,10 @@
     table{font-size:11px;}
     th, td{padding:8px 6px;}
     .auth-card{padding:26px 22px;}
-    #btnCloudConfig, #notifWidget{ top:64px; width:40px; height:40px; font-size:16px; }
+    #btnCloudConfig, #notifWidget{ top:calc(14px + env(safe-area-inset-top)); width:40px; height:40px; font-size:16px; }
     #notifWidget{ right:16px; }
     #btnCloudConfig{ right:64px; }
-    .notif-panel-flotante{ top:112px; }
+    .notif-panel-flotante{ top:calc(62px + env(safe-area-inset-top)); }
   }
   @media(max-width:420px){
     .dash-grid{grid-template-columns:1fr;}
@@ -1542,7 +1542,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.46.2</div>
+<div id="versionLabel">V4.46.3</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1615,7 +1615,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.46.2
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.46.3
     </div>
   </div>
 </div>
@@ -3443,7 +3443,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.46.2'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.46.3'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
