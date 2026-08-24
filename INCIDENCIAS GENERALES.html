@@ -1204,6 +1204,17 @@
   tr.fila-clicable:hover td{background:var(--teal-light);}
   .table-wrap{overflow-x:auto;max-height:60vh;overflow-y:auto;border-radius:12px;box-shadow:0 1px 3px rgba(0,61,84,.05);}
   .empty-state{text-align:center;padding:60px 20px;color:#8a97a3;background:var(--white);border-radius:12px;}
+  .skeleton-wrap{padding:14px;background:var(--white);}
+  .skeleton-row{
+    height:46px;border-radius:9px;margin-bottom:10px;
+    background:linear-gradient(90deg, #eef2f4 25%, #f7f9fa 50%, #eef2f4 75%);
+    background-size:400% 100%;
+    animation:skeletonPulso 1.4s ease-in-out infinite;
+  }
+  @keyframes skeletonPulso{
+    0%{background-position:100% 0;}
+    100%{background-position:0 0;}
+  }
   .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:700;}
   .badge-resuelta,.badge-ok,.badge-solucionado{background:#e3f6e9;color:#1a7a41;}
   .badge-persistente,.badge-fallapersiste{background:var(--orange-light);color:var(--orange);}
@@ -1408,6 +1419,16 @@
     background:var(--white); border-top:1px solid #e7edf0; box-shadow:0 -4px 14px rgba(0,0,0,.08);
     padding:6px 4px calc(14px + env(safe-area-inset-bottom)) 4px;
   }
+  .mobile-fab{
+    display:none; position:fixed; z-index:99997;
+    right:18px; bottom:calc(88px + env(safe-area-inset-bottom));
+    width:56px; height:56px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(145deg, var(--orange-2), var(--orange));
+    color:#fff; font-size:26px; line-height:1;
+    box-shadow:0 8px 20px rgba(240,102,36,.45), 0 3px 8px rgba(0,0,0,.2);
+    transition:transform .15s ease;
+  }
+  .mobile-fab:active{ transform:scale(.9); }
   .mbt-item{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
     background:none; border:none; color:#96a2a8; font-size:9.5px; font-weight:700;
@@ -1428,6 +1449,11 @@
     .welcome-logo-wrap img{width:180px;}
   }
   @media(max-width:768px){
+    .btn:active, .btn-secondary:active, .btn-guardar:active, .option-card:active, .mbt-item:active,
+    .vt-tom-card:active, .gemelo-gate:active, .fila-clicable:active, .mapa-real-marcador:active,
+    .link-toggle-btn:active, .nav-btn:active{
+      transform:scale(.94); opacity:.85; transition:transform .08s ease, opacity .08s ease;
+    }
     body{display:block;}
     #appShell{height:auto;overflow:visible;}
     .main{overflow-y:visible;min-height:auto;}
@@ -1435,6 +1461,7 @@
     .pagination-bar{margin-top:18px;margin-bottom:10px;padding:10px 0;}
     .mobile-topbar{display:none !important;}
     .mobile-bottom-tabs{display:flex;}
+    .mobile-fab{display:flex;align-items:center;justify-content:center;}
     .sidebar{
       position:fixed;top:0;left:0;bottom:0;width:82%;max-width:290px;z-index:200;
       transform:translateX(-105%);transition:transform .28s ease;overflow-y:auto;
@@ -1549,7 +1576,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.48.3</div>
+<div id="versionLabel">V4.49.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1622,7 +1649,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.48.3
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.49.0
     </div>
   </div>
 </div>
@@ -1976,6 +2003,8 @@
   <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
   <img class="logo-blanco-img mobile-topbar-logo" alt="FIMOVIT">
 </div>
+
+<button class="mobile-fab" id="mobileFab" onclick="showPage('form')" title="Registrar Incidencia">➕</button>
 
 <div class="mobile-bottom-tabs" id="mobileBottomTabs">
   <button class="mbt-item" id="mbt-form" onclick="showPage('form')"><span class="mbt-ic">📋</span><span class="mbt-lbl">Registrar</span></button>
@@ -2658,6 +2687,10 @@
           <tbody id="tableBody1"></tbody>
         </table>
         <div class="empty-state" id="emptyState1">Aún no hay incidencias registradas en este módulo.</div>
+        <div class="skeleton-wrap" id="skeletonSistema" style="display:none;">
+          <div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div>
+          <div class="skeleton-row"></div><div class="skeleton-row"></div>
+        </div>
       </div>
       <div class="pagination-bar" id="paginacionSistema"></div>
     </div>
@@ -2721,6 +2754,10 @@
           <tbody id="tableBody2"></tbody>
         </table>
         <div class="empty-state" id="emptyState2">Aún no hay incidencias registradas en este módulo.</div>
+        <div class="skeleton-wrap" id="skeletonVt" style="display:none;">
+          <div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div>
+          <div class="skeleton-row"></div><div class="skeleton-row"></div>
+        </div>
       </div>
       <div class="pagination-bar" id="paginacionVt"></div>
     </div>
@@ -3450,7 +3487,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.48.3'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.49.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5773,6 +5810,8 @@ function showPage(name){
     const el = document.getElementById(id);
     if(el) el.classList.toggle('activo', (id === 'mbt-'+name));
   });
+  const fab = document.getElementById('mobileFab');
+  if(fab) fab.style.visibility = (name === 'form') ? 'hidden' : 'visible';
   if(name !== 'manual' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
   if(name !== 'mantenimiento'){
     mcDetenerJuego();
@@ -5807,7 +5846,21 @@ function showPage(name){
     updateLiveUI();
     volverASeleccionProvincia();
     aplicarRestriccionHistorial();
-    if(isLiveEnabled()){ sincronizarAhora(false); startLivePolling(); }
+    if(isLiveEnabled()){
+      const sinDatosAun = records.length === 0 && vtRecords.length === 0;
+      if(sinDatosAun){
+        const skS = document.getElementById('skeletonSistema'); if(skS) skS.style.display = 'block';
+        const skV = document.getElementById('skeletonVt'); if(skV) skV.style.display = 'block';
+        const emS = document.getElementById('emptyState1'); if(emS) emS.style.display = 'none';
+        const emV = document.getElementById('emptyState2'); if(emV) emV.style.display = 'none';
+      }
+      sincronizarAhora(false).then(()=>{
+        const skS = document.getElementById('skeletonSistema'); if(skS) skS.style.display = 'none';
+        const skV = document.getElementById('skeletonVt'); if(skV) skV.style.display = 'none';
+        renderAll();
+      });
+      startLivePolling();
+    }
   }
   if(name==='users'){
     if(!isMasterUser()){ showPage('form'); return; }
