@@ -583,7 +583,7 @@
   .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:16px 18px;flex-shrink:0;}
   #preferenciasPanel{animation:fade .2s ease;}
   #btnTogglePreferencias:hover{color:#fff;}
-  .sidebar .counters{margin-top:auto;padding:14px 18px 0 18px;}
+  .sidebar .counters{margin-top:auto;padding:14px 18px 24px 18px;}
   .user-card{
     display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);
     border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;margin:0 18px 12px 18px;
@@ -1439,7 +1439,7 @@
       position:fixed;top:0;left:0;bottom:0;width:82%;max-width:290px;z-index:200;
       transform:translateX(-105%);transition:transform .28s ease;overflow-y:auto;
       box-shadow:10px 0 30px rgba(0,0,0,.35);
-      padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+      padding-top:env(safe-area-inset-top); padding-bottom:calc(30px + env(safe-area-inset-bottom));
     }
     .sidebar.mobile-open{transform:translateX(0);}
     .main{padding:calc(18px + env(safe-area-inset-top)) 14px calc(86px + env(safe-area-inset-bottom)) 14px;max-width:100%;width:100%;}
@@ -1549,7 +1549,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.48.2</div>
+<div id="versionLabel">V4.48.3</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1622,7 +1622,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.48.2
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.48.3
     </div>
   </div>
 </div>
@@ -3450,7 +3450,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.48.2'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.48.3'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
