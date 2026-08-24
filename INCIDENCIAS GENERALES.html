@@ -653,7 +653,13 @@
     width:360px;max-width:calc(100vw - 40px);
   }
   @media(max-width:768px){
-    .notif-panel-flotante{left:20px;right:20px;top:72px;width:auto;max-width:none;max-height:60vh;}
+    .notif-panel-flotante{
+      position:fixed !important;inset:0 !important;left:0 !important;right:0 !important;top:0 !important;
+      width:auto !important;max-width:none !important;max-height:none !important;
+      border-radius:0;z-index:99998;
+      padding:calc(20px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom)) 18px !important;
+    }
+    .notif-panel-flotante h4{font-size:19px;display:flex;justify-content:space-between;align-items:center;}
   }
   .notif-item{
     display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:9px;
@@ -1453,10 +1459,9 @@
     table{font-size:11px;}
     th, td{padding:8px 6px;}
     .auth-card{padding:26px 22px;}
-    #btnCloudConfig, #notifWidget{ top:calc(14px + env(safe-area-inset-top)); width:40px; height:40px; font-size:16px; }
+    #btnCloudConfig, #notifWidget{ display:none !important; }
     #notifWidget{ right:16px; }
     #btnCloudConfig{ right:64px; }
-    .notif-panel-flotante{ top:calc(62px + env(safe-area-inset-top)); }
   }
   @media(max-width:420px){
     .dash-grid{grid-template-columns:1fr;}
@@ -1542,7 +1547,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.46.3</div>
+<div id="versionLabel">V4.48.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1615,7 +1620,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.46.3
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.48.0
     </div>
   </div>
 </div>
@@ -1844,7 +1849,7 @@
 </button>
 
 <div class="notif-panel notif-panel-flotante" id="notifPanel" style="display:none;">
-  <h4>🔔 Notificaciones</h4>
+  <h4>🔔 Notificaciones <button onclick="toggleNotifPanel()" style="background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button></h4>
   <div id="notifListContainer"></div>
   <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="verTodasNotificaciones()">Ver en Historial</button>
 </div>
@@ -3443,7 +3448,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.46.3'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.48.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -9729,6 +9734,28 @@ function drawLineChart(canvasId, refName, etiquetas, valores, color){
   });
 }
 
+// Encoge la tabla (solo en celular) para que quepan la mayor cantidad de columnas posible en pantalla,
+// en vez de tener que desplazarse horizontalmente.
+function ajustarZoomTablaMovil(idTabla){
+  if(window.innerWidth > 768) return;
+  requestAnimationFrame(()=>{
+    const tabla = document.getElementById(idTabla);
+    if(!tabla) return;
+    const wrap = tabla.closest('.table-wrap');
+    if(!wrap) return;
+    tabla.style.zoom = 1;
+    const anchoDisponible = wrap.clientWidth;
+    const anchoNatural = tabla.scrollWidth;
+    if(anchoNatural > anchoDisponible && anchoNatural > 0){
+      const factor = Math.max(0.42, anchoDisponible / anchoNatural);
+      tabla.style.zoom = factor;
+    }
+  });
+}
+window.addEventListener('resize', ()=>{
+  ['dataTable1','dataTable2'].forEach(id=> ajustarZoomTablaMovil(id));
+});
+
 function renderTableSistema(){
   const tbody = document.getElementById('tableBody1');
   const empty = document.getElementById('emptyState1');
@@ -9788,6 +9815,7 @@ function renderTableSistema(){
   drawDoughnut('chartEstado1', 'chartEstado1_ref', byEstado, (valor)=> mostrarListaPorCampo('sistema','estado',valor));
   const tend1 = tendenciaPorDia(activosSistema, 14);
   drawLineChart('chartTendencia1', 'chartTendencia1_ref', tend1.etiquetas, tend1.valores, '#005879');
+  ajustarZoomTablaMovil('dataTable1');
 }
 function renderTableVt(){
   const tbody = document.getElementById('tableBody2');
@@ -9849,6 +9877,7 @@ function renderTableVt(){
   drawDoughnut('chartEstado2', 'chartEstado2_ref', byEstado, (valor)=> mostrarListaPorCampo('vt','estado',valor));
   const tend2 = tendenciaPorDia(activosVt, 14);
   drawLineChart('chartTendencia2', 'chartTendencia2_ref', tend2.etiquetas, tend2.valores, '#F06624');
+  ajustarZoomTablaMovil('dataTable2');
 }
 
 function drawBarChart(canvasId, refName, dataObj, color, onClickLabel){
