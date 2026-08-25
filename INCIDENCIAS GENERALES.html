@@ -287,6 +287,7 @@
   .login-glass-wrap{
     position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;
     padding:32px 20px;width:100%;
+
   }
   .login-glass-card{
     background:rgba(255,255,255,.97);backdrop-filter:blur(12px);
@@ -1577,7 +1578,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.51.0</div>
+<div id="versionLabel">V4.52.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1629,6 +1630,22 @@
         <div class="auth-error" id="loginError">Usuario o contraseña incorrectos.</div>
         <button class="btn-auth" onclick="doLogin()">Entrar</button>
         <div class="auth-switch">¿No tienes cuenta? <a onclick="abrirSolicitudCuenta()">Solicítala al administrador del sistema</a>.</div>
+        <div class="auth-switch">¿Olvidaste tu contraseña? <a onclick="toggleAuthMode('recuperar')">Tengo un código de recuperación</a></div>
+      </div>
+
+      <div class="auth-form" id="recuperarForm" style="display:none;">
+        <p style="font-size:12.5px;color:var(--gray-text);margin:0 0 14px 0;">Si olvidaste tu contraseña, pídele a tu administrador que te genere un código — te llegará por correo. Escríbelo aquí junto con tu nueva contraseña.</p>
+        <label class="req">Usuario</label>
+        <input type="text" id="recuperarUsuario" placeholder="Tu nombre de usuario">
+        <label class="req">Código recibido por correo</label>
+        <input type="text" id="recuperarCodigo" placeholder="Ej: 483920" maxlength="6">
+        <label class="req">Nueva contraseña</label>
+        <input type="password" id="recuperarPassword" placeholder="Mínimo 4 caracteres">
+        <label class="req">Confirmar nueva contraseña</label>
+        <input type="password" id="recuperarPassword2" placeholder="Repita la contraseña">
+        <div class="auth-error" id="recuperarError">Código inválido o expirado.</div>
+        <button class="btn-auth" onclick="confirmarRecuperacionPassword()">Cambiar mi contraseña</button>
+        <div class="auth-switch">¿Ya la recordaste? <a onclick="toggleAuthMode('login')">Iniciar sesión</a></div>
       </div>
 
       <div class="auth-form" id="registerForm" style="display:none;">
@@ -1650,7 +1667,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.51.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.52.1
     </div>
   </div>
 </div>
@@ -1678,8 +1695,9 @@
       <div class="error-msg" id="err-solicitudUsuario">Debes elegir un usuario.</div>
       <div class="error-msg" id="err-solicitudUsuarioDup">Ese usuario ya existe o ya tiene una solicitud pendiente.</div>
 
-      <label>Correo electrónico <span style="text-transform:none;font-weight:400;color:#96a2a8;">(opcional)</span></label>
+      <label class="req">Correo electrónico</label>
       <input type="email" id="solicitudEmailInput" placeholder="correo@fimovit.gob.do">
+      <div class="error-msg" id="err-solicitudEmail">Debes indicar un correo válido — se usará para recuperar tu contraseña.</div>
 
       <label class="req">¿En qué provincia trabajas?</label>
       <select id="solicitudProvinciaInput">
@@ -1788,6 +1806,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- ============ MODAL: EDITAR ESTADO DE INCIDENCIA ============ -->
 <div id="editIncidenciaModal" style="display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,26,36,.55);backdrop-filter:blur(2px);">
@@ -3466,8 +3485,6 @@
     </div>
   </div>
 
-
-
 </div>
 </div>
 
@@ -3489,7 +3506,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.51.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.52.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -4003,6 +4020,8 @@ async function cargarUsuariosAdmin(){
       <td>${escapeHtml(u.fechaCreacion||'')}</td>
       <td>
         <button class="btn-del" onclick='cambiarPasswordUsuario(${JSON.stringify(u.usuario)})'>🔑 Cambiar</button>
+        <button class="btn-guardar" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='generarCodigoRecuperacionAdmin(${JSON.stringify(u.usuario)})'>📧 Enviar código</button>
+        <button class="btn-guardar" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='editarEmailUsuario(${JSON.stringify(u.usuario)}, ${JSON.stringify(u.email||'')})'>✉️ Editar correo</button>
         <button class="btn-del" style="margin-left:6px;" onclick='eliminarUsuarioAdmin(${JSON.stringify(u.usuario)})'>🗑 Eliminar</button>
       </td>`;
     tbody.appendChild(tr);
@@ -5507,9 +5526,47 @@ async function cambiarPasswordUsuario(usuario){
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({sheet:'usuarios', action:'cambiarPassword', usuario, passwordHash})
     });
-    alert('Contraseña actualizada para "' + usuario + '".');
-    registrarAuditoria('Cambió contraseña', usuario);
+    alert('Contraseña actualizada para "' + usuario + '". Se le notificó por correo, si tiene uno registrado.');
+    registrarAuditoria('Cambió contraseña directamente', usuario);
   }catch(err){ console.error(err); alert('No se pudo cambiar la contraseña.'); }
+}
+
+async function editarEmailUsuario(usuario, emailActual){
+  const nuevoEmail = await promptPersonalizado('Correo para "' + usuario + '" (se usará para el código de recuperación y avisos):', emailActual || '');
+  if(nuevoEmail === null) return;
+  const limpio = nuevoEmail.trim();
+  if(limpio && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpio)){
+    alert('Ese correo no parece válido. Verifica e inténtalo de nuevo.');
+    return;
+  }
+  try{
+    await fetch(liveUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'cambiarEmail', usuario, email: limpio})
+    });
+    alert('Correo actualizado para "' + usuario + '".');
+    registrarAuditoria('Actualizó el correo de un usuario', usuario);
+    cargarUsuariosAdmin();
+  }catch(err){ console.error(err); alert('No se pudo actualizar el correo.'); }
+}
+
+async function generarCodigoRecuperacionAdmin(usuario){
+  if(!(await confirmarPersonalizado('¿Enviar un código de recuperación por correo a "' + usuario + '"? Solo llegará al correo ya registrado de esa cuenta, y vence en 20 minutos.'))) return;
+  try{
+    const res = await fetch(liveUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'generarCodigoRecuperacion', usuario})
+    });
+    const data = await res.json();
+    if(data && data.ok){
+      alert('Código enviado por correo a "' + usuario + '". Vence en 20 minutos y solo sirve una vez.');
+      registrarAuditoria('Generó código de recuperación de contraseña', usuario);
+    } else {
+      alert('No se pudo enviar el código: ' + (data && data.error ? data.error : 'error desconocido'));
+    }
+  }catch(err){ console.error(err); alert('Ocurrió un error al generar el código.'); }
 }
 
 async function eliminarUsuarioAdmin(usuario){
@@ -5619,7 +5676,46 @@ function showWelcome(){
 function toggleAuthMode(mode){
   document.getElementById('loginForm').classList.toggle('active', mode==='login');
   document.getElementById('registerForm').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('recuperarForm').style.display = mode==='recuperar' ? 'block' : 'none';
+  if(mode==='recuperar'){
+    ['recuperarUsuario','recuperarCodigo','recuperarPassword','recuperarPassword2'].forEach(id=> document.getElementById(id).value = '');
+  }
   document.querySelectorAll('.auth-error').forEach(e=>e.style.display='none');
+}
+async function confirmarRecuperacionPassword(){
+  const usuario = document.getElementById('recuperarUsuario').value.trim();
+  const codigo = document.getElementById('recuperarCodigo').value.trim();
+  const pass = document.getElementById('recuperarPassword').value;
+  const pass2 = document.getElementById('recuperarPassword2').value;
+  const errEl = document.getElementById('recuperarError');
+  errEl.style.display = 'none';
+
+  if(!usuario || !codigo){ errEl.textContent = 'Indica tu usuario y el código recibido por correo.'; errEl.style.display='block'; return; }
+  if(!pass || pass.length < 4){ errEl.textContent = 'La nueva contraseña debe tener al menos 4 caracteres.'; errEl.style.display='block'; return; }
+  if(pass !== pass2){ errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display='block'; return; }
+  if(!isLiveEnabled()){ errEl.textContent = 'El modo en vivo no está activo — no se puede validar el código.'; errEl.style.display='block'; return; }
+
+  try{
+    const passwordHash = await hashPassword(pass);
+    const res = await fetch(liveUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'validarYCambiarPasswordConCodigo', usuario, codigo, passwordHash})
+    });
+    const data = await res.json();
+    if(data && data.ok){
+      alert('¡Contraseña cambiada con éxito! Ya puedes iniciar sesión con tu nueva contraseña.');
+      toggleAuthMode('login');
+      document.getElementById('loginUsuario').value = usuario;
+    } else {
+      errEl.textContent = (data && data.error) ? data.error : 'Código inválido o expirado.';
+      errEl.style.display = 'block';
+    }
+  }catch(err){
+    console.error(err);
+    errEl.textContent = 'Ocurrió un error al validar el código.';
+    errEl.style.display = 'block';
+  }
 }
 
 /* ================= SOLICITUD DE CUENTA (desde login) ================= */
@@ -5667,6 +5763,8 @@ async function enviarSolicitudCuenta(){
 
   document.getElementById('err-solicitudNombre').style.display = nombre ? 'none' : 'block'; if(!nombre) ok=false;
   document.getElementById('err-solicitudUsuario').style.display = usuario ? 'none' : 'block'; if(!usuario) ok=false;
+  const emailOk = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  document.getElementById('err-solicitudEmail').style.display = emailOk ? 'none' : 'block'; if(!emailOk) ok=false;
   document.getElementById('err-solicitudProvincia').style.display = provincia ? 'none' : 'block'; if(!provincia) ok=false;
   const passOk = pass && pass.length >= 4;
   document.getElementById('err-solicitudPassword').style.display = passOk ? 'none' : 'block'; if(!passOk) ok=false;
