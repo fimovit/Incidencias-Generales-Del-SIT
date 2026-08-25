@@ -1321,31 +1321,84 @@
   .gemelo-gate-icono{font-size:26px;margin-bottom:6px;}
   .gemelo-gate-nombre{font-size:10.5px;font-weight:700;color:var(--teal-dark);line-height:1.3;}
   /* ---------- OP OMSA SANTIAGO — flota de autobuses ---------- */
-  .omsa-flota-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;}
+  .omsa-filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .omsa-filtro-btn{
+    display:flex; align-items:center; gap:8px; background:var(--gray-light); border:1.5px solid transparent;
+    border-radius:12px; padding:10px 16px; cursor:pointer; font-weight:700; font-size:12.5px; color:var(--gray-text);
+    transition:.15s ease;
+  }
+  .omsa-filtro-btn:hover{background:#e9eef0;}
+  .omsa-filtro-btn.activo{background:var(--white); border-color:var(--teal); color:var(--teal-dark); box-shadow:0 3px 10px rgba(0,88,121,.12);}
+  .omsa-filtro-num{
+    background:rgba(0,0,0,.06); border-radius:8px; padding:2px 8px; font-size:12px; font-weight:800; color:inherit;
+  }
+  .omsa-filtro-btn.activo .omsa-filtro-num{background:var(--teal); color:#fff;}
+  .omsa-filtro-punto{width:8px;height:8px;border-radius:50%;}
+  .omsa-filtro-punto.ok{background:#3ddc84;}
+  .omsa-filtro-punto.mal{background:#e53935;}
+  .omsa-flota-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:24px;padding:6px 2px;}
   .omsa-bus-card{
-    background:#fff;border-radius:16px;padding:18px 14px;text-align:center;cursor:pointer;
-    border:3px solid #2e9e5b;transition:transform .15s ease;
+    position:relative; background:linear-gradient(155deg, #ffffff 0%, #f4f7f8 100%);
+    border-radius:20px; padding:30px 18px 20px 18px; text-align:center; cursor:pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 14px 26px rgba(0,61,84,.10), 0 3px 6px rgba(0,0,0,.06);
+    transform:perspective(600px) rotateX(0deg); transition:transform .2s ease, box-shadow .2s ease;
+    border:1px solid rgba(0,0,0,.04);
   }
-  .omsa-bus-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1);}
-  .omsa-bus-card.fuera-servicio{
-    border-color:#e53935;
-    animation:omsaParpadeo 1.1s ease-in-out infinite;
+  .omsa-bus-card:hover{
+    transform:perspective(600px) rotateX(4deg) translateY(-5px);
+    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 24px 40px rgba(0,61,84,.18), 0 6px 12px rgba(0,0,0,.1);
   }
-  @keyframes omsaParpadeo{
-    0%,100%{ background:#fff; box-shadow:0 0 0 0 rgba(229,57,53,.4); }
-    50%{ background:#ffecec; box-shadow:0 0 0 8px rgba(229,57,53,0); }
+  .omsa-bus-luz{
+    position:absolute; top:14px; right:14px; width:11px; height:11px; border-radius:50%;
   }
-  .omsa-bus-icono{font-size:34px;margin-bottom:8px;}
-  .omsa-bus-ficha{font-size:14px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;}
+  .omsa-bus-card.omsa-online .omsa-bus-luz{
+    background:#3ddc84; box-shadow:0 0 0 3px rgba(61,220,132,.25), 0 0 10px 2px rgba(61,220,132,.7);
+  }
+  .omsa-bus-card.omsa-offline .omsa-bus-luz{
+    background:#e53935; box-shadow:0 0 0 3px rgba(229,57,53,.25), 0 0 10px 2px rgba(229,57,53,.7);
+    animation:omsaLuzParpadeo 1.1s ease-in-out infinite;
+  }
+  @keyframes omsaLuzParpadeo{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .omsa-bus-card.omsa-offline{
+    background:linear-gradient(155deg, #fff8f7 0%, #ffeceb 100%);
+    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 14px 26px rgba(229,57,53,.14), 0 3px 6px rgba(0,0,0,.06);
+  }
+  .omsa-mini-bus{ position:relative; width:64px; height:46px; margin:0 auto 14px auto; filter:drop-shadow(0 4px 6px rgba(0,0,0,.2)); }
+  .omsa-mini-bus-cuerpo{
+    position:relative; width:64px; height:30px; border-radius:9px 9px 3px 3px;
+    box-shadow: inset 0 2px 2px rgba(255,255,255,.45), inset 0 -3px 5px rgba(0,0,0,.15);
+  }
+  .omsa-mini-bus.verde .omsa-mini-bus-cuerpo{ background:linear-gradient(155deg, #4fe397, #1e9455); }
+  .omsa-mini-bus.blanco .omsa-mini-bus-cuerpo{ background:linear-gradient(155deg, #ffffff, #dfe4e6); border:1px solid rgba(0,0,0,.08); }
+  .omsa-mini-bus.blanco .omsa-mini-bus-cuerpo::after{
+    content:''; position:absolute; left:0; right:0; bottom:3px; height:5px; background:#e53935;
+  }
+  .omsa-mini-bus-ventanas{
+    position:absolute; top:4px; left:5px; right:5px; height:9px; border-radius:3px;
+    background:rgba(255,255,255,.55); display:flex; gap:2px; overflow:hidden;
+  }
+  .omsa-mini-bus.blanco .omsa-mini-bus-ventanas{ background:rgba(120,170,190,.35); }
+  .omsa-mini-bus-ventanas span{ flex:1; background:rgba(255,255,255,.35); }
+  .omsa-mini-bus-ruedas{ position:absolute; bottom:-5px; left:8px; right:8px; display:flex; justify-content:space-between; }
+  .omsa-mini-bus-ruedas span{
+    width:10px; height:10px; border-radius:50%; background:#2b2f33;
+    box-shadow: inset 0 0 0 2px #6b7176;
+  }
+  .omsa-bus-ficha{font-size:14.5px; font-weight:800; color:var(--teal-dark); margin-bottom:8px;}
   .omsa-bus-badge{
-    display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
-    padding:3px 10px;border-radius:12px;margin-bottom:6px;
+    display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.3px;
+    padding:4px 11px; border-radius:20px; margin-bottom:6px;
   }
-  .omsa-bus-badge.ok{background:#e3f6ea;color:#2e9e5b;}
-  .omsa-bus-badge.mal{background:#fdecea;color:#e53935;}
-  .omsa-bus-tiempo{font-size:10.5px;color:#c53030;font-weight:700;}
+  .omsa-bus-badge.ok{ background:linear-gradient(145deg,#e3f6ea,#c9edd6); color:#237a45; box-shadow:inset 0 1px 2px rgba(255,255,255,.6);}
+  .omsa-bus-badge.mal{ background:linear-gradient(145deg,#fdecea,#fbd2cf); color:#c62828; box-shadow:inset 0 1px 2px rgba(255,255,255,.6);}
+  .omsa-bus-tiempo{font-size:10.5px;color:#c53030;font-weight:700;margin-bottom:4px;}
+  .omsa-bus-comentario{
+    font-size:10.5px; color:#8a4a1f; background:#fff3e6; border-radius:8px; padding:6px 8px;
+    margin:4px 0; text-align:left; line-height:1.35;
+  }
+  .omsa-bus-tecnico{font-size:9.5px;color:#96a2a8;margin-top:2px;}
   .omsa-bus-eliminar{
-    display:block;margin-top:8px;font-size:10px;color:#a9b6bd;text-decoration:underline;cursor:pointer;background:none;border:none;
+    display:block;margin-top:10px;font-size:10px;color:#a9b6bd;text-decoration:underline;cursor:pointer;background:none;border:none;
   }
   /* ---------- CHAT / MENSAJES — diseño profesional tipo app de mensajería ---------- */
   .chat-app{
@@ -1578,7 +1631,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.52.1</div>
+<div id="versionLabel">V4.54.3</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1667,7 +1720,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.52.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.54.3
     </div>
   </div>
 </div>
@@ -2049,6 +2102,7 @@
   <button class="nav-btn" id="nav-mensajes" onclick="showPage('mensajes')" style="display:none;"><span class="ic">💬</span> Mensajes <span id="mensajesNavBadge" style="display:none;background:var(--orange);color:#fff;border-radius:10px;padding:1px 7px;font-size:10.5px;font-weight:800;margin-left:6px;">0</span></button>
   <button class="nav-btn" id="nav-mantenimiento" onclick="showPage('mantenimiento')" style="display:none;"><span class="ic">🔧</span> Mantenimiento</button>
   <button class="nav-btn" id="nav-gemelo" onclick="showPage('gemelo')" style="display:none;"><span class="ic">🧬</span> Mapa Digital</button>
+  <button class="nav-btn" id="nav-omsa" onclick="showPage('omsa')" style="display:none;"><span class="ic">🚌</span> Estado Autobuses</button>
   <button class="nav-btn" id="nav-sala" onclick="showPage('sala')" style="display:none;"><span class="ic">🖥️</span> Sala de Control</button>
   <button class="nav-btn" id="nav-versionestoms" onclick="showPage('versionestoms')" style="display:none;"><span class="ic">💻</span> Versión de los Sistemas</button>
 
@@ -3296,8 +3350,8 @@
     <div class="topbar">
       <div>
         <img class="topbar-logo logo-color-img" alt="FIMOVIT">
-        <h1>🚌 OP OMSA Santiago</h1>
-        <div class="subtitle">Estado en vivo de la flota de autobuses activos — verde: operando bien, rojo parpadeante: fuera de servicio.</div>
+        <h1>🚌 Estado Autobuses — OP OMSA Santiago</h1>
+        <div class="subtitle">Estado en vivo de la flota — verde: en operación, rojo: fuera de servicio.</div>
       </div>
     </div>
 
@@ -3305,15 +3359,75 @@
       <h2 style="margin-bottom:14px;">➕ Agregar autobús a la flota</h2>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <input type="text" id="omsaNuevaFicha" placeholder="Número de ficha, ej: BUS-012" style="flex:1;min-width:220px;">
-        <button class="btn btn-primary" onclick="agregarBusOmsa()">➕ Agregar autobús</button>
+        <button class="btn btn-primary" onclick="abrirModalOmsaCompleto()">➕ Agregar con datos completos</button>
       </div>
       <div class="error-msg" id="err-omsaDup">Esa ficha ya está registrada en la flota.</div>
     </div>
 
     <div class="card">
       <h2 style="margin-bottom:6px;">Flota activa</h2>
-      <div class="subtitle" style="margin-bottom:16px;">Haz clic en un autobús para cambiar su estado.</div>
+      <div class="subtitle" style="margin-bottom:16px;">Haz clic en un autobús para ver o editar sus datos.</div>
+      <div class="omsa-filtros" id="omsaFiltros">
+        <button class="omsa-filtro-btn activo" data-filtro="todos" onclick="filtrarFlotaOmsa('todos')">
+          <span class="omsa-filtro-num" id="omsaCountTodos">0</span><span class="omsa-filtro-lbl">Todos</span>
+        </button>
+        <button class="omsa-filtro-btn" data-filtro="operacion" onclick="filtrarFlotaOmsa('operacion')">
+          <span class="omsa-filtro-punto ok"></span><span class="omsa-filtro-num" id="omsaCountOk">0</span><span class="omsa-filtro-lbl">En operación</span>
+        </button>
+        <button class="omsa-filtro-btn" data-filtro="fuera" onclick="filtrarFlotaOmsa('fuera')">
+          <span class="omsa-filtro-punto mal"></span><span class="omsa-filtro-num" id="omsaCountMal">0</span><span class="omsa-filtro-lbl">Fuera de servicio</span>
+        </button>
+      </div>
       <div id="omsaFlotaGrid"><div class="empty-state">Cargando flota...</div></div>
+    </div>
+  </div>
+
+  <div id="omsaDetalleModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.65);">
+    <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+      <button onclick="cerrarModalOmsaDetalle()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+      <h2 id="omsaModalTitulo" style="margin-bottom:4px;">🚌 —</h2>
+      <div id="omsaModalTiempoFuera" style="display:none;font-size:12px;font-weight:700;color:#c53030;margin-bottom:14px;"></div>
+
+      <label class="req">Estado</label>
+      <select id="omsaEstadoSelect">
+        <option value="habilitado">✔ En operación</option>
+        <option value="deshabilitado">✕ Fuera de servicio</option>
+      </select>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px;">
+        <div>
+          <label>N.º de Validador (Activo Fijo)</label>
+          <input type="text" id="omsaNumeroValidador" placeholder="Ej: AF-00123">
+        </div>
+        <div>
+          <label>Serial del Validador</label>
+          <input type="text" id="omsaSerialValidador" placeholder="Ej: VAL-2024-556">
+        </div>
+        <div>
+          <label>Versión del Software del Validador</label>
+          <input type="text" id="omsaVersionSoftwareValidador" placeholder="Ej: v3.2.1">
+        </div>
+        <div>
+          <label>Serial del Router</label>
+          <input type="text" id="omsaSerialRouter" placeholder="Ej: RT-889231">
+        </div>
+        <div>
+          <label>Activo Fijo del Router</label>
+          <input type="text" id="omsaActivoFijoRouter" placeholder="Ej: AF-00789">
+        </div>
+      </div>
+
+      <div id="omsaComentarioBox" style="display:none;">
+        <label>Comentario — motivo, si ya se está arreglando, cuándo estaría disponible, etc.</label>
+        <textarea id="omsaComentario" rows="3" placeholder="Ej: Falla en el aire acondicionado, en taller, disponible aprox. el viernes..."></textarea>
+      </div>
+
+      <button id="omsaBtnEliminarModal" class="omsa-bus-eliminar" style="display:none;margin-bottom:4px;" onclick="eliminarBusOmsa(omsaFichaEnEdicion); cerrarModalOmsaDetalle();">🗑️ Quitar de la flota</button>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="cerrarModalOmsaDetalle()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarModalOmsaDetalle()">💾 Guardar</button>
+      </div>
     </div>
   </div>
 
@@ -3506,7 +3620,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.52.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.54.3'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5035,7 +5149,22 @@ function renderGemeloSantoDomingo(){
 /* ================= OP OMSA SANTIAGO — FLOTA DE AUTOBUSES ================= */
 let flotaOmsa = [];
 let omsaRelojInterval = null;
+let omsaModalModo = 'agregar'; // 'agregar' | 'editar'
+let omsaFichaEnEdicion = null;
 
+// Rango 15 al 24 (ej: 15-001, 16-002...) -> bus verde. 25 en adelante -> bus blanco con rojo.
+function renderMiniBusOmsa(ficha){
+  const match = String(ficha).match(/^(\d{2})-/);
+  const prefijo = match ? parseInt(match[1], 10) : null;
+  const esVerde = (prefijo === null) || (prefijo >= 15 && prefijo <= 24);
+  const clase = esVerde ? 'verde' : 'blanco';
+  return `<div class="omsa-mini-bus ${clase}">
+    <div class="omsa-mini-bus-cuerpo">
+      <div class="omsa-mini-bus-ventanas"><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="omsa-mini-bus-ruedas"><span></span><span></span></div>
+  </div>`;
+}
 function formatoDuracionOmsa(ms){
   if(ms < 0) ms = 0;
   const horasTotales = ms / 3600000;
@@ -5049,9 +5178,6 @@ function formatoDuracionOmsa(ms){
   return `${horas}h ${minutos}m`;
 }
 
-function avisoOmsaFueraDeServicio(){
-  alert('🚧 OP OMSA Santiago está temporalmente fuera de servicio.\n\nEsta sección no está disponible por el momento.');
-}
 async function cargarFlotaOmsa(){
   const cont = document.getElementById('omsaFlotaGrid');
   if(!isLiveEnabled()){
@@ -5074,75 +5200,168 @@ async function cargarFlotaOmsa(){
   }
 }
 
+let omsaFiltroActual = 'todos';
+function filtrarFlotaOmsa(filtro){
+  omsaFiltroActual = filtro;
+  document.querySelectorAll('.omsa-filtro-btn').forEach(btn=>{
+    btn.classList.toggle('activo', btn.dataset.filtro === filtro);
+  });
+  renderFlotaOmsa();
+}
 function renderFlotaOmsa(){
   const cont = document.getElementById('omsaFlotaGrid');
   if(!cont) return;
+
+  const totalOk = flotaOmsa.filter(b=> String(b.estado).toLowerCase()==='habilitado').length;
+  const totalMal = flotaOmsa.length - totalOk;
+  const elTodos = document.getElementById('omsaCountTodos'); if(elTodos) elTodos.textContent = flotaOmsa.length;
+  const elOk = document.getElementById('omsaCountOk'); if(elOk) elOk.textContent = totalOk;
+  const elMal = document.getElementById('omsaCountMal'); if(elMal) elMal.textContent = totalMal;
+
   if(flotaOmsa.length === 0){
     cont.innerHTML = '<div class="empty-state">Todavía no hay autobuses registrados en la flota. Agrega el primero arriba.</div>';
     return;
   }
-  const ahora = Date.now();
-  cont.innerHTML = '<div class="omsa-flota-grid">' + flotaOmsa.map(b=>{
+
+  const visibles = flotaOmsa.filter(b=>{
     const ok = String(b.estado).toLowerCase() === 'habilitado';
-    const ultimaVezBien = Number(b.ultimaVezBien) || ahora;
-    const tiempoFuera = ok ? '' : formatoDuracionOmsa(ahora - ultimaVezBien);
-    return `<div class="omsa-bus-card ${ok?'':'fuera-servicio'}" onclick="toggleEstadoBusOmsa('${attrJs(b.ficha)}')" title="Clic para cambiar el estado">
-      <div class="omsa-bus-icono">🚌</div>
+    if(omsaFiltroActual === 'operacion') return ok;
+    if(omsaFiltroActual === 'fuera') return !ok;
+    return true;
+  });
+  if(visibles.length === 0){
+    cont.innerHTML = '<div class="empty-state">No hay autobuses en este filtro por ahora.</div>';
+    return;
+  }
+
+  cont.innerHTML = '<div class="omsa-flota-grid">' + visibles.map(b=>{
+    const ok = String(b.estado).toLowerCase() === 'habilitado';
+    return `<div class="omsa-bus-card ${ok?'omsa-online':'omsa-offline'}" onclick="abrirModalOmsaEditar('${attrJs(b.ficha)}')" title="Clic para ver todos los datos">
+      <div class="omsa-bus-luz"></div>
+      ${renderMiniBusOmsa(b.ficha)}
       <div class="omsa-bus-ficha">${escapeHtml(String(b.ficha))}</div>
-      <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'✔ Habilitado':'✕ Fuera de servicio'}</span>
-      ${ok ? '' : `<div class="omsa-bus-tiempo">Lleva ${tiempoFuera} así</div>`}
-      <button class="omsa-bus-eliminar" onclick="event.stopPropagation(); eliminarBusOmsa('${attrJs(b.ficha)}')">Quitar de la flota</button>
+      <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'● En operación':'● Fuera de servicio'}</span>
     </div>`;
   }).join('') + '</div>';
 }
 
-async function agregarBusOmsa(){
+function abrirModalOmsaCompleto(){
   const input = document.getElementById('omsaNuevaFicha');
   const ficha = input.value.trim();
   document.getElementById('err-omsaDup').style.display = 'none';
-  if(!ficha){ alert('Escribe el número de ficha del autobús.'); return; }
+  if(!ficha){ alert('Escribe el número de ficha del autobús primero.'); return; }
   if(flotaOmsa.some(b => String(b.ficha).toLowerCase() === ficha.toLowerCase())){
     document.getElementById('err-omsaDup').style.display = 'block';
     return;
   }
-  if(!isLiveEnabled()){ alert('El modo en vivo no está activo.'); return; }
-  const nuevo = { ficha, estado:'habilitado', ultimaVezBien: Date.now(), actualizadoPor: currentUser ? currentUser.nombre : '', lastModified: Date.now(), eliminado:'no' };
-  flotaOmsa.push(nuevo);
-  renderFlotaOmsa();
-  input.value = '';
-  try{
-    await fetch(liveUrl, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha: nuevo.ficha, estado: nuevo.estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor})
-    });
-    registrarAuditoria('Agregó autobús a la flota OMSA Santiago', ficha);
-  }catch(err){ console.error('No se pudo agregar el autobús:', err); }
+  omsaModalModo = 'agregar';
+  omsaFichaEnEdicion = ficha;
+  document.getElementById('omsaModalTitulo').textContent = '🚌 ' + ficha;
+  document.getElementById('omsaEstadoSelect').value = 'habilitado';
+  document.getElementById('omsaNumeroValidador').value = '';
+  document.getElementById('omsaSerialValidador').value = '';
+  document.getElementById('omsaVersionSoftwareValidador').value = '';
+  document.getElementById('omsaSerialRouter').value = '';
+  document.getElementById('omsaActivoFijoRouter').value = '';
+  document.getElementById('omsaComentario').value = '';
+  document.getElementById('omsaComentarioBox').style.display = 'none';
+  document.getElementById('omsaBtnEliminarModal').style.display = 'none';
+  document.getElementById('omsaModalTiempoFuera').style.display = 'none';
+  document.getElementById('omsaDetalleModal').style.display = 'flex';
 }
-
-async function toggleEstadoBusOmsa(ficha){
+function abrirModalOmsaEditar(ficha){
   const bus = flotaOmsa.find(b => String(b.ficha) === String(ficha));
   if(!bus) return;
+  omsaModalModo = 'editar';
+  omsaFichaEnEdicion = ficha;
+  document.getElementById('omsaModalTitulo').textContent = '🚌 ' + ficha;
+  document.getElementById('omsaEstadoSelect').value = String(bus.estado).toLowerCase() === 'habilitado' ? 'habilitado' : 'deshabilitado';
+  document.getElementById('omsaNumeroValidador').value = bus.numeroValidador || '';
+  document.getElementById('omsaSerialValidador').value = bus.serialValidador || '';
+  document.getElementById('omsaVersionSoftwareValidador').value = bus.versionSoftwareValidador || '';
+  document.getElementById('omsaSerialRouter').value = bus.serialRouter || '';
+  document.getElementById('omsaActivoFijoRouter').value = bus.activoFijoRouter || '';
+  document.getElementById('omsaComentario').value = bus.comentario || '';
+  document.getElementById('omsaComentarioBox').style.display = document.getElementById('omsaEstadoSelect').value === 'deshabilitado' ? 'block' : 'none';
+  document.getElementById('omsaBtnEliminarModal').style.display = 'block';
+  const tiempoFueraEl = document.getElementById('omsaModalTiempoFuera');
   const ok = String(bus.estado).toLowerCase() === 'habilitado';
-  const nuevoEstado = ok ? 'deshabilitado' : 'habilitado';
-  if(ok){
-    // se está deshabilitando: guardamos desde cuándo, para poder contar el tiempo fuera de servicio
-    bus.ultimaVezBien = Date.now();
+  if(!ok){
+    const ultimaVezBien = Number(bus.ultimaVezBien) || Date.now();
+    tiempoFueraEl.textContent = '⏱ Lleva ' + formatoDuracionOmsa(Date.now() - ultimaVezBien) + ' fuera de servicio';
+    tiempoFueraEl.style.display = 'block';
   } else {
-    // vuelve a estar habilitado: reinicia la marca de "última vez bien" a ahora mismo
-    bus.ultimaVezBien = Date.now();
+    tiempoFueraEl.style.display = 'none';
   }
-  bus.estado = nuevoEstado;
-  renderFlotaOmsa();
-  if(!isLiveEnabled()) return;
-  try{
-    await fetch(liveUrl, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({sheet:'flotaomsa', action:'actualizarEstado', ficha: bus.ficha, estado: bus.estado, ultimaVezBien: bus.ultimaVezBien, actualizadoPor: currentUser ? currentUser.nombre : ''})
-    });
-    registrarAuditoria('Cambió el estado de un autobús OMSA', ficha + ' → ' + nuevoEstado);
-  }catch(err){ console.error('No se pudo actualizar el estado del autobús:', err); }
+  document.getElementById('omsaDetalleModal').style.display = 'flex';
+}
+function cerrarModalOmsaDetalle(){
+  document.getElementById('omsaDetalleModal').style.display = 'none';
+  omsaFichaEnEdicion = null;
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const sel = document.getElementById('omsaEstadoSelect');
+  if(sel) sel.addEventListener('change', function(){
+    document.getElementById('omsaComentarioBox').style.display = (this.value === 'deshabilitado') ? 'block' : 'none';
+  });
+});
+
+async function guardarModalOmsaDetalle(){
+  if(!omsaFichaEnEdicion || !isLiveEnabled()) return;
+  const ficha = omsaFichaEnEdicion;
+  const estado = document.getElementById('omsaEstadoSelect').value;
+  const numeroValidador = document.getElementById('omsaNumeroValidador').value.trim();
+  const serialValidador = document.getElementById('omsaSerialValidador').value.trim();
+  const versionSoftwareValidador = document.getElementById('omsaVersionSoftwareValidador').value.trim();
+  const serialRouter = document.getElementById('omsaSerialRouter').value.trim();
+  const activoFijoRouter = document.getElementById('omsaActivoFijoRouter').value.trim();
+  const comentario = document.getElementById('omsaComentario').value.trim();
+
+  cerrarModalOmsaDetalle();
+
+  if(omsaModalModo === 'agregar'){
+    const nuevo = { ficha, estado, ultimaVezBien: Date.now(), actualizadoPor: currentUser ? currentUser.nombre : '', lastModified: Date.now(), eliminado:'no', numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador };
+    flotaOmsa.push(nuevo);
+    renderFlotaOmsa();
+    document.getElementById('omsaNuevaFicha').value = '';
+    try{
+      await fetch(liveUrl, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha, estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
+      });
+      registrarAuditoria('Agregó autobús a la flota OMSA Santiago', ficha);
+    }catch(err){ console.error('No se pudo agregar el autobús:', err); }
+  } else {
+    const bus = flotaOmsa.find(b => String(b.ficha) === String(ficha));
+    if(bus){
+      const cambiaEstado = String(bus.estado).toLowerCase() !== estado;
+      if(cambiaEstado) bus.ultimaVezBien = Date.now();
+      bus.estado = estado;
+      bus.numeroValidador = numeroValidador;
+      bus.serialValidador = serialValidador;
+      bus.versionSoftwareValidador = versionSoftwareValidador;
+      bus.serialRouter = serialRouter;
+      bus.activoFijoRouter = activoFijoRouter;
+      bus.comentario = comentario;
+      renderFlotaOmsa();
+    }
+    try{
+      if(bus){
+        await fetch(liveUrl, {
+          method:'POST', mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify({sheet:'flotaomsa', action:'actualizarEstado', ficha, estado, ultimaVezBien: bus.ultimaVezBien, actualizadoPor: currentUser ? currentUser.nombre : ''})
+        });
+      }
+      await fetch(liveUrl, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({sheet:'flotaomsa', action:'actualizarDatos', ficha, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
+      });
+      registrarAuditoria('Actualizó datos de un autobús OMSA', ficha);
+    }catch(err){ console.error('No se pudo actualizar el autobús:', err); }
+  }
 }
 
 async function eliminarBusOmsa(ficha){
@@ -5153,6 +5372,7 @@ async function eliminarBusOmsa(ficha){
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
+
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({sheet:'flotaomsa', action:'eliminar', ficha})
     });
@@ -5653,6 +5873,7 @@ function showApp(){
   const mbtNotifInicial = document.getElementById('mbt-notif'); if(mbtNotifInicial) mbtNotifInicial.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const mbtMensajesInicial = document.getElementById('mbt-mensajes'); if(mbtMensajesInicial) mbtMensajesInicial.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navVersionesInicial = document.getElementById('nav-versionestoms'); if(navVersionesInicial) navVersionesInicial.style.display = puedeExportar() ? 'flex' : 'none';
+  const navOmsaInicial = document.getElementById('nav-omsa'); if(navOmsaInicial) navOmsaInicial.style.display = isMasterUser() ? 'flex' : 'none';
   aplicarModoBasico();
   aplicarRestriccionProvincia();
   actualizarBotonNotifEmail();
@@ -6045,9 +6266,8 @@ function showPage(name){
     cargarVersionesToms();
   }
   if(name==='omsa'){
-    avisoOmsaFueraDeServicio();
-    showPage('form');
-    return;
+    if(!isMasterUser()){ showPage('form'); return; }
+    cargarFlotaOmsa();
   }
   if(name==='sala'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
@@ -7107,6 +7327,8 @@ async function refrescarPermisosPropios(){
     if(navManual) navManual.style.display = esUsuarioBasico() ? 'flex' : 'none';
     const navVersiones = document.getElementById('nav-versionestoms');
     if(navVersiones) navVersiones.style.display = puedeExportar() ? 'flex' : 'none';
+    const navOmsa = document.getElementById('nav-omsa');
+    if(navOmsa) navOmsa.style.display = isMasterUser() ? 'flex' : 'none';
     const mbtNotif = document.getElementById('mbt-notif');
     if(mbtNotif) mbtNotif.style.display = puedeEditarEstado() ? 'flex' : 'none';
     const mbtMensajes = document.getElementById('mbt-mensajes');
