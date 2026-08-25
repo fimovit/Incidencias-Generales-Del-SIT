@@ -1504,6 +1504,18 @@
     .welcome-logo-wrap img{width:180px;}
   }
   @media(max-width:768px){
+    .omsa-flota-grid{grid-template-columns:repeat(3, 1fr);gap:10px;padding:2px;}
+    .omsa-bus-card{padding:14px 6px 10px 6px;border-radius:14px;}
+    .omsa-mini-bus{width:38px;height:28px;margin:0 auto 6px auto;}
+    .omsa-mini-bus-cuerpo{width:38px;height:18px;border-radius:6px 6px 2px 2px;}
+    .omsa-mini-bus-ventanas{top:2px;left:3px;right:3px;height:6px;}
+    .omsa-mini-bus-ruedas{bottom:-3px;left:5px;right:5px;}
+    .omsa-mini-bus-ruedas span{width:6px;height:6px;}
+    .omsa-bus-ficha{font-size:10.5px;margin-bottom:4px;word-break:break-word;}
+    .omsa-bus-badge{font-size:8px;padding:3px 6px;letter-spacing:0;}
+    .omsa-bus-luz{width:8px;height:8px;top:8px;right:8px;}
+    .omsa-filtros{gap:6px;}
+    .omsa-filtro-btn{padding:8px 10px;font-size:11px;gap:5px;}
     .btn:active, .btn-secondary:active, .btn-guardar:active, .option-card:active, .mbt-item:active,
     .vt-tom-card:active, .gemelo-gate:active, .fila-clicable:active, .mapa-real-marcador:active,
     .link-toggle-btn:active, .nav-btn:active{
@@ -1631,7 +1643,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.54.3</div>
+<div id="versionLabel">V4.54.4</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1720,7 +1732,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.54.3
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.54.4
     </div>
   </div>
 </div>
@@ -3620,7 +3632,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.54.3'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.54.4'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
