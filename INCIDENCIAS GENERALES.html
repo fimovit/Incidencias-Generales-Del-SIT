@@ -1322,6 +1322,7 @@
   .gemelo-gate-nombre{font-size:10.5px;font-weight:700;color:var(--teal-dark);line-height:1.3;}
   /* ---------- OP OMSA SANTIAGO — flota de autobuses ---------- */
   .omsa-filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+
   .omsa-filtro-btn{
     display:flex; align-items:center; gap:8px; background:var(--gray-light); border:1.5px solid transparent;
     border-radius:12px; padding:10px 16px; cursor:pointer; font-weight:700; font-size:12.5px; color:var(--gray-text);
@@ -1336,58 +1337,51 @@
   .omsa-filtro-punto{width:8px;height:8px;border-radius:50%;}
   .omsa-filtro-punto.ok{background:#3ddc84;}
   .omsa-filtro-punto.mal{background:#e53935;}
-  .omsa-flota-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:24px;padding:6px 2px;}
-  .omsa-bus-card{
-    position:relative; background:linear-gradient(155deg, #ffffff 0%, #f4f7f8 100%);
-    border-radius:20px; padding:30px 18px 20px 18px; text-align:center; cursor:pointer;
-    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 14px 26px rgba(0,61,84,.10), 0 3px 6px rgba(0,0,0,.06);
-    transform:perspective(600px) rotateX(0deg); transition:transform .2s ease, box-shadow .2s ease;
-    border:1px solid rgba(0,0,0,.04);
+  .omsa-flota-lista{display:flex;flex-direction:column;gap:8px;}
+  .omsa-bus-fila{
+    position:relative; display:flex; align-items:center; gap:14px;
+    background:var(--white); border-radius:12px; padding:10px 16px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,61,84,.06); border:1px solid #eef2f4; transition:.15s ease;
   }
-  .omsa-bus-card:hover{
-    transform:perspective(600px) rotateX(4deg) translateY(-5px);
-    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 24px 40px rgba(0,61,84,.18), 0 6px 12px rgba(0,0,0,.1);
-  }
+  .omsa-bus-fila:hover{ box-shadow:0 6px 16px rgba(0,61,84,.12); transform:translateX(2px); }
+  .omsa-bus-fila.omsa-offline{ background:#fffaf9; border-color:#f8e2e0; }
   .omsa-bus-luz{
-    position:absolute; top:14px; right:14px; width:11px; height:11px; border-radius:50%;
+    position:absolute; top:50%; right:16px; transform:translateY(-50%);
+    width:9px; height:9px; border-radius:50%;
   }
-  .omsa-bus-card.omsa-online .omsa-bus-luz{
-    background:#3ddc84; box-shadow:0 0 0 3px rgba(61,220,132,.25), 0 0 10px 2px rgba(61,220,132,.7);
+  .omsa-bus-fila.omsa-online .omsa-bus-luz{
+    background:#3ddc84; box-shadow:0 0 0 3px rgba(61,220,132,.25), 0 0 8px 2px rgba(61,220,132,.7);
   }
-  .omsa-bus-card.omsa-offline .omsa-bus-luz{
-    background:#e53935; box-shadow:0 0 0 3px rgba(229,57,53,.25), 0 0 10px 2px rgba(229,57,53,.7);
+  .omsa-bus-fila.omsa-offline .omsa-bus-luz{
+    background:#e53935; box-shadow:0 0 0 3px rgba(229,57,53,.25), 0 0 8px 2px rgba(229,57,53,.7);
     animation:omsaLuzParpadeo 1.1s ease-in-out infinite;
   }
   @keyframes omsaLuzParpadeo{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
-  .omsa-bus-card.omsa-offline{
-    background:linear-gradient(155deg, #fff8f7 0%, #ffeceb 100%);
-    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset, 0 14px 26px rgba(229,57,53,.14), 0 3px 6px rgba(0,0,0,.06);
-  }
-  .omsa-mini-bus{ position:relative; width:64px; height:46px; margin:0 auto 14px auto; filter:drop-shadow(0 4px 6px rgba(0,0,0,.2)); }
+  .omsa-mini-bus{ position:relative; width:32px; height:24px; flex-shrink:0; filter:drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
   .omsa-mini-bus-cuerpo{
-    position:relative; width:64px; height:30px; border-radius:9px 9px 3px 3px;
-    box-shadow: inset 0 2px 2px rgba(255,255,255,.45), inset 0 -3px 5px rgba(0,0,0,.15);
+    position:relative; width:32px; height:15px; border-radius:5px 5px 2px 2px;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.45), inset 0 -2px 3px rgba(0,0,0,.15);
   }
   .omsa-mini-bus.verde .omsa-mini-bus-cuerpo{ background:linear-gradient(155deg, #4fe397, #1e9455); }
   .omsa-mini-bus.blanco .omsa-mini-bus-cuerpo{ background:linear-gradient(155deg, #ffffff, #dfe4e6); border:1px solid rgba(0,0,0,.08); }
   .omsa-mini-bus.blanco .omsa-mini-bus-cuerpo::after{
-    content:''; position:absolute; left:0; right:0; bottom:3px; height:5px; background:#e53935;
+    content:''; position:absolute; left:0; right:0; bottom:1.5px; height:2.5px; background:#e53935;
   }
   .omsa-mini-bus-ventanas{
-    position:absolute; top:4px; left:5px; right:5px; height:9px; border-radius:3px;
-    background:rgba(255,255,255,.55); display:flex; gap:2px; overflow:hidden;
+    position:absolute; top:2px; left:2.5px; right:2.5px; height:4.5px; border-radius:1.5px;
+    background:rgba(255,255,255,.55); display:flex; gap:1px; overflow:hidden;
   }
   .omsa-mini-bus.blanco .omsa-mini-bus-ventanas{ background:rgba(120,170,190,.35); }
   .omsa-mini-bus-ventanas span{ flex:1; background:rgba(255,255,255,.35); }
-  .omsa-mini-bus-ruedas{ position:absolute; bottom:-5px; left:8px; right:8px; display:flex; justify-content:space-between; }
+  .omsa-mini-bus-ruedas{ position:absolute; bottom:-2.5px; left:4px; right:4px; display:flex; justify-content:space-between; }
   .omsa-mini-bus-ruedas span{
-    width:10px; height:10px; border-radius:50%; background:#2b2f33;
-    box-shadow: inset 0 0 0 2px #6b7176;
+    width:5px; height:5px; border-radius:50%; background:#2b2f33;
+    box-shadow: inset 0 0 0 1px #6b7176;
   }
-  .omsa-bus-ficha{font-size:14.5px; font-weight:800; color:var(--teal-dark); margin-bottom:8px;}
+  .omsa-bus-ficha{font-size:13.5px; font-weight:800; color:var(--teal-dark); flex:1;}
   .omsa-bus-badge{
     display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.3px;
-    padding:4px 11px; border-radius:20px; margin-bottom:6px;
+    padding:4px 11px; border-radius:20px; margin-right:26px;
   }
   .omsa-bus-badge.ok{ background:linear-gradient(145deg,#e3f6ea,#c9edd6); color:#237a45; box-shadow:inset 0 1px 2px rgba(255,255,255,.6);}
   .omsa-bus-badge.mal{ background:linear-gradient(145deg,#fdecea,#fbd2cf); color:#c62828; box-shadow:inset 0 1px 2px rgba(255,255,255,.6);}
@@ -1504,16 +1498,10 @@
     .welcome-logo-wrap img{width:180px;}
   }
   @media(max-width:768px){
-    .omsa-flota-grid{grid-template-columns:repeat(3, 1fr);gap:10px;padding:2px;}
-    .omsa-bus-card{padding:14px 6px 10px 6px;border-radius:14px;}
-    .omsa-mini-bus{width:38px;height:28px;margin:0 auto 6px auto;}
-    .omsa-mini-bus-cuerpo{width:38px;height:18px;border-radius:6px 6px 2px 2px;}
-    .omsa-mini-bus-ventanas{top:2px;left:3px;right:3px;height:6px;}
-    .omsa-mini-bus-ruedas{bottom:-3px;left:5px;right:5px;}
-    .omsa-mini-bus-ruedas span{width:6px;height:6px;}
-    .omsa-bus-ficha{font-size:10.5px;margin-bottom:4px;word-break:break-word;}
-    .omsa-bus-badge{font-size:8px;padding:3px 6px;letter-spacing:0;}
-    .omsa-bus-luz{width:8px;height:8px;top:8px;right:8px;}
+    .omsa-bus-fila{padding:8px 12px;gap:10px;}
+    .omsa-bus-ficha{font-size:11.5px;}
+    .omsa-bus-badge{font-size:8px;padding:3px 7px;letter-spacing:0;margin-right:16px;}
+    .omsa-bus-luz{width:7px;height:7px;right:10px;}
     .omsa-filtros{gap:6px;}
     .omsa-filtro-btn{padding:8px 10px;font-size:11px;gap:5px;}
     .btn:active, .btn-secondary:active, .btn-guardar:active, .option-card:active, .mbt-item:active,
@@ -1643,7 +1631,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.54.4</div>
+<div id="versionLabel">V4.55.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1732,7 +1720,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.54.4
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.55.1
     </div>
   </div>
 </div>
@@ -3443,6 +3431,8 @@
     </div>
   </div>
 
+  
+
   <div class="page" id="page-sala">
     <div style="min-height:calc(100vh - 60px);background:radial-gradient(circle at 25% 15%, #003d54 0%, #000e15 72%);border-radius:26px;padding:56px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;position:relative;overflow:hidden;">
       <div style="position:absolute;top:22px;left:28px;font-size:11px;color:#4d7889;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">FIMOVIT · Panel de Fiscalización</div>
@@ -3632,7 +3622,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.54.4'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.55.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5246,13 +5236,13 @@ function renderFlotaOmsa(){
     return;
   }
 
-  cont.innerHTML = '<div class="omsa-flota-grid">' + visibles.map(b=>{
+  cont.innerHTML = '<div class="omsa-flota-lista">' + visibles.map(b=>{
     const ok = String(b.estado).toLowerCase() === 'habilitado';
-    return `<div class="omsa-bus-card ${ok?'omsa-online':'omsa-offline'}" onclick="abrirModalOmsaEditar('${attrJs(b.ficha)}')" title="Clic para ver todos los datos">
-      <div class="omsa-bus-luz"></div>
+    return `<div class="omsa-bus-fila ${ok?'omsa-online':'omsa-offline'}" onclick="abrirModalOmsaEditar('${attrJs(b.ficha)}')" title="Clic para ver todos los datos">
       ${renderMiniBusOmsa(b.ficha)}
       <div class="omsa-bus-ficha">${escapeHtml(String(b.ficha))}</div>
       <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'● En operación':'● Fuera de servicio'}</span>
+      <div class="omsa-bus-luz"></div>
     </div>`;
   }).join('') + '</div>';
 }
