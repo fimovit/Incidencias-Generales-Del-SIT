@@ -299,12 +299,30 @@
     text-align:center;
   }
   @keyframes cardIn{ from{opacity:0;transform:translateY(18px) scale(.98);} to{opacity:1;transform:translateY(0) scale(1);} }
-  .login-glass-logo{
-    width:96px;display:block;margin:0 auto 18px auto;
-    filter:drop-shadow(0 8px 18px rgba(0,61,84,.2));
+  .login-glass-logo-wrap{
+    width:96px;margin:0 auto 18px auto;position:relative;perspective:700px;
     animation:logoEntrance .8s cubic-bezier(.2,.8,.3,1) both;
   }
+  .login-glass-logo-spin{
+    width:100%;position:relative;transform-style:preserve-3d;
+    animation:logoRotar3D 7s linear 1s infinite;
+  }
+  .login-glass-logo{
+    width:100%;display:block;
+    filter:drop-shadow(0 8px 18px rgba(0,61,84,.2));
+  }
+  .logo-guino{
+    position:absolute;left:39.4%;width:22.3%;top:1.5%;height:66.5%;
+    background:rgba(255,255,255,.97);border-radius:50%;
+    transform-origin:center;pointer-events:none;
+    animation:guinoOjo 4.5s ease-in-out 2s infinite;
+  }
   @keyframes logoEntrance{ 0%{opacity:0;transform:scale(.8) translateY(-10px);} 100%{opacity:1;transform:scale(1) translateY(0);} }
+  @keyframes logoRotar3D{ from{transform:rotateY(0deg);} to{transform:rotateY(360deg);} }
+  @keyframes guinoOjo{
+    0%, 88%, 100%{ transform:scaleY(0); }
+    91%, 95%{ transform:scaleY(1); }
+  }
   .login-glass-card .auth-form{text-align:left;}
   .login-form-titulo{color:var(--teal-dark);font-size:23px;font-weight:800;margin:0 0 4px 0;}
   .login-form-sub{color:var(--gray-text);font-size:12.5px;margin:0 0 24px 0;}
@@ -1631,7 +1649,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.55.1</div>
+<div id="versionLabel">V4.55.2</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1671,7 +1689,12 @@
 
   <div class="login-glass-wrap">
     <div class="login-glass-card">
-      <img class="logo-color-img login-glass-logo" alt="FIMOVIT">
+      <div class="login-glass-logo-wrap">
+        <div class="login-glass-logo-spin">
+          <img class="logo-color-img login-glass-logo" alt="FIMOVIT">
+          <div class="logo-guino"></div>
+        </div>
+      </div>
       <h2 class="login-form-titulo">Iniciar sesión</h2>
       <p class="login-form-sub">Sistema de Gestión de Incidencias del SIT</p>
 
@@ -1720,7 +1743,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.55.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.55.2
     </div>
   </div>
 </div>
@@ -3622,7 +3645,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.55.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.55.2'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
