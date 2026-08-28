@@ -1339,6 +1339,32 @@
   .gemelo-gate-icono{font-size:26px;margin-bottom:6px;}
   .gemelo-gate-nombre{font-size:10.5px;font-weight:700;color:var(--teal-dark);line-height:1.3;}
   /* ---------- OP OMSA SANTIAGO — flota de autobuses ---------- */
+  /* ---------- Mantenimiento Preventivo — rediseño visual ---------- */
+  .mant-kpi-row{display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-bottom:22px;}
+  .mant-kpi-card{
+    display:flex;align-items:center;gap:14px;background:var(--white);border-radius:16px;padding:18px 20px;
+    box-shadow:0 4px 14px rgba(0,61,84,.08);border:1px solid #eef2f4;
+  }
+  .mant-kpi-icono{font-size:26px;flex-shrink:0;}
+  .mant-kpi-valor{font-size:20px;font-weight:800;color:var(--teal-dark);line-height:1.1;}
+  .mant-kpi-etiqueta{font-size:11px;color:var(--gray-text);font-weight:600;margin-top:2px;}
+  .mant-kpi-card.mant-kpi-alerta{background:#FFF3EC;border-color:#ffe0cc;}
+  .mant-kpi-card.mant-kpi-alerta .mant-kpi-valor{color:var(--orange);}
+  .mant-herramientas-card{background:var(--gray-light);border:1.5px dashed #c7d1d6;}
+
+  /* ---------- Gestión de Usuarios — acciones compactas ---------- */
+  .gu-acciones{display:flex;gap:6px;flex-wrap:wrap;}
+  .gu-accion-btn{
+    width:32px;height:32px;border-radius:9px;border:1px solid #e7edf0;background:var(--white);
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;
+    transition:.15s ease;box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .gu-accion-btn:hover{background:var(--gray-light);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .gu-accion-btn.gu-peligro:hover{background:#fdecea;border-color:#f3c9c6;}
+  .gu-accion-btn.gu-exito:hover{background:#e3f6ea;border-color:#bfe6cd;}
+  @media(max-width:768px){
+    .mant-kpi-row{grid-template-columns:1fr;gap:10px;}
+  }
   .omsa-filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
 
   .omsa-filtro-btn{
@@ -1561,7 +1587,7 @@
     table{font-size:11px;}
     th, td{padding:8px 6px;}
     .auth-card{padding:26px 22px;}
-    #btnCloudConfig, #notifWidget{ display:none !important; }
+    #btnCloudConfig, #notifWidget, #btnPapeleraFlotante{ display:none !important; }
     #notifWidget{ right:16px; }
     #btnCloudConfig{ right:64px; }
   }
@@ -1649,7 +1675,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.55.2</div>
+<div id="versionLabel">V4.56.5</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1743,7 +1769,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.55.2
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.56.5
     </div>
   </div>
 </div>
@@ -1984,6 +2010,11 @@
   <span id="cloudConfigDot" style="position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#8a97a3;border:2px solid #fff;"></span>
 </button>
 
+<button id="btnPapeleraFlotante" onclick="showPage('papelera')" title="Papelera de reciclaje" style="display:none;position:fixed;bottom:26px;right:26px;z-index:150;width:52px;height:52px;border-radius:50%;background:var(--white);border:none;color:var(--gray-text);font-size:22px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18);align-items:center;justify-content:center;transition:transform .15s ease;">
+  <span id="papeleraFlotanteIcono">🗑️</span>
+  <span id="papeleraFlotanteBadge" style="display:none;position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e53935;color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center;border:2px solid #fff;"></span>
+</button>
+
 <div id="liveConfigModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.75);">
   <div style="background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
     <button onclick="cerrarModalConfigNube()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
@@ -2024,6 +2055,14 @@
       <button class="btn btn-secondary" onclick="resolverConfirmarPersonalizado(false)">Cancelar</button>
       <button class="btn btn-primary" onclick="resolverConfirmarPersonalizado(true)">Confirmar</button>
     </div>
+  </div>
+</div>
+
+<div id="detalleAuditoriaModal" style="display:none;position:fixed;inset:0;z-index:410;align-items:center;justify-content:center;background:rgba(0,26,36,.65);">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="cerrarDetalleAuditoria()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="margin-bottom:18px;">📋 Detalle del cambio</h2>
+    <div id="detalleAuditoriaCuerpo"></div>
   </div>
 </div>
 
@@ -3220,7 +3259,21 @@
         <h1>🔧 Mantenimiento Preventivo</h1>
         <div class="subtitle">Módulo exclusivo de Santiago — inspección de estaciones, torniquetes y accesos PMR del Validador/Torniquete.</div>
       </div>
-      <button class="btn btn-primary" onclick="abrirModalRondaMantenimiento()">📝 Registrar ronda de inspección</button>
+    </div>
+
+    <div class="mant-kpi-row">
+      <div class="mant-kpi-card">
+        <div class="mant-kpi-icono">🗂️</div>
+        <div><div class="mant-kpi-valor" id="mantKpiTotalRondas">0</div><div class="mant-kpi-etiqueta">Rondas registradas</div></div>
+      </div>
+      <div class="mant-kpi-card">
+        <div class="mant-kpi-icono">📅</div>
+        <div><div class="mant-kpi-valor" id="mantKpiUltimaFecha">—</div><div class="mant-kpi-etiqueta">Última inspección</div></div>
+      </div>
+      <div class="mant-kpi-card mant-kpi-alerta">
+        <div class="mant-kpi-icono">⚠️</div>
+        <div><div class="mant-kpi-valor" id="mantKpiAlertas">0</div><div class="mant-kpi-etiqueta">Puntos en alerta</div></div>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:22px;">
@@ -3229,7 +3282,7 @@
       <div id="mantPrediccionBody"><div class="empty-state">Cargando...</div></div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-bottom:22px;">
       <h2 style="margin-bottom:14px;">🗂️ Historial de rondas de inspección</h2>
       <div class="table-wrap">
         <table id="dataTableMantenimiento">
@@ -3238,6 +3291,12 @@
         </table>
         <div class="empty-state" id="emptyStateMantenimiento">Todavía no se ha registrado ninguna ronda de inspección.</div>
       </div>
+    </div>
+
+    <div class="card mant-herramientas-card">
+      <h2 style="margin-bottom:4px;">🛠️ Herramientas de mantenimiento</h2>
+      <div class="subtitle" style="margin-bottom:16px;">Registra una nueva ronda de inspección, o gestiona el acta oficial desde la pestaña lateral 🔧.</div>
+      <button class="btn btn-primary" onclick="abrirModalRondaMantenimiento()">📝 Registrar ronda de inspección</button>
     </div>
   </div>
 
@@ -3645,7 +3704,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.55.2'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.56.5'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -4158,10 +4217,12 @@ async function cargarUsuariosAdmin(){
       </td>
       <td>${escapeHtml(u.fechaCreacion||'')}</td>
       <td>
-        <button class="btn-del" onclick='cambiarPasswordUsuario(${JSON.stringify(u.usuario)})'>🔑 Cambiar</button>
-        <button class="btn-guardar" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='generarCodigoRecuperacionAdmin(${JSON.stringify(u.usuario)})'>📧 Enviar código</button>
-        <button class="btn-guardar" style="padding:6px 12px;font-size:11px;margin-left:6px;" onclick='editarEmailUsuario(${JSON.stringify(u.usuario)}, ${JSON.stringify(u.email||'')})'>✉️ Editar correo</button>
-        <button class="btn-del" style="margin-left:6px;" onclick='eliminarUsuarioAdmin(${JSON.stringify(u.usuario)})'>🗑 Eliminar</button>
+        <div class="gu-acciones">
+          <button class="gu-accion-btn" title="Cambiar contraseña directamente" onclick='cambiarPasswordUsuario(${JSON.stringify(u.usuario)})'>🔑</button>
+          <button class="gu-accion-btn gu-exito" title="Enviar código de recuperación por correo" onclick='generarCodigoRecuperacionAdmin(${JSON.stringify(u.usuario)})'>📧</button>
+          <button class="gu-accion-btn" title="Editar correo electrónico" onclick='editarEmailUsuario(${JSON.stringify(u.usuario)}, ${JSON.stringify(u.email||'')})'>✉️</button>
+          <button class="gu-accion-btn gu-peligro" title="Eliminar usuario" onclick='eliminarUsuarioAdmin(${JSON.stringify(u.usuario)})'>🗑️</button>
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -4905,7 +4966,14 @@ async function cargarMantenimiento(){
   }catch(err){ console.error('No se pudo cargar el historial de mantenimiento:', err); }
 }
 
+function actualizarKpisMantenimiento(){
+  const elTotal = document.getElementById('mantKpiTotalRondas');
+  const elFecha = document.getElementById('mantKpiUltimaFecha');
+  if(elTotal) elTotal.textContent = mantenimientoRegistros.length;
+  if(elFecha) elFecha.textContent = mantenimientoRegistros.length > 0 ? (mantenimientoRegistros[0].fecha || '—') : '—';
+}
 function renderTablaMantenimiento(){
+  actualizarKpisMantenimiento();
   const tbody = document.getElementById('tableBodyMantenimiento');
   const tabla = document.getElementById('dataTableMantenimiento');
   const empty = document.getElementById('emptyStateMantenimiento');
@@ -4967,16 +5035,19 @@ function calcularPrediccionMantenimiento(){
     conteo[clave] = (conteo[clave]||0) + 1;
   });
   const alertas = Object.entries(conteo).filter(([_,n])=> n >= 3).sort((a,b)=> b[1]-a[1]);
+  const elAlertas = document.getElementById('mantKpiAlertas');
+  if(elAlertas) elAlertas.textContent = alertas.length;
   if(alertas.length === 0){
     cont.innerHTML = '<div class="empty-state">🎉 Ninguna estación/gate de Santiago tiene 3 o más incidencias en los últimos 30 días.</div>';
     return;
   }
-  cont.innerHTML = alertas.map(([lugar, veces])=>
-    `<div class="fila-clicable" style="display:flex;justify-content:space-between;align-items:center;background:var(--orange-light);border-radius:10px;padding:12px 16px;margin-bottom:10px;" onclick="verIncidenciasEstacionMantenimiento('${attrJs(lugar)}')">
-      <span style="font-weight:700;color:var(--teal-dark);">⚠️ ${escapeHtml(lugar)}</span>
-      <span style="font-weight:800;color:var(--orange);">${veces} incidencias en 30 días</span>
-    </div>`
-  ).join('');
+  cont.innerHTML = alertas.map(([lugar, veces])=>{
+    const critico = veces >= 5;
+    return `<div class="fila-clicable" style="display:flex;justify-content:space-between;align-items:center;background:${critico ? '#fdecea' : 'var(--orange-light)'};border-radius:10px;padding:12px 16px;margin-bottom:10px;" onclick="verIncidenciasEstacionMantenimiento('${attrJs(lugar)}')">
+      <span style="font-weight:700;color:var(--teal-dark);">${critico ? '🔴' : '⚠️'} ${escapeHtml(lugar)}</span>
+      <span style="font-weight:800;color:${critico ? '#c62828' : 'var(--orange)'};">${veces} incidencias en 30 días</span>
+    </div>`;
+  }).join('');
 }
 
 function verIncidenciasEstacionMantenimiento(lugar){
@@ -5128,25 +5199,25 @@ function renderGemeloSantiago(){
     const gatesConIncidencia = gates.filter(gate=>
       vtRecords.some(r=> r.eliminado!=='si' && r.estacion===estacion && r.gate===gate && !estaResuelta(r,'vt'))
     );
+    // Si esta estación no tiene ninguna incidencia activa, no se muestra su tarjeta en absoluto.
+    if(gatesConIncidencia.length === 0) return;
     html += `<div class="gemelo-estacion-card"><div class="gemelo-estacion-titulo">📍 ${escapeHtml(estacion)}</div>`;
-    if(gatesConIncidencia.length === 0){
-      html += `<div class="empty-state" style="padding:16px;">🎉 Sin incidencias activas en esta estación.</div>`;
-    } else {
-      html += `<div class="gemelo-gates-grid">`;
-      gatesConIncidencia.forEach(gate=>{
-        const activas = vtRecords.filter(r=> r.eliminado!=='si' && r.estacion===estacion && r.gate===gate && !estaResuelta(r,'vt'));
-        const {estado, masReciente} = gemeloEstadoDeIncidencias(activas);
-        const esPmr = gate.indexOf('PMR') !== -1;
-        const onclick = masReciente ? `onclick="abrirDetalleKiosko('${attrJs(masReciente.id)}','vt')"` : '';
-        html += `<div class="gemelo-gate ${estado}" ${onclick} title="${escapeHtml(gate)}${masReciente ? ' — ' + escapeHtml(masReciente.falla||'') : ''}">
-          <div class="gemelo-gate-icono">${esPmr ? '♿' : '🚧'}</div>
-          <div class="gemelo-gate-nombre">${escapeHtml(gate)}</div>
-        </div>`;
-      });
-      html += `</div>`;
-    }
-    html += `</div>`;
+    html += `<div class="gemelo-gates-grid">`;
+    gatesConIncidencia.forEach(gate=>{
+      const activas = vtRecords.filter(r=> r.eliminado!=='si' && r.estacion===estacion && r.gate===gate && !estaResuelta(r,'vt'));
+      const {estado, masReciente} = gemeloEstadoDeIncidencias(activas);
+      const esPmr = gate.indexOf('PMR') !== -1;
+      const onclick = masReciente ? `onclick="abrirDetalleKiosko('${attrJs(masReciente.id)}','vt')"` : '';
+      html += `<div class="gemelo-gate ${estado}" ${onclick} title="${escapeHtml(gate)}${masReciente ? ' — ' + escapeHtml(masReciente.falla||'') : ''}">
+        <div class="gemelo-gate-icono">${esPmr ? '♿' : '🚧'}</div>
+        <div class="gemelo-gate-nombre">${escapeHtml(gate)}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
   });
+  if(html === ''){
+    html = '<div class="empty-state" style="padding:20px;">🎉 No hay incidencias activas en ninguna estación por ahora.</div>';
+  }
   cont.innerHTML = html;
 }
 function renderGemeloSantoDomingo(){
@@ -5355,10 +5426,11 @@ async function guardarModalOmsaDetalle(){
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha, estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
       });
-      registrarAuditoria('Agregó autobús a la flota OMSA Santiago', ficha);
+      registrarAuditoria('Agregó autobús "' + ficha + '" a la flota OMSA Santiago', 'Estado: ' + estado + (numeroValidador ? ' · Validador: ' + numeroValidador : ''));
     }catch(err){ console.error('No se pudo agregar el autobús:', err); }
   } else {
     const bus = flotaOmsa.find(b => String(b.ficha) === String(ficha));
+    const antes = bus ? Object.assign({}, bus) : null;
     if(bus){
       const cambiaEstado = String(bus.estado).toLowerCase() !== estado;
       if(cambiaEstado) bus.ultimaVezBien = Date.now();
@@ -5384,13 +5456,26 @@ async function guardarModalOmsaDetalle(){
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({sheet:'flotaomsa', action:'actualizarDatos', ficha, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
       });
-      registrarAuditoria('Actualizó datos de un autobús OMSA', ficha);
+
+      // Se arma el detalle comparando campo por campo qué realmente cambió.
+      const camposComparar = [
+        ['estado', 'Estado'], ['numeroValidador', 'N.º Validador'], ['serialValidador', 'Serial Validador'],
+        ['versionSoftwareValidador', 'Versión Software'], ['serialRouter', 'Serial Router'],
+        ['activoFijoRouter', 'Activo Fijo Router'], ['comentario', 'Comentario']
+      ];
+      const cambios = antes ? camposComparar
+        .filter(([campo])=> String(antes[campo]||'') !== String(bus[campo]||''))
+        .map(([campo, etiqueta])=> `${etiqueta}: "${antes[campo]||'—'}" → "${bus[campo]||'—'}"`)
+        : [];
+      const detalleCambio = cambios.length > 0 ? cambios.join(' | ') : 'Sin cambios detectados en los campos';
+      registrarAuditoria('Actualizó el autobús "' + ficha + '"', detalleCambio);
     }catch(err){ console.error('No se pudo actualizar el autobús:', err); }
   }
 }
 
 async function eliminarBusOmsa(ficha){
   if(!(await confirmarPersonalizado('¿Quitar el autobús "' + ficha + '" de la flota?'))) return;
+  sonarPapelera();
   flotaOmsa = flotaOmsa.filter(b => String(b.ficha) !== String(ficha));
   renderFlotaOmsa();
   if(!isLiveEnabled()) return;
@@ -5655,6 +5740,80 @@ async function verificarEnvioMensajeChat(id, esperas){
   verificarEnvioMensajeChat(id, esperas.slice(1));
 }
 
+function iconoParaAccionAuditoria(accion){
+  const a = (accion||'').toLowerCase();
+  if(/agregó|creó|registró|subió|generó (?!informe)/.test(a)) return '➕';
+  if(/cambió|actualizó|editó/.test(a)) return '✏️';
+  if(/eliminó|quitó/.test(a)) return '🗑️';
+  if(/restauró/.test(a)) return '♻️';
+  if(/envió|generó informe|generó código/.test(a)) return '📤';
+  if(/aprobó/.test(a)) return '✅';
+  if(/rechazó/.test(a)) return '❌';
+  if(/abrió|cerró/.test(a)) return '🖥️';
+  return '📌';
+}
+function verDetalleAuditoria(indice){
+  const a = auditoriaCache[indice];
+  if(!a) return;
+  const icono = iconoParaAccionAuditoria(a.accion);
+
+  // Si el detalle trae varios campos separados por " | " (ej: cambios de un autobús OMSA),
+  // cada uno se muestra en su propio bloque de antes/después.
+  // Si solo trae un único "X → Y", se muestra como un solo cambio de valor.
+  let bloqueDetalle;
+  const segmentos = (a.detalle || '').split(' | ').map(s=>s.trim()).filter(Boolean);
+  const segmentosConFlecha = segmentos.filter(s=> s.includes('→'));
+  if(segmentosConFlecha.length > 0 && segmentosConFlecha.length === segmentos.length){
+    bloqueDetalle = segmentos.map(seg=>{
+      // Separa "Etiqueta: valorAntes → valorDespues" si trae etiqueta con ":", si no, queda sin etiqueta.
+      let etiqueta = '';
+      let resto = seg;
+      const idxDosPuntos = seg.indexOf(':');
+      const idxFlecha = seg.indexOf('→');
+      if(idxDosPuntos !== -1 && idxDosPuntos < idxFlecha){
+        etiqueta = seg.slice(0, idxDosPuntos).trim();
+        resto = seg.slice(idxDosPuntos+1).trim();
+      }
+      const [antes, despues] = resto.split('→').map(s=>s.trim().replace(/^"|"$/g,''));
+      return `
+        <div style="margin-bottom:10px;">
+          ${etiqueta ? `<div style="font-size:11px;font-weight:800;color:var(--teal-dark);margin-bottom:4px;">${escapeHtml(etiqueta)}</div>` : ''}
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;background:#fdecea;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#c62828;font-weight:800;text-transform:uppercase;margin-bottom:3px;">Antes</div>
+              <div style="font-size:13px;color:var(--teal-dark);font-weight:600;">${escapeHtml(antes || '—')}</div>
+            </div>
+            <div style="font-size:16px;color:#96a2a8;">→</div>
+            <div style="flex:1;background:#e3f6ea;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#237a45;font-weight:800;text-transform:uppercase;margin-bottom:3px;">Después</div>
+              <div style="font-size:13px;color:var(--teal-dark);font-weight:600;">${escapeHtml(despues || '—')}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } else {
+    bloqueDetalle = `<div style="background:var(--gray-light);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--teal-dark);font-weight:600;white-space:pre-wrap;margin-top:4px;">${escapeHtml(a.detalle || '—')}</div>`;
+  }
+
+  document.getElementById('detalleAuditoriaCuerpo').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${icono}</div>
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--teal-dark);">${escapeHtml(a.accion || 'Acción')}</div>
+        <div style="font-size:11.5px;color:#96a2a8;">📅 ${escapeHtml(a.fecha || '—')}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#96a2a8;text-transform:uppercase;font-weight:800;margin-bottom:4px;">👤 Quién lo hizo</div>
+    <div style="font-size:13.5px;color:var(--teal-dark);font-weight:600;margin-bottom:16px;">${escapeHtml(a.usuario || '—')}</div>
+    <div style="font-size:11px;color:#96a2a8;text-transform:uppercase;font-weight:800;margin-bottom:4px;">📋 Detalle completo del cambio</div>
+    ${bloqueDetalle}
+  `;
+  document.getElementById('detalleAuditoriaModal').style.display = 'flex';
+}
+function cerrarDetalleAuditoria(){
+  document.getElementById('detalleAuditoriaModal').style.display = 'none';
+}
+let auditoriaCache = [];
 async function cargarAuditoria(){
   const tbody = document.getElementById('tableBodyAuditoria');
   const empty = document.getElementById('emptyStateAuditoria');
@@ -5669,8 +5828,9 @@ async function cargarAuditoria(){
     }
     table.style.display='table'; empty.style.display='none';
     const ordenado = data.slice().reverse().slice(0, 100);
+    auditoriaCache = ordenado;
     tbody.innerHTML = ordenado.map((a,i)=>
-      `<tr><td>${i+1}</td><td>${escapeHtml(a.fecha||'')}</td><td>${escapeHtml(a.usuario||'')}</td><td>${escapeHtml(a.accion||'')}</td><td>${escapeHtml(a.detalle||'')}</td></tr>`
+      `<tr class="fila-clicable" onclick="verDetalleAuditoria(${i})" title="Clic para ver el detalle completo de este cambio"><td>${i+1}</td><td>${escapeHtml(a.fecha||'')}</td><td>${escapeHtml(a.usuario||'')}</td><td>${escapeHtml(a.accion||'')}</td><td>${escapeHtml(a.detalle||'')}</td></tr>`
     ).join('');
   }catch(err){ console.error('No se pudo cargar la auditoría:', err); }
 }
@@ -5731,6 +5891,8 @@ async function crearUsuarioAdmin(){
 async function guardarPermisosUsuario(usuario, nuevoPermiso){
   if(!isLiveEnabled()) return;
   const permisoFinal = normalizarPermisoInput(nuevoPermiso);
+  const previo = usuariosCache.find(u=> u.usuario === usuario);
+  const permisoAntes = previo ? (previo.permisos || 'usuario') : '(desconocido)';
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -5738,13 +5900,15 @@ async function guardarPermisosUsuario(usuario, nuevoPermiso){
       body: JSON.stringify({sheet:'usuarios', action:'cambiarPermisos', usuario, permisos: permisoFinal})
     });
     alert('Permisos actualizados para "' + usuario + '".');
-    registrarAuditoria('Cambió permisos', usuario + ' → ' + permisoFinal);
+    registrarAuditoria('Cambió permisos de "' + usuario + '"', permisoAntes + ' → ' + permisoFinal);
     setTimeout(cargarUsuariosAdmin, 1000);
   }catch(err){ console.error(err); alert('No se pudo actualizar el permiso.'); }
 }
 
 async function guardarProvinciaUsuario(usuario, nuevaProvincia){
   if(!isLiveEnabled()) return;
+  const previo = usuariosCache.find(u=> u.usuario === usuario);
+  const provinciaAntes = previo ? (previo.provinciaAsignada || 'Sin restricción') : '(desconocido)';
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -5752,7 +5916,7 @@ async function guardarProvinciaUsuario(usuario, nuevaProvincia){
       body: JSON.stringify({sheet:'usuarios', action:'cambiarProvincia', usuario, provinciaAsignada: nuevaProvincia})
     });
     alert('Provincia/sistema actualizado para "' + usuario + '"' + (nuevaProvincia ? (': ' + nuevaProvincia) : ' (sin restricción)') + '.');
-    registrarAuditoria('Cambió provincia asignada', usuario + ' → ' + (nuevaProvincia || 'Sin restricción'));
+    registrarAuditoria('Cambió provincia asignada de "' + usuario + '"', provinciaAntes + ' → ' + (nuevaProvincia || 'Sin restricción'));
     setTimeout(cargarUsuariosAdmin, 1000);
   }catch(err){ console.error(err); alert('No se pudo actualizar la provincia.'); }
 }
@@ -5791,7 +5955,7 @@ async function editarEmailUsuario(usuario, emailActual){
       body: JSON.stringify({action:'cambiarEmail', usuario, email: limpio})
     });
     alert('Correo actualizado para "' + usuario + '".');
-    registrarAuditoria('Actualizó el correo de un usuario', usuario);
+    registrarAuditoria('Actualizó el correo de "' + usuario + '"', (emailActual || 'sin correo') + ' → ' + (limpio || 'sin correo'));
     cargarUsuariosAdmin();
   }catch(err){ console.error(err); alert('No se pudo actualizar el correo.'); }
 }
@@ -5820,6 +5984,7 @@ async function eliminarUsuarioAdmin(usuario){
     return;
   }
   if(!(await confirmarPersonalizado('¿Eliminar permanentemente al usuario "' + usuario + '"? Esta acción no se puede deshacer.'))) return;
+  sonarPapelera();
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -5883,6 +6048,7 @@ function showApp(){
   const navUsers = document.getElementById('nav-users');
   if(navUsers) navUsers.style.display = isMasterUser() ? 'flex' : 'none';
   const navPapelera = document.getElementById('nav-papelera'); if(navPapelera) navPapelera.style.display = isMasterUser() ? 'flex' : 'none';
+  actualizarPapeleraFlotante();
   const secA = document.getElementById('sectionLabelAdmin'); if(secA) secA.style.display = isMasterUser() ? 'block' : 'none';
   const navFallas = document.getElementById('nav-fallas'); if(navFallas) navFallas.style.display = isMasterUser() ? 'flex' : 'none';
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeEditarEstado() ? 'flex' : 'none';
@@ -7334,6 +7500,7 @@ async function refrescarPermisosPropios(){
     const navUsers = document.getElementById('nav-users');
     if(navUsers) navUsers.style.display = isMasterUser() ? 'flex' : 'none';
   const navPapelera = document.getElementById('nav-papelera'); if(navPapelera) navPapelera.style.display = isMasterUser() ? 'flex' : 'none';
+  actualizarPapeleraFlotante();
   const secA = document.getElementById('sectionLabelAdmin'); if(secA) secA.style.display = isMasterUser() ? 'block' : 'none';
   const navFallas = document.getElementById('nav-fallas'); if(navFallas) navFallas.style.display = isMasterUser() ? 'flex' : 'none';
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeEditarEstado() ? 'flex' : 'none';
@@ -7919,6 +8086,49 @@ function sonarAlertaCritica(){
   }catch(e){ /* audio no disponible, se ignora */ }
   if(navigator.vibrate) navigator.vibrate([160,80,160,80,160]);
 }
+// Sonido de "papel arrugándose" (tipo papelera de Windows) — se genera con ráfagas cortas de ruido
+// filtrado, en vez de un tono limpio, para que suene crujiente como papel real.
+function sonarPapelera(){
+  try{
+    const ctx = obtenerAudioContext();
+    if(!ctx) return;
+    const duracionTotal = 0.4;
+    const bufferSize = Math.floor(ctx.sampleRate * duracionTotal);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const datos = buffer.getChannelData(0);
+
+    // Ruido blanco, pero organizado en "crujidos" cortos (ráfagas) con silencios entre medio,
+    // para que no suene como estática continua sino como arrugones sucesivos de papel.
+    let i = 0;
+    while(i < bufferSize){
+      const duracionCrujido = Math.floor(ctx.sampleRate * (0.01 + Math.random()*0.03));
+      const esCrujido = Math.random() > 0.35;
+      for(let j = 0; j < duracionCrujido && (i+j) < bufferSize; j++){
+        datos[i+j] = esCrujido ? (Math.random()*2 - 1) : 0;
+      }
+      i += duracionCrujido;
+    }
+
+    const fuente = ctx.createBufferSource();
+    fuente.buffer = buffer;
+
+    // Filtro pasa-banda que se mueve durante el sonido, dando esa textura "arrugada" característica.
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'bandpass';
+    filtro.frequency.setValueAtTime(2200, ctx.currentTime);
+    filtro.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + duracionTotal);
+    filtro.Q.value = 0.8;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duracionTotal);
+
+    fuente.connect(filtro); filtro.connect(gain); gain.connect(ctx.destination);
+    fuente.start(); fuente.stop(ctx.currentTime + duracionTotal);
+  }catch(e){ /* audio no disponible, se ignora */ }
+  if(navigator.vibrate) navigator.vibrate([40,20,30,20,40]);
+}
 
 function mostrarToast(titulo, mensaje, tipo){
   const cont = document.getElementById('toastContainer');
@@ -8415,27 +8625,69 @@ function renderAll(){
   if(gemeloVisible && gemeloVisible.classList.contains('active')) renderGemeloDigital();
 }
 
+// Arma un resumen con TODOS los datos de una incidencia, para dejar constancia completa en Auditoría
+// cuando se envía a papelera, se restaura, o se elimina definitivamente.
+function snapshotCompletoIncidencia(tabla, rec){
+  if(!rec) return 'Registro no encontrado (puede que ya no exista en la lista local).';
+  const lineas = tabla === 'sistema' ? [
+    `Fecha: ${rec.fecha || '—'}`,
+    `Provincia: ${rec.provincia || '—'}`,
+    `Sistema: ${rec.sistema || '—'}`,
+    `Ruta / Corredor: ${rec.detalle || '—'}`,
+    `Ficha: ${rec.ficha || '—'}`,
+    `Falla: ${rec.falla || '—'}`,
+    `Veces ocurrida: ${rec.veces || '—'}`,
+    `Reportada antes: ${rec.reportada || '—'}`,
+    `Estado: ${rec.estado || '—'}`,
+    `Resolución: ${rec.resolucion || '—'}`,
+    `Asignado a: ${rec.asignadoA || '—'}`,
+    `Registrado por: ${rec.registradoPor || '—'}`,
+    `Registrado el: ${rec.registradoEl || '—'}`,
+    `Resuelto por: ${rec.resueltoPor || '—'}`,
+    `Hora resuelta: ${rec.horaResuelta || '—'}`
+  ] : [
+    `Fecha: ${rec.fecha || '—'}`,
+    `Provincia: ${rec.provincia || '—'}`,
+    `Estación: ${rec.estacion || '—'}`,
+    `Gate / TOM: ${rec.gate || '—'}`,
+    `Falla: ${rec.falla || '—'}`,
+    `Veces ocurrida: ${rec.veces || '—'}`,
+    `Reportada antes: ${rec.reportada || '—'}`,
+    `Estado: ${rec.estado || '—'}`,
+    `Comentario: ${rec.comentario || '—'}`,
+    `Asignado a: ${rec.asignadoA || '—'}`,
+    `Registrado por: ${rec.registradoPor || '—'}`,
+    `Registrado el: ${rec.registradoEl || '—'}`,
+    `Resuelto por: ${rec.resueltoPor || '—'}`,
+    `Hora resuelta: ${rec.horaResuelta || '—'}`
+  ];
+  return lineas.join('\n');
+}
 async function eliminarIncidenciaSistema(id){
   if(!isMasterUser()) return;
   if(!(await confirmarPersonalizado('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.'))) return;
+  sonarPapelera();
   const rec = records.find(r=>r.id===id);
   if(rec) rec.eliminado = 'si';
   saveRecords();
   updateSidebarCount();
   renderTableSistema();
+  actualizarPapeleraFlotante();
   actualizarEstadoEnSheet('sistema', id, {eliminado: 'si'});
-  registrarAuditoria('Envió a papelera', 'Sistema de Transporte #' + id);
+  registrarAuditoria('Envió a papelera (Sistema de Transporte #' + id + ')', snapshotCompletoIncidencia('sistema', rec));
 }
 async function eliminarIncidenciaVt(id){
   if(!isMasterUser()) return;
   if(!(await confirmarPersonalizado('¿Enviar esta incidencia a la papelera? Podrás restaurarla después desde "🗑 Papelera" mientras no la elimines definitivamente.'))) return;
+  sonarPapelera();
   const rec = vtRecords.find(r=>r.id===id);
   if(rec) rec.eliminado = 'si';
   saveVtRecords();
   updateSidebarCount();
   renderTableVt();
+  actualizarPapeleraFlotante();
   actualizarEstadoEnSheet('vt', id, {eliminado: 'si'});
-  registrarAuditoria('Envió a papelera', 'Validador/Torniquete #' + id);
+  registrarAuditoria('Envió a papelera (Validador/Torniquete #' + id + ')', snapshotCompletoIncidencia('vt', rec));
 }
 function restaurarIncidencia(tabla, id){
   if(!isMasterUser()) return;
@@ -8446,11 +8698,15 @@ function restaurarIncidencia(tabla, id){
   updateSidebarCount();
   renderPapelera();
   actualizarEstadoEnSheet(tabla, id, {eliminado: 'no'});
-  registrarAuditoria('Restauró de la papelera', (tabla==='sistema'?'Sistema de Transporte':'Validador/Torniquete') + ' #' + id);
+  registrarAuditoria('Restauró de la papelera (' + (tabla==='sistema'?'Sistema de Transporte':'Validador/Torniquete') + ' #' + id + ')', snapshotCompletoIncidencia(tabla, rec));
 }
 async function eliminarDefinitivamente(tabla, id){
   if(!isMasterUser()) return;
   if(!(await confirmarPersonalizado('¿ELIMINAR DEFINITIVAMENTE esta incidencia? Esta acción NO se puede deshacer, ni siquiera desde la papelera.'))) return;
+  sonarPapelera();
+  const list = tabla === 'sistema' ? records : vtRecords;
+  const rec = list.find(r=>r.id===id);
+  const contexto = snapshotCompletoIncidencia(tabla, rec);
   if(tabla === 'sistema'){
     records = records.filter(r=>r.id!==id);
     saveRecords();
@@ -8461,7 +8717,7 @@ async function eliminarDefinitivamente(tabla, id){
   updateSidebarCount();
   renderPapelera();
   deleteFromSheet(tabla, id);
-  registrarAuditoria('Eliminó definitivamente', (tabla==='sistema'?'Sistema de Transporte':'Validador/Torniquete') + ' #' + id);
+  registrarAuditoria('Eliminó definitivamente (' + (tabla==='sistema'?'Sistema de Transporte':'Validador/Torniquete') + ' #' + id + ')', contexto);
 }
 
 /* ================= EDITAR ESTADO DE INCIDENCIA (Fiscalizador / Técnico / Admin) ================= */
@@ -8679,7 +8935,9 @@ async function guardarEdicionIncidencia(){
   marcarEdicionLocal(id);
 
   actualizarEstadoEnSheet(tabla, id, updates);
-  registrarAuditoria('Respondió incidencia', tabla + ' #' + id + ' → estado: ' + nuevoEstado);
+  const referencia = tabla === 'sistema' ? (rec.ficha || rec.sistema || '#'+id) : (rec.estacion || '#'+id);
+  const detalleRespuesta = (estadoAnterior !== nuevoEstado ? `Estado: "${estadoAnterior||'—'}" → "${nuevoEstado}"` : `Estado sin cambio: "${nuevoEstado}"`) + (solucionTexto ? ` | Respuesta escrita: "${solucionTexto}"` : '');
+  registrarAuditoria('Respondió incidencia "' + referencia + '" (' + tabla + ' #' + id + ')', detalleRespuesta);
   cerrarEditorIncidencia();
 }
 
@@ -8690,6 +8948,7 @@ async function guardarEdicionDatos(){
   const rec = list.find(r=>String(r.id)===String(id));
   if(!rec) return;
 
+  const antes = Object.assign({}, rec);
   const updates = {};
   leerCamposAdmin(tabla, rec, updates);
 
@@ -8706,7 +8965,13 @@ async function guardarEdicionDatos(){
   marcarEdicionLocal(id);
 
   actualizarEstadoEnSheet(tabla, id, updates);
-  registrarAuditoria('Editó datos originales de incidencia', tabla + ' #' + id);
+
+  // Se arma el detalle real comparando campo por campo qué cambió de verdad.
+  const cambios = camposAdminPara(tabla, rec)
+    .filter(c=> String(antes[c.key]||'') !== String(rec[c.key]||''))
+    .map(c=> `${c.label}: "${antes[c.key]||'—'}" → "${rec[c.key]||'—'}"`);
+  const detalleCambio = cambios.length > 0 ? cambios.join(' | ') : 'Se guardó sin cambios detectados en los campos';
+  registrarAuditoria('Editó datos originales de incidencia (' + tabla + ' #' + id + ')', detalleCambio);
   alert('✔ Datos corregidos guardados.');
   cerrarEditorIncidencia();
 }
@@ -8852,9 +9117,11 @@ async function aplicarCambioEstadoLote(tabla){
   const nuevoEstado = document.getElementById(tabla === 'sistema' ? 'bulkEstadoSistema' : 'bulkEstadoVt').value;
   if(!(await confirmarPersonalizado(`¿Cambiar el estado de ${seleccionados.length} incidencia(s) a "${nuevoEstado}"?`))) return;
   const list = tabla === 'sistema' ? records : vtRecords;
+  const referencias = [];
   seleccionados.forEach(idStr=>{
     const rec = list.find(r=> String(r.id) === idStr);
     if(!rec) return;
+    referencias.push(tabla === 'sistema' ? (rec.ficha || rec.sistema || idStr) : (rec.estacion || idStr));
     rec.estado = nuevoEstado;
     if(nuevoEstado==='Resuelta' || nuevoEstado==='SOLUCIONADO' || nuevoEstado==='OK'){
       rec.horaResuelta = fechaHoraRD();
@@ -8863,7 +9130,7 @@ async function aplicarCambioEstadoLote(tabla){
     actualizarEstadoEnSheet(tabla, rec.id, {estado: nuevoEstado, horaResuelta: rec.horaResuelta||'', resueltoPor: rec.resueltoPor||''});
   });
   if(tabla === 'sistema') saveRecords(); else saveVtRecords();
-  registrarAuditoria('Cambio de estado en lote', seleccionados.length + ' incidencia(s) → ' + nuevoEstado);
+  registrarAuditoria('Cambio de estado en lote → "' + nuevoEstado + '"', `${seleccionados.length} incidencia(s): ${referencias.join(', ')}`);
   if(tabla === 'sistema') renderTableSistema(); else renderTableVt();
 }
 async function enviarPapeleraLote(tabla){
@@ -8871,15 +9138,19 @@ async function enviarPapeleraLote(tabla){
   const seleccionados = idsSeleccionados(tabla);
   if(seleccionados.length === 0) return;
   if(!(await confirmarPersonalizado(`¿Enviar ${seleccionados.length} incidencia(s) a la papelera?`))) return;
+  sonarPapelera();
   const list = tabla === 'sistema' ? records : vtRecords;
+  const referencias = [];
   seleccionados.forEach(idStr=>{
     const rec = list.find(r=> String(r.id) === idStr);
     if(!rec) return;
+    referencias.push(tabla === 'sistema' ? (rec.ficha || rec.sistema || idStr) : (rec.estacion || idStr));
     rec.eliminado = 'si';
     actualizarEstadoEnSheet(tabla, rec.id, {eliminado: 'si'});
   });
   if(tabla === 'sistema') saveRecords(); else saveVtRecords();
-  registrarAuditoria('Envío a papelera en lote', seleccionados.length + ' incidencia(s)');
+  registrarAuditoria('Envío a papelera en lote', `${seleccionados.length} incidencia(s): ${referencias.join(', ')}`);
+  actualizarPapeleraFlotante();
   if(tabla === 'sistema') renderTableSistema(); else renderTableVt();
 }
 
@@ -8889,7 +9160,31 @@ function registrosPapelera(){
   return sist.concat(vt);
 }
 
+function actualizarPapeleraFlotante(){
+  const btn = document.getElementById('btnPapeleraFlotante');
+  if(!btn) return;
+  if(!isMasterUser()){ btn.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  const cantidad = registrosPapelera().length;
+  const badge = document.getElementById('papeleraFlotanteBadge');
+  const icono = document.getElementById('papeleraFlotanteIcono');
+  if(cantidad > 0){
+    badge.textContent = cantidad > 99 ? '99+' : cantidad;
+    badge.style.display = 'flex';
+    btn.style.background = '#FFF3EC';
+    btn.style.color = 'var(--orange)';
+    icono.textContent = '🗑️';
+    btn.title = `Papelera de reciclaje — ${cantidad} incidencia(s) dentro`;
+  } else {
+    badge.style.display = 'none';
+    btn.style.background = 'var(--white)';
+    btn.style.color = 'var(--gray-text)';
+    icono.textContent = '🗑️';
+    btn.title = 'Papelera de reciclaje — vacía';
+  }
+}
 function renderPapelera(){
+  actualizarPapeleraFlotante();
   const tbody = document.getElementById('tableBodyPapelera');
   const empty = document.getElementById('emptyStatePapelera');
   const table = document.getElementById('dataTablePapelera');
