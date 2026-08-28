@@ -1389,6 +1389,9 @@
   }
   .omsa-bus-fila:hover{ box-shadow:0 6px 16px rgba(0,61,84,.12); transform:translateX(2px); }
   .omsa-bus-fila.omsa-offline{ background:#fffaf9; border-color:#f8e2e0; }
+  .omsa-bus-mantenimiento{
+    font-size:10.5px; color:#7a8a92; font-weight:600; white-space:nowrap; margin-right:28px;
+  }
   .omsa-bus-luz{
     position:absolute; top:50%; right:16px; transform:translateY(-50%);
     width:9px; height:9px; border-radius:50%;
@@ -1543,6 +1546,7 @@
   }
   @media(max-width:768px){
     .omsa-bus-fila{padding:8px 12px;gap:10px;}
+    .omsa-bus-mantenimiento{font-size:9px;margin-right:18px;}
     .omsa-bus-ficha{font-size:11.5px;}
     .omsa-bus-badge{font-size:8px;padding:3px 7px;letter-spacing:0;margin-right:16px;}
     .omsa-bus-luz{width:7px;height:7px;right:10px;}
@@ -1675,7 +1679,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.56.5</div>
+<div id="versionLabel">V4.57.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1769,7 +1773,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.56.5
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.57.1
     </div>
   </div>
 </div>
@@ -3459,6 +3463,12 @@
         <button class="omsa-filtro-btn" data-filtro="fuera" onclick="filtrarFlotaOmsa('fuera')">
           <span class="omsa-filtro-punto mal"></span><span class="omsa-filtro-num" id="omsaCountMal">0</span><span class="omsa-filtro-lbl">Fuera de servicio</span>
         </button>
+        <button class="omsa-filtro-btn" data-filtro="conMantenimiento" onclick="filtrarFlotaOmsa('conMantenimiento')">
+          <span class="omsa-filtro-num" id="omsaCountConMant">0</span><span class="omsa-filtro-lbl">🔧 Con mantenimiento</span>
+        </button>
+        <button class="omsa-filtro-btn" data-filtro="sinMantenimiento" onclick="filtrarFlotaOmsa('sinMantenimiento')">
+          <span class="omsa-filtro-num" id="omsaCountSinMant">0</span><span class="omsa-filtro-lbl">⚠️ Sin mantenimiento</span>
+        </button>
       </div>
       <div id="omsaFlotaGrid"><div class="empty-state">Cargando flota...</div></div>
     </div>
@@ -3502,6 +3512,16 @@
       <div id="omsaComentarioBox" style="display:none;">
         <label>Comentario — motivo, si ya se está arreglando, cuándo estaría disponible, etc.</label>
         <textarea id="omsaComentario" rows="3" placeholder="Ej: Falla en el aire acondicionado, en taller, disponible aprox. el viernes..."></textarea>
+      </div>
+
+      <div id="omsaMantenimientoBox" style="display:none;margin-top:6px;">
+        <h3 style="font-size:14px;color:var(--teal);margin:14px 0 10px 0;">🔧 Mantenimiento</h3>
+        <div id="omsaUltimoMantenimientoTexto" style="font-size:12px;color:var(--gray-text);margin-bottom:10px;"></div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input type="text" id="omsaNuevaNotaMantenimiento" placeholder="Ej: Cambio de aceite y revisión de frenos" style="flex:1;">
+          <button class="btn-guardar" style="white-space:nowrap;" onclick="registrarMantenimientoOmsa()">🔧 Registrar</button>
+        </div>
+        <div id="omsaListaMantenimiento"></div>
       </div>
 
       <button id="omsaBtnEliminarModal" class="omsa-bus-eliminar" style="display:none;margin-bottom:4px;" onclick="eliminarBusOmsa(omsaFichaEnEdicion); cerrarModalOmsaDetalle();">🗑️ Quitar de la flota</button>
@@ -3704,7 +3724,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.56.5'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.57.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5304,15 +5324,22 @@ function filtrarFlotaOmsa(filtro){
   });
   renderFlotaOmsa();
 }
+function fechaCortaHoyRD(){
+  return claveDia(hoyRD());
+}
 function renderFlotaOmsa(){
   const cont = document.getElementById('omsaFlotaGrid');
   if(!cont) return;
 
   const totalOk = flotaOmsa.filter(b=> String(b.estado).toLowerCase()==='habilitado').length;
   const totalMal = flotaOmsa.length - totalOk;
+  const totalConMant = flotaOmsa.filter(b=> !!b.ultimoMantenimiento).length;
+  const totalSinMant = flotaOmsa.length - totalConMant;
   const elTodos = document.getElementById('omsaCountTodos'); if(elTodos) elTodos.textContent = flotaOmsa.length;
   const elOk = document.getElementById('omsaCountOk'); if(elOk) elOk.textContent = totalOk;
   const elMal = document.getElementById('omsaCountMal'); if(elMal) elMal.textContent = totalMal;
+  const elConMant = document.getElementById('omsaCountConMant'); if(elConMant) elConMant.textContent = totalConMant;
+  const elSinMant = document.getElementById('omsaCountSinMant'); if(elSinMant) elSinMant.textContent = totalSinMant;
 
   if(flotaOmsa.length === 0){
     cont.innerHTML = '<div class="empty-state">Todavía no hay autobuses registrados en la flota. Agrega el primero arriba.</div>';
@@ -5323,6 +5350,8 @@ function renderFlotaOmsa(){
     const ok = String(b.estado).toLowerCase() === 'habilitado';
     if(omsaFiltroActual === 'operacion') return ok;
     if(omsaFiltroActual === 'fuera') return !ok;
+    if(omsaFiltroActual === 'conMantenimiento') return !!b.ultimoMantenimiento;
+    if(omsaFiltroActual === 'sinMantenimiento') return !b.ultimoMantenimiento;
     return true;
   });
   if(visibles.length === 0){
@@ -5336,6 +5365,7 @@ function renderFlotaOmsa(){
       ${renderMiniBusOmsa(b.ficha)}
       <div class="omsa-bus-ficha">${escapeHtml(String(b.ficha))}</div>
       <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'● En operación':'● Fuera de servicio'}</span>
+      <span class="omsa-bus-mantenimiento" title="Último mantenimiento">${b.ultimoMantenimiento ? '🔧 ' + escapeHtml(String(b.ultimoMantenimiento)) : '🔧 Sin mantenimiento registrado'}</span>
       <div class="omsa-bus-luz"></div>
     </div>`;
   }).join('') + '</div>';
@@ -5361,6 +5391,7 @@ function abrirModalOmsaCompleto(){
   document.getElementById('omsaActivoFijoRouter').value = '';
   document.getElementById('omsaComentario').value = '';
   document.getElementById('omsaComentarioBox').style.display = 'none';
+  document.getElementById('omsaMantenimientoBox').style.display = 'none';
   document.getElementById('omsaBtnEliminarModal').style.display = 'none';
   document.getElementById('omsaModalTiempoFuera').style.display = 'none';
   document.getElementById('omsaDetalleModal').style.display = 'flex';
@@ -5389,7 +5420,48 @@ function abrirModalOmsaEditar(ficha){
   } else {
     tiempoFueraEl.style.display = 'none';
   }
+  document.getElementById('omsaMantenimientoBox').style.display = 'block';
+  renderMantenimientoOmsa(bus);
   document.getElementById('omsaDetalleModal').style.display = 'flex';
+}
+function renderMantenimientoOmsa(bus){
+  const notas = (bus.historialMantenimiento || '').split('|||').filter(Boolean).map(entrada=>{
+    const [fecha, autor, texto] = entrada.split('::');
+    return {fecha, autor, texto};
+  }).reverse();
+  const elUltimo = document.getElementById('omsaUltimoMantenimientoTexto');
+  elUltimo.textContent = bus.ultimoMantenimiento ? ('Último mantenimiento: ' + bus.ultimoMantenimiento) : 'Todavía no se ha registrado ningún mantenimiento para este autobús.';
+  const cont = document.getElementById('omsaListaMantenimiento');
+  cont.innerHTML = notas.length === 0 ? '' : notas.map(n=>`<div class="fdi-card" style="cursor:default;">
+    <div class="fdi-fila"><span class="fdi-lbl">📅 ${escapeHtml(n.fecha||'—')}</span><span class="fdi-val">${escapeHtml(n.autor||'—')}</span></div>
+    <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(n.texto||'')}</span></div>
+  </div>`).join('');
+}
+async function registrarMantenimientoOmsa(){
+  const input = document.getElementById('omsaNuevaNotaMantenimiento');
+  const nota = input.value.trim();
+  if(!nota){ alert('Escribe qué mantenimiento se le hizo antes de registrarlo.'); return; }
+  if(!omsaFichaEnEdicion || !isLiveEnabled()) return;
+  const bus = flotaOmsa.find(b => String(b.ficha) === String(omsaFichaEnEdicion));
+  if(!bus) return;
+
+  const fecha = fechaHoraRD();
+  const autor = currentUser ? currentUser.nombre : '';
+  const nuevaEntrada = fecha + '::' + autor + '::' + nota;
+  bus.historialMantenimiento = bus.historialMantenimiento ? (bus.historialMantenimiento + '|||' + nuevaEntrada) : nuevaEntrada;
+  bus.ultimoMantenimiento = fecha;
+  input.value = '';
+  renderMantenimientoOmsa(bus);
+  renderFlotaOmsa();
+
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'flotaomsa', action:'registrarMantenimientoOmsa', ficha: omsaFichaEnEdicion, fecha, autor, nota})
+    });
+    registrarAuditoria('Registró mantenimiento de autobús "' + omsaFichaEnEdicion + '"', nota);
+  }catch(err){ console.error('No se pudo registrar el mantenimiento:', err); alert('Ocurrió un error al registrar el mantenimiento.'); }
 }
 function cerrarModalOmsaDetalle(){
   document.getElementById('omsaDetalleModal').style.display = 'none';
