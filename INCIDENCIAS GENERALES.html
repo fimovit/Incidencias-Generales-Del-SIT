@@ -1419,6 +1419,13 @@
   @media(max-width:768px){
     .mant-kpi-row{grid-template-columns:1fr;gap:10px;}
   }
+  .omsa-modulo-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #eef2f4;}
+  .omsa-modulo-btn{
+    background:none;border:none;padding:12px 18px;font-size:13.5px;font-weight:800;color:var(--gray-text);
+    cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s ease;
+  }
+  .omsa-modulo-btn:hover{color:var(--teal-dark);}
+  .omsa-modulo-btn.activo{color:var(--teal-dark);border-bottom-color:var(--orange);}
   .omsa-filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
 
   .omsa-filtro-btn{
@@ -1445,6 +1452,9 @@
   .omsa-bus-fila.omsa-offline{ background:#fffaf9; border-color:#f8e2e0; }
   .omsa-bus-mantenimiento{
     font-size:10.5px; color:#7a8a92; font-weight:600; white-space:nowrap; margin-right:28px;
+  }
+  .omsa-bus-corredor{
+    font-size:10.5px; color:var(--teal); font-weight:700; white-space:nowrap; background:#e7f1f4; padding:3px 9px; border-radius:10px;
   }
   .omsa-bus-luz{
     position:absolute; top:50%; right:16px; transform:translateY(-50%);
@@ -1733,7 +1743,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.59.0</div>
+<div id="versionLabel">V4.64.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1827,7 +1837,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.59.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.64.0
     </div>
   </div>
 </div>
@@ -3528,9 +3538,14 @@
     <div class="topbar">
       <div>
         <img class="topbar-logo logo-color-img" alt="FIMOVIT">
-        <h1>🚌 Estado Autobuses — OP OMSA Santiago</h1>
+        <h1>🚌 Estado Autobuses</h1>
         <div class="subtitle">Estado en vivo de la flota — verde: en operación, rojo: fuera de servicio.</div>
       </div>
+    </div>
+
+    <div class="omsa-modulo-tabs">
+      <button class="omsa-modulo-btn activo" data-modulo="Santiago" onclick="cambiarModuloOmsa('Santiago')">OP OMSA SANTIAGO</button>
+      <button class="omsa-modulo-btn" data-modulo="Santo Domingo" onclick="cambiarModuloOmsa('Santo Domingo')">SANTO DOMINGO</button>
     </div>
 
     <div class="card" style="margin-bottom:22px;">
@@ -3543,7 +3558,13 @@
     </div>
 
     <div class="card">
-      <h2 style="margin-bottom:6px;">Flota activa</h2>
+      <h2 style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>Flota activa</span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" style="font-size:12px;padding:8px 16px;" onclick="exportarMantenimientoOmsaExcel()">📊 Exportar a Excel</button>
+          <button class="btn btn-secondary" style="font-size:12px;padding:8px 16px;" onclick="exportarAutobusesExcel()">📋 Exportar a Excel Autobuses</button>
+        </span>
+      </h2>
       <div class="subtitle" style="margin-bottom:16px;">Haz clic en un autobús para ver o editar sus datos.</div>
       <div class="omsa-filtros" id="omsaFiltros">
         <button class="omsa-filtro-btn activo" data-filtro="todos" onclick="filtrarFlotaOmsa('todos')">
@@ -3561,8 +3582,39 @@
         <button class="omsa-filtro-btn" data-filtro="sinMantenimiento" onclick="filtrarFlotaOmsa('sinMantenimiento')">
           <span class="omsa-filtro-num" id="omsaCountSinMant">0</span><span class="omsa-filtro-lbl">⚠️ Sin mantenimiento</span>
         </button>
+        <button class="omsa-filtro-btn omsa-filtro-sd-solo" style="display:none;" data-filtro="categoriaReformado" onclick="filtrarFlotaOmsa('categoriaReformado')">
+          <span class="omsa-filtro-num" id="omsaCountReformado">0</span><span class="omsa-filtro-lbl">🛣️ Corredor Reformado</span>
+        </button>
+        <button class="omsa-filtro-btn omsa-filtro-sd-solo" style="display:none;" data-filtro="categoriaOmsa" onclick="filtrarFlotaOmsa('categoriaOmsa')">
+          <span class="omsa-filtro-num" id="omsaCountOmsaCat">0</span><span class="omsa-filtro-lbl">🚌 OMSA</span>
+        </button>
       </div>
       <div id="omsaFlotaGrid"><div class="empty-state">Cargando flota...</div></div>
+    </div>
+  </div>
+
+  <div id="omsaCorredorModal" style="display:none;position:fixed;inset:0;z-index:415;align-items:center;justify-content:center;background:rgba(0,26,36,.65);">
+    <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+      <button onclick="cerrarModalOmsaCorredor()" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+      <h2 style="margin-bottom:6px;">🚌 ¿A qué corredor pertenece?</h2>
+      <div class="subtitle" style="margin-bottom:18px;">Ficha: <b id="omsaCorredorFichaTexto">—</b></div>
+
+      <label class="req">Categoría</label>
+      <select id="omsaCategoriaCorredor" onchange="actualizarListaCorredores()">
+        <option value="">Selecciona una categoría...</option>
+        <option value="reformado">Corredor Reformado</option>
+        <option value="omsa">OMSA</option>
+      </select>
+
+      <label class="req">Corredor específico</label>
+      <select id="omsaCorredorEspecifico">
+        <option value="">Primero elige una categoría...</option>
+      </select>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="cerrarModalOmsaCorredor()">Cancelar</button>
+        <button class="btn btn-primary" onclick="continuarConCorredor()">Continuar →</button>
+      </div>
     </div>
   </div>
 
@@ -3577,6 +3629,19 @@
         <option value="habilitado">✔ En operación</option>
         <option value="deshabilitado">✕ Fuera de servicio</option>
       </select>
+
+      <div id="omsaCorredorEditBox" style="display:none;">
+        <label>Categoría del corredor</label>
+        <select id="omsaCategoriaCorredorEdit" onchange="actualizarListaCorredoresEdit()">
+          <option value="">Selecciona una categoría...</option>
+          <option value="reformado">Corredor Reformado</option>
+          <option value="omsa">OMSA</option>
+        </select>
+        <label>Corredor específico</label>
+        <select id="omsaCorredorEspecificoEdit">
+          <option value="">Primero elige una categoría...</option>
+        </select>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px;">
         <div>
@@ -3816,7 +3881,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.59.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.64.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -4303,19 +4368,21 @@ async function cargarUsuariosAdmin(){
   table.style.display = 'table';
   empty.style.display = 'none';
   tbody.innerHTML = '';
+  const miPermiso = (currentUser && currentUser.permisos) ? currentUser.permisos.toLowerCase() : '';
   usuarios.forEach((u,i)=>{
     const tr = document.createElement('tr');
     const permisoActual = u.permisos || 'usuario';
     const provinciaActual = u.provinciaAsignada || '';
+    const bloqueadoParaMi = (miPermiso === 'admin' && permisoActual === 'admin_plus');
     tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(u.usuario||'')}</td><td>${escapeHtml(u.nombre||'')}</td>
       <td>
-        <select id="permSel_${i}" style="width:auto;padding:6px 10px;">
+        <select id="permSel_${i}" style="width:auto;padding:6px 10px;" ${bloqueadoParaMi?'disabled title="Solo un Administrador Plus puede cambiar los permisos de otro Administrador Plus"':''}>
           <option value="usuario" ${permisoActual==='usuario'?'selected':''}>Usuario</option>
           <option value="fiscalizador" ${permisoActual==='fiscalizador'?'selected':''}>Fiscalizador / Técnico</option>
           <option value="admin" ${permisoActual==='admin'?'selected':''}>Administrador</option>
           <option value="admin_plus" ${permisoActual==='admin_plus'?'selected':''}>Administrador Plus</option>
         </select>
-        <button class="btn-guardar" style="padding:6px 14px;font-size:11px;margin-left:6px;" onclick='guardarPermisosUsuario(${JSON.stringify(u.usuario)}, document.getElementById("permSel_${i}").value)'>Guardar</button>
+        <button class="btn-guardar" style="padding:6px 14px;font-size:11px;margin-left:6px;" ${bloqueadoParaMi?'disabled':''} onclick='guardarPermisosUsuario(${JSON.stringify(u.usuario)}, document.getElementById("permSel_${i}").value)'>Guardar</button>
       </td>
       <td>
         <select id="provSel_${i}" style="width:auto;padding:6px 10px;" ${permisoActual!=='usuario' ? 'title="Solo tiene efecto real en cuentas con permiso Usuario"' : ''}>
@@ -5356,6 +5423,45 @@ function renderGemeloSantoDomingo(){
 
 /* ================= OP OMSA SANTIAGO — FLOTA DE AUTOBUSES ================= */
 let flotaOmsa = [];
+let moduloActivoOmsa = 'Santiago';
+// Admin/Admin Plus siempre ven ambas pestañas. Un Fiscalizador sin restricción también ve ambas.
+// Un Fiscalizador con provincia asignada a Santiago solo ve "OP OMSA SANTIAGO";
+// asignado a Santo Domingo (o a alguno de sus dos sistemas OMSA) solo ve "SANTO DOMINGO".
+function aplicarRestriccionTabsOmsa(){
+  const btnSantiago = document.querySelector('.omsa-modulo-btn[data-modulo="Santiago"]');
+  const btnSD = document.querySelector('.omsa-modulo-btn[data-modulo="Santo Domingo"]');
+  if(!btnSantiago || !btnSD) return;
+
+  let veSantiago = true, veSD = true;
+  if(!isMasterUser()){
+    const asignada = currentUser ? (currentUser.provinciaAsignada || '') : '';
+    if(asignada === 'Santiago' || asignada === 'OP OMSA SANTIAGO'){ veSantiago = true; veSD = false; }
+    else if(asignada === 'Santo Domingo' || asignada === 'OMSA Santo Domingo'){ veSantiago = false; veSD = true; }
+    // sin restricción (asignada === '') => ambas visibles, como ya están por defecto
+  }
+  btnSantiago.style.display = veSantiago ? '' : 'none';
+  btnSD.style.display = veSD ? '' : 'none';
+
+  // Si el módulo activo actual quedó oculto para esta cuenta, cambia automáticamente al que sí puede ver.
+  if(moduloActivoOmsa === 'Santiago' && !veSantiago) cambiarModuloOmsa('Santo Domingo');
+  else if(moduloActivoOmsa === 'Santo Domingo' && !veSD) cambiarModuloOmsa('Santiago');
+}
+function cambiarModuloOmsa(modulo){
+  moduloActivoOmsa = modulo;
+  document.querySelectorAll('.omsa-modulo-btn').forEach(btn=>{
+    btn.classList.toggle('activo', btn.dataset.modulo === modulo);
+  });
+  document.querySelectorAll('.omsa-filtro-sd-solo').forEach(btn=>{
+    btn.style.display = (modulo === 'Santo Domingo') ? 'flex' : 'none';
+  });
+  filtrarFlotaOmsa('todos');
+  renderFlotaOmsa();
+}
+function categoriaCorredorDe(corredor){
+  if(CORREDORES_REFORMADOS.includes(corredor)) return 'reformado';
+  if(OMSA.includes(corredor)) return 'omsa';
+  return '';
+}
 let omsaRelojInterval = null;
 let omsaModalModo = 'agregar'; // 'agregar' | 'editar'
 let omsaFichaEnEdicion = null;
@@ -5423,27 +5529,35 @@ function renderFlotaOmsa(){
   const cont = document.getElementById('omsaFlotaGrid');
   if(!cont) return;
 
-  const totalOk = flotaOmsa.filter(b=> String(b.estado).toLowerCase()==='habilitado').length;
-  const totalMal = flotaOmsa.length - totalOk;
-  const totalConMant = flotaOmsa.filter(b=> !!b.ultimoMantenimiento).length;
-  const totalSinMant = flotaOmsa.length - totalConMant;
-  const elTodos = document.getElementById('omsaCountTodos'); if(elTodos) elTodos.textContent = flotaOmsa.length;
+  const flotaModulo = flotaOmsa.filter(b=> (b.modulo || 'Santiago') === moduloActivoOmsa);
+
+  const totalOk = flotaModulo.filter(b=> String(b.estado).toLowerCase()==='habilitado').length;
+  const totalMal = flotaModulo.length - totalOk;
+  const totalConMant = flotaModulo.filter(b=> !!b.ultimoMantenimiento).length;
+  const totalSinMant = flotaModulo.length - totalConMant;
+  const totalReformado = flotaModulo.filter(b=> categoriaCorredorDe(b.corredor) === 'reformado').length;
+  const totalOmsaCat = flotaModulo.filter(b=> categoriaCorredorDe(b.corredor) === 'omsa').length;
+  const elTodos = document.getElementById('omsaCountTodos'); if(elTodos) elTodos.textContent = flotaModulo.length;
   const elOk = document.getElementById('omsaCountOk'); if(elOk) elOk.textContent = totalOk;
   const elMal = document.getElementById('omsaCountMal'); if(elMal) elMal.textContent = totalMal;
   const elConMant = document.getElementById('omsaCountConMant'); if(elConMant) elConMant.textContent = totalConMant;
   const elSinMant = document.getElementById('omsaCountSinMant'); if(elSinMant) elSinMant.textContent = totalSinMant;
+  const elReformado = document.getElementById('omsaCountReformado'); if(elReformado) elReformado.textContent = totalReformado;
+  const elOmsaCat = document.getElementById('omsaCountOmsaCat'); if(elOmsaCat) elOmsaCat.textContent = totalOmsaCat;
 
-  if(flotaOmsa.length === 0){
-    cont.innerHTML = '<div class="empty-state">Todavía no hay autobuses registrados en la flota. Agrega el primero arriba.</div>';
+  if(flotaModulo.length === 0){
+    cont.innerHTML = '<div class="empty-state">Todavía no hay autobuses registrados en este módulo. Agrega el primero arriba.</div>';
     return;
   }
 
-  const visibles = flotaOmsa.filter(b=>{
+  const visibles = flotaModulo.filter(b=>{
     const ok = String(b.estado).toLowerCase() === 'habilitado';
     if(omsaFiltroActual === 'operacion') return ok;
     if(omsaFiltroActual === 'fuera') return !ok;
     if(omsaFiltroActual === 'conMantenimiento') return !!b.ultimoMantenimiento;
     if(omsaFiltroActual === 'sinMantenimiento') return !b.ultimoMantenimiento;
+    if(omsaFiltroActual === 'categoriaReformado') return categoriaCorredorDe(b.corredor) === 'reformado';
+    if(omsaFiltroActual === 'categoriaOmsa') return categoriaCorredorDe(b.corredor) === 'omsa';
     return true;
   });
   if(visibles.length === 0){
@@ -5456,6 +5570,7 @@ function renderFlotaOmsa(){
     return `<div class="omsa-bus-fila ${ok?'omsa-online':'omsa-offline'}" onclick="abrirModalOmsaEditar('${attrJs(b.ficha)}')" title="Clic para ver todos los datos">
       ${renderMiniBusOmsa(b.ficha)}
       <div class="omsa-bus-ficha">${escapeHtml(String(b.ficha))}</div>
+      ${b.corredor ? `<span class="omsa-bus-corredor" title="Corredor">🛣️ ${escapeHtml(String(b.corredor))}</span>` : ''}
       <span class="omsa-bus-badge ${ok?'ok':'mal'}">${ok?'● En operación':'● Fuera de servicio'}</span>
       <span class="omsa-bus-mantenimiento" title="Último mantenimiento">${b.ultimoMantenimiento ? '🔧 ' + escapeHtml(String(b.ultimoMantenimiento)) : '🔧 Sin mantenimiento registrado'}</span>
       <div class="omsa-bus-luz"></div>
@@ -5463,6 +5578,7 @@ function renderFlotaOmsa(){
   }).join('') + '</div>';
 }
 
+let omsaCorredorSeleccionado = '';
 function abrirModalOmsaCompleto(){
   const input = document.getElementById('omsaNuevaFicha');
   const ficha = input.value.trim();
@@ -5472,6 +5588,44 @@ function abrirModalOmsaCompleto(){
     document.getElementById('err-omsaDup').style.display = 'block';
     return;
   }
+  omsaCorredorSeleccionado = '';
+  if(moduloActivoOmsa === 'Santo Domingo'){
+    document.getElementById('omsaCorredorFichaTexto').textContent = ficha;
+    document.getElementById('omsaCategoriaCorredor').value = '';
+    document.getElementById('omsaCorredorEspecifico').innerHTML = '<option value="">Primero elige una categoría...</option>';
+    document.getElementById('omsaCorredorModal').style.display = 'flex';
+    return;
+  }
+  abrirModalOmsaCompletoPaso2(ficha);
+}
+function actualizarListaCorredores(){
+  const categoria = document.getElementById('omsaCategoriaCorredor').value;
+  const sel = document.getElementById('omsaCorredorEspecifico');
+  const lista = categoria === 'reformado' ? CORREDORES_REFORMADOS : (categoria === 'omsa' ? OMSA : []);
+  sel.innerHTML = lista.length === 0
+    ? '<option value="">Primero elige una categoría...</option>'
+    : lista.map(c=>`<option value="${attrJs(c)}">${escapeHtml(c)}</option>`).join('');
+}
+function cerrarModalOmsaCorredor(){
+  document.getElementById('omsaCorredorModal').style.display = 'none';
+}
+function continuarConCorredor(){
+  const corredor = document.getElementById('omsaCorredorEspecifico').value;
+  if(!corredor){ alert('Selecciona el corredor específico antes de continuar.'); return; }
+  omsaCorredorSeleccionado = corredor;
+  const ficha = document.getElementById('omsaCorredorFichaTexto').textContent;
+  cerrarModalOmsaCorredor();
+  abrirModalOmsaCompletoPaso2(ficha);
+}
+function actualizarListaCorredoresEdit(){
+  const categoria = document.getElementById('omsaCategoriaCorredorEdit').value;
+  const sel = document.getElementById('omsaCorredorEspecificoEdit');
+  const lista = categoria === 'reformado' ? CORREDORES_REFORMADOS : (categoria === 'omsa' ? OMSA : []);
+  sel.innerHTML = lista.length === 0
+    ? '<option value="">Primero elige una categoría...</option>'
+    : lista.map(c=>`<option value="${attrJs(c)}">${escapeHtml(c)}</option>`).join('');
+}
+function abrirModalOmsaCompletoPaso2(ficha){
   omsaModalModo = 'agregar';
   omsaFichaEnEdicion = ficha;
   document.getElementById('omsaModalTitulo').textContent = '🚌 ' + ficha;
@@ -5485,6 +5639,7 @@ function abrirModalOmsaCompleto(){
   document.getElementById('omsaComentarioBox').style.display = 'none';
   document.getElementById('omsaMantenimientoBox').style.display = 'none';
   document.getElementById('omsaBtnEliminarModal').style.display = 'none';
+  document.getElementById('omsaCorredorEditBox').style.display = 'none';
   document.getElementById('omsaModalTiempoFuera').style.display = 'none';
   document.getElementById('omsaDetalleModal').style.display = 'flex';
 }
@@ -5503,6 +5658,19 @@ function abrirModalOmsaEditar(ficha){
   document.getElementById('omsaComentario').value = bus.comentario || '';
   document.getElementById('omsaComentarioBox').style.display = document.getElementById('omsaEstadoSelect').value === 'deshabilitado' ? 'block' : 'none';
   document.getElementById('omsaBtnEliminarModal').style.display = 'block';
+
+  const corredorBox = document.getElementById('omsaCorredorEditBox');
+  if((bus.modulo || 'Santiago') === 'Santo Domingo'){
+    corredorBox.style.display = 'block';
+    const esReformado = CORREDORES_REFORMADOS.includes(bus.corredor);
+    const categoria = esReformado ? 'reformado' : (OMSA.includes(bus.corredor) ? 'omsa' : '');
+    document.getElementById('omsaCategoriaCorredorEdit').value = categoria;
+    actualizarListaCorredoresEdit();
+    document.getElementById('omsaCorredorEspecificoEdit').value = bus.corredor || '';
+  } else {
+    corredorBox.style.display = 'none';
+  }
+
   const tiempoFueraEl = document.getElementById('omsaModalTiempoFuera');
   const ok = String(bus.estado).toLowerCase() === 'habilitado';
   if(!ok){
@@ -5515,6 +5683,105 @@ function abrirModalOmsaEditar(ficha){
   document.getElementById('omsaMantenimientoBox').style.display = 'block';
   renderMantenimientoOmsa(bus);
   document.getElementById('omsaDetalleModal').style.display = 'flex';
+}
+// Exporta un renglón por cada mantenimiento registrado (no por autobús), para llevar el
+// historial completo — un autobús con 3 mantenimientos aparece en 3 filas distintas.
+function exportarMantenimientoOmsaExcel(){
+  if(!isMasterUser()){ alert('Solo el administrador puede exportar esta información.'); return; }
+  const esSD = moduloActivoOmsa === 'Santo Domingo';
+  const filas = [];
+  flotaOmsa.filter(b=> (b.modulo || 'Santiago') === moduloActivoOmsa).forEach(b=>{
+    const historial = (b.historialMantenimiento || '').split('|||').filter(Boolean);
+    historial.forEach(entrada=>{
+      const partes = entrada.split('::');
+      const fecha = partes[0] || '';
+      const nota = partes[2] || '';
+      const fila = { 'Ficha': b.ficha || '' };
+      if(esSD) fila['Corredor'] = b.corredor || '';
+      fila['Fecha y Hora del Mantenimiento'] = fecha;
+      fila['Activo Fijo Validador'] = b.numeroValidador || '';
+      fila['Serial Validador'] = b.serialValidador || '';
+      fila['Activo Fijo Router'] = b.activoFijoRouter || '';
+      fila['Serial Router'] = b.serialRouter || '';
+      fila['Comentarios'] = nota;
+      filas.push(fila);
+    });
+  });
+  if(filas.length === 0){ alert('Todavía no hay ningún mantenimiento registrado para exportar en este módulo.'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(filas);
+  ws['!cols'] = esSD
+    ? [{wch:12},{wch:30},{wch:26},{wch:20},{wch:20},{wch:20},{wch:20},{wch:40}]
+    : [{wch:12},{wch:26},{wch:20},{wch:20},{wch:20},{wch:20},{wch:40}];
+  const nombreHoja = esSD ? "Mantenimiento OMSA SD" : "Mantenimiento OMSA";
+  XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+  XLSX.writeFile(wb, `Mantenimiento_${esSD?'OMSA_SantoDomingo':'OMSA_Santiago'}_FIMOVIT_${new Date().toISOString().slice(0,10)}.xlsx`);
+  registrarAuditoria('Exportó mantenimiento de la flota ' + moduloActivoOmsa + ' a Excel', filas.length + ' registro(s)');
+}
+// Exporta un renglón por CADA AUTOBÚS del módulo activo (a diferencia del botón anterior, que
+// exporta un renglón por cada mantenimiento). Incluye si se le hizo mantenimiento o no.
+// En Santo Domingo, separa en pestañas por categoría de corredor (Corredor Reformado / OMSA).
+function exportarAutobusesExcel(){
+  if(!isMasterUser()){ alert('Solo el administrador puede exportar esta información.'); return; }
+  const flotaModulo = flotaOmsa.filter(b=> (b.modulo || 'Santiago') === moduloActivoOmsa);
+  if(flotaModulo.length === 0){ alert('No hay autobuses registrados en este módulo.'); return; }
+
+  const esSD = moduloActivoOmsa === 'Santo Domingo';
+
+  function filaDe(b){
+    const tieneMant = !!b.ultimoMantenimiento;
+    let comentarioMant = '';
+    if(tieneMant){
+      const historial = (b.historialMantenimiento || '').split('|||').filter(Boolean);
+      if(historial.length > 0){
+        const ultima = historial[historial.length - 1].split('::');
+        comentarioMant = ultima[2] || '';
+      }
+    }
+    const fila = { 'Ficha': b.ficha || '' };
+    if(esSD) fila['Corredor / Sistema'] = b.corredor || '';
+    fila['Activo Fijo Validador'] = b.numeroValidador || '';
+    fila['Serial Validador'] = b.serialValidador || '';
+    fila['Activo Fijo Router'] = b.activoFijoRouter || '';
+    fila['Serial Router'] = b.serialRouter || '';
+    fila['Mantenimiento'] = tieneMant ? 'Sí' : 'No';
+    fila['Comentario de Mantenimiento'] = comentarioMant;
+    return fila;
+  }
+
+  const wb = XLSX.utils.book_new();
+  const anchosBase = [{wch:12},{wch:20},{wch:20},{wch:20},{wch:20},{wch:14},{wch:40}];
+  const anchosSD = [{wch:12},{wch:30},{wch:20},{wch:20},{wch:20},{wch:20},{wch:14},{wch:40}];
+
+  if(esSD){
+    const reformados = flotaModulo.filter(b=> categoriaCorredorDe(b.corredor) === 'reformado');
+    const omsaCat = flotaModulo.filter(b=> categoriaCorredorDe(b.corredor) === 'omsa');
+    const sinCategoria = flotaModulo.filter(b=> !categoriaCorredorDe(b.corredor));
+
+    if(reformados.length > 0){
+      const ws = XLSX.utils.json_to_sheet(reformados.map(filaDe));
+      ws['!cols'] = anchosSD;
+      XLSX.utils.book_append_sheet(wb, ws, "Corredor Reformado");
+    }
+    if(omsaCat.length > 0){
+      const ws = XLSX.utils.json_to_sheet(omsaCat.map(filaDe));
+      ws['!cols'] = anchosSD;
+      XLSX.utils.book_append_sheet(wb, ws, "OMSA");
+    }
+    if(sinCategoria.length > 0){
+      const ws = XLSX.utils.json_to_sheet(sinCategoria.map(filaDe));
+      ws['!cols'] = anchosSD;
+      XLSX.utils.book_append_sheet(wb, ws, "Sin corredor asignado");
+    }
+  } else {
+    const ws = XLSX.utils.json_to_sheet(flotaModulo.map(filaDe));
+    ws['!cols'] = anchosBase;
+    XLSX.utils.book_append_sheet(wb, ws, "OMSA Santiago");
+  }
+
+  XLSX.writeFile(wb, `Autobuses_${esSD ? 'SantoDomingo' : 'Santiago'}_FIMOVIT_${new Date().toISOString().slice(0,10)}.xlsx`);
+  registrarAuditoria('Exportó autobuses de ' + moduloActivoOmsa + ' a Excel', flotaModulo.length + ' autobús(es)');
 }
 function renderMantenimientoOmsa(bus){
   const notas = (bus.historialMantenimiento || '').split('|||').filter(Boolean).map(entrada=>{
@@ -5576,11 +5843,16 @@ async function guardarModalOmsaDetalle(){
   const serialRouter = document.getElementById('omsaSerialRouter').value.trim();
   const activoFijoRouter = document.getElementById('omsaActivoFijoRouter').value.trim();
   const comentario = document.getElementById('omsaComentario').value.trim();
+  const corredorEditado = document.getElementById('omsaCorredorEditBox').style.display !== 'none'
+    ? document.getElementById('omsaCorredorEspecificoEdit').value
+    : undefined;
 
   cerrarModalOmsaDetalle();
 
   if(omsaModalModo === 'agregar'){
-    const nuevo = { ficha, estado, ultimaVezBien: Date.now(), actualizadoPor: currentUser ? currentUser.nombre : '', lastModified: Date.now(), eliminado:'no', numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador };
+    const modulo = moduloActivoOmsa;
+    const corredor = modulo === 'Santo Domingo' ? omsaCorredorSeleccionado : '';
+    const nuevo = { ficha, estado, ultimaVezBien: Date.now(), actualizadoPor: currentUser ? currentUser.nombre : '', lastModified: Date.now(), eliminado:'no', numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador, modulo, corredor };
     flotaOmsa.push(nuevo);
     renderFlotaOmsa();
     document.getElementById('omsaNuevaFicha').value = '';
@@ -5588,9 +5860,9 @@ async function guardarModalOmsaDetalle(){
       await fetch(liveUrl, {
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha, estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
+        body: JSON.stringify({sheet:'flotaomsa', action:'agregar', ficha, estado, ultimaVezBien: nuevo.ultimaVezBien, actualizadoPor: nuevo.actualizadoPor, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador, modulo, corredor})
       });
-      registrarAuditoria('Agregó autobús "' + ficha + '" a la flota OMSA Santiago', 'Estado: ' + estado + (numeroValidador ? ' · Validador: ' + numeroValidador : ''));
+      registrarAuditoria('Agregó autobús "' + ficha + '" a la flota ' + (modulo==='Santo Domingo'?'OMSA Santo Domingo':'OMSA Santiago'), 'Estado: ' + estado + (numeroValidador ? ' · Validador: ' + numeroValidador : '') + (corredor ? ' · Corredor: ' + corredor : ''));
     }catch(err){ console.error('No se pudo agregar el autobús:', err); }
   } else {
     const bus = flotaOmsa.find(b => String(b.ficha) === String(ficha));
@@ -5605,6 +5877,7 @@ async function guardarModalOmsaDetalle(){
       bus.serialRouter = serialRouter;
       bus.activoFijoRouter = activoFijoRouter;
       bus.comentario = comentario;
+      if(corredorEditado !== undefined) bus.corredor = corredorEditado;
       renderFlotaOmsa();
     }
     try{
@@ -5618,14 +5891,14 @@ async function guardarModalOmsaDetalle(){
       await fetch(liveUrl, {
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({sheet:'flotaomsa', action:'actualizarDatos', ficha, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador})
+        body: JSON.stringify({sheet:'flotaomsa', action:'actualizarDatos', ficha, numeroValidador, serialValidador, serialRouter, activoFijoRouter, comentario, versionSoftwareValidador, corredor: corredorEditado})
       });
 
       // Se arma el detalle comparando campo por campo qué realmente cambió.
       const camposComparar = [
         ['estado', 'Estado'], ['numeroValidador', 'N.º Validador'], ['serialValidador', 'Serial Validador'],
         ['versionSoftwareValidador', 'Versión Software'], ['serialRouter', 'Serial Router'],
-        ['activoFijoRouter', 'Activo Fijo Router'], ['comentario', 'Comentario']
+        ['activoFijoRouter', 'Activo Fijo Router'], ['comentario', 'Comentario'], ['corredor', 'Corredor']
       ];
       const cambios = antes ? camposComparar
         .filter(([campo])=> String(antes[campo]||'') !== String(bus[campo]||''))
@@ -6057,6 +6330,14 @@ async function guardarPermisosUsuario(usuario, nuevoPermiso){
   const permisoFinal = normalizarPermisoInput(nuevoPermiso);
   const previo = usuariosCache.find(u=> u.usuario === usuario);
   const permisoAntes = previo ? (previo.permisos || 'usuario') : '(desconocido)';
+
+  // Un Administrador (no Plus) no puede cambiar los permisos de una cuenta que ya es Administrador Plus.
+  const permisoPropio = (currentUser && currentUser.permisos) ? currentUser.permisos.toLowerCase() : '';
+  if(permisoPropio === 'admin' && permisoAntes === 'admin_plus'){
+    alert('No puedes cambiar los permisos de una cuenta de Administrador Plus. Esa acción solo la puede hacer otro Administrador Plus.');
+    return;
+  }
+
   try{
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
@@ -6228,7 +6509,7 @@ function showApp(){
   const mbtNotifInicial = document.getElementById('mbt-notif'); if(mbtNotifInicial) mbtNotifInicial.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const mbtMensajesInicial = document.getElementById('mbt-mensajes'); if(mbtMensajesInicial) mbtMensajesInicial.style.display = puedeEditarEstado() ? 'flex' : 'none';
   const navVersionesInicial = document.getElementById('nav-versionestoms'); if(navVersionesInicial) navVersionesInicial.style.display = puedeExportar() ? 'flex' : 'none';
-  const navOmsaInicial = document.getElementById('nav-omsa'); if(navOmsaInicial) navOmsaInicial.style.display = isMasterUser() ? 'flex' : 'none';
+  const navOmsaInicial = document.getElementById('nav-omsa'); if(navOmsaInicial) navOmsaInicial.style.display = puedeVerEstadoAutobuses() ? 'flex' : 'none';
   aplicarModoBasico();
   aplicarRestriccionProvincia();
   actualizarBotonNotifEmail();
@@ -6621,7 +6902,8 @@ function showPage(name){
     cargarVersionesToms();
   }
   if(name==='omsa'){
-    if(!isMasterUser()){ showPage('form'); return; }
+    if(!puedeVerEstadoAutobuses()){ showPage('form'); return; }
+    aplicarRestriccionTabsOmsa();
     cargarFlotaOmsa();
   }
   if(name==='sala'){
@@ -6910,6 +7192,14 @@ function aplicarRestriccionProvincia(){
   // hacia OTRO sistema, para que una cuenta restringida solo vea su propio sistema y nada más.
   cardOmsa.style.display = (!!asignada && asignada !== 'OP OMSA SANTIAGO') ? 'none' : '';
 
+  // MONORRIEL SANTIAGO: solo visible para administradores, o para cuentas con la provincia
+  // asignada exactamente a "Santiago" (sin importar el rol). Cualquier otro caso, se oculta.
+  const cardMonorriel = document.getElementById('provinciaCardMonorriel');
+  if(cardMonorriel){
+    const puedeVerMonorriel = isMasterUser() || (currentUser && currentUser.provinciaAsignada === 'Santiago');
+    cardMonorriel.style.display = puedeVerMonorriel ? '' : 'none';
+  }
+
   // Esta función es la ÚNICA que decide a qué paso ir, para no pisarse con otras llamadas a goTo().
   if(asignada === 'Santo Domingo' || asignada === 'Santiago' || asignada === 'OMSA Santo Domingo'){
     selectProvincia(asignada);
@@ -6924,7 +7214,7 @@ function aplicarRestriccionHistorial(){
   const cardStgo = document.getElementById('histCardStgo');
   if(!btnCambiar || !cardSD || !cardStgo) return;
 
-  const asignada = (esUsuarioBasico() && currentUser) ? (currentUser.provinciaAsignada || '') : '';
+  const asignada = (currentUser && !isMasterUser()) ? (currentUser.provinciaAsignada || '') : '';
 
   if(!asignada){
     btnCambiar.style.display = '';
@@ -6934,7 +7224,8 @@ function aplicarRestriccionHistorial(){
   }
 
   // Cuentas restringidas: solo ven el historial de su propio sistema, sin poder cambiar.
-  const subtabDestino = (asignada === 'Santiago') ? 'vt' : 'sistema'; // Santo Domingo y OMSA Santo Domingo comparten el historial 'sistema'
+  const esSantiago = (asignada === 'Santiago' || asignada === 'OP OMSA SANTIAGO');
+  const subtabDestino = esSantiago ? 'vt' : 'sistema'; // Santo Domingo y OMSA Santo Domingo comparten el historial 'sistema'
   btnCambiar.style.display = 'none';
   cardSD.style.display = (subtabDestino === 'sistema') ? '' : 'none';
   cardStgo.style.display = (subtabDestino === 'vt') ? '' : 'none';
@@ -7684,7 +7975,7 @@ async function refrescarPermisosPropios(){
     const navVersiones = document.getElementById('nav-versionestoms');
     if(navVersiones) navVersiones.style.display = puedeExportar() ? 'flex' : 'none';
     const navOmsa = document.getElementById('nav-omsa');
-    if(navOmsa) navOmsa.style.display = isMasterUser() ? 'flex' : 'none';
+    if(navOmsa) navOmsa.style.display = puedeVerEstadoAutobuses() ? 'flex' : 'none';
     const mbtNotif = document.getElementById('mbt-notif');
     if(mbtNotif) mbtNotif.style.display = puedeEditarEstado() ? 'flex' : 'none';
     const mbtMensajes = document.getElementById('mbt-mensajes');
@@ -7777,6 +8068,13 @@ function puedeEditarEstado(){
   if(isMasterUser()) return true;
   const p = (currentUser.permisos || '').toLowerCase();
   return p === 'fiscalizador' || p === 'tecnico';
+}
+// Además de Admin/Admin Plus/Fiscalizador (ya cubiertos por puedeEditarEstado), también deja entrar
+// a una cuenta de rol "usuario" cuando está asignada específicamente a uno de los 4 sistemas de autobuses.
+function puedeVerEstadoAutobuses(){
+  if(puedeEditarEstado()) return true;
+  const asignada = currentUser ? (currentUser.provinciaAsignada || '') : '';
+  return asignada === 'Santiago' || asignada === 'Santo Domingo' || asignada === 'OMSA Santo Domingo' || asignada === 'OP OMSA SANTIAGO';
 }
 
 function esUsuarioBasico(){
