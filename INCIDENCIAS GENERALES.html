@@ -1743,7 +1743,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.65.0</div>
+<div id="versionLabel">V4.65.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1837,7 +1837,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.65.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.65.1
     </div>
   </div>
 </div>
@@ -3881,7 +3881,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.65.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.65.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -8093,10 +8093,10 @@ function puedeEditarEstado(){
 }
 // Además de Admin/Admin Plus/Fiscalizador (ya cubiertos por puedeEditarEstado), también deja entrar
 // a una cuenta de rol "usuario" cuando está asignada específicamente a uno de los 4 sistemas de autobuses.
+// Estado Autobuses: solo Admin/Admin Plus/Fiscalizador. El rol "Usuario" nunca lo ve,
+// sin importar su provincia asignada.
 function puedeVerEstadoAutobuses(){
-  if(puedeEditarEstado()) return true;
-  const asignada = currentUser ? (currentUser.provinciaAsignada || '') : '';
-  return asignada === 'Santiago' || asignada === 'Santo Domingo' || asignada === 'OMSA Santo Domingo' || asignada === 'OP OMSA SANTIAGO';
+  return puedeEditarEstado();
 }
 // Mantenimiento es un módulo exclusivo de Santiago — una cuenta restringida a Santo Domingo
 // (o a OMSA Santo Domingo) no debe verlo en absoluto, aunque sea Fiscalizador/Admin Plus.
