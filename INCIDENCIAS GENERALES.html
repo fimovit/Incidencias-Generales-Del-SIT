@@ -1689,7 +1689,7 @@
     table{font-size:11px;}
     th, td{padding:8px 6px;}
     .auth-card{padding:26px 22px;}
-    #btnCloudConfig, #notifWidget, #btnPapeleraFlotante{ display:none !important; }
+    #btnCloudConfig, #notifWidget, #btnPapeleraFlotante, #btnSemaforoSalud{ display:none !important; }
     #notifWidget{ right:16px; }
     #btnCloudConfig{ right:64px; }
   }
@@ -1777,7 +1777,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.66.1</div>
+<div id="versionLabel">V4.67.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1871,7 +1871,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.66.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.67.1
     </div>
   </div>
 </div>
@@ -2106,6 +2106,10 @@
   <div id="notifListContainer"></div>
   <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="verTodasNotificaciones()">Ver en Historial</button>
 </div>
+
+<button id="btnSemaforoSalud" onclick="showPage('table')" title="Sistema estable" style="display:none;position:fixed;bottom:26px;right:88px;z-index:150;width:40px;height:40px;border-radius:50%;background:var(--white);border:none;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18);align-items:center;justify-content:center;">
+  <span id="semaforoSaludPunto" style="width:14px;height:14px;border-radius:50%;display:inline-block;"></span>
+</button>
 
 <button id="btnCloudConfig" onclick="abrirModalConfigNube()" style="display:none;position:fixed;top:18px;right:26px;z-index:150;width:46px;height:46px;border-radius:50%;background:var(--teal);border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 4px 14px rgba(0,88,121,.35);align-items:center;justify-content:center;">
   ☁️
@@ -2350,6 +2354,14 @@
         <div class="bienvenida-sistema-card"><span class="oi">🚡</span><b>Teleférico</b><span>Santiago</span></div>
         <div class="bienvenida-sistema-card"><span class="oi">🚧</span><b>Validador / Torniquete</b><span>Santiago</span></div>
         <div class="bienvenida-sistema-card"><span class="oi">🔧</span><b>Mantenimiento</b><span>Santiago</span></div>
+      </div>
+    </div>
+
+    <div class="card" id="bienvenidaSemaforoCard" style="display:flex;align-items:center;gap:20px;margin-bottom:22px;cursor:pointer;" onclick="showPage('table')">
+      <span id="bienvenidaSemaforoPunto" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 8px rgba(0,0,0,.04);"></span>
+      <div>
+        <div style="font-size:11px;font-weight:800;color:#96a2a8;text-transform:uppercase;letter-spacing:.4px;">Estado general del sistema</div>
+        <div id="bienvenidaSemaforoTexto" style="font-size:18px;font-weight:800;color:var(--teal-dark);">Cargando...</div>
       </div>
     </div>
 
@@ -3962,7 +3974,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.66.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.67.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -6575,6 +6587,7 @@ function showApp(){
   if(navUsers) navUsers.style.display = isMasterUser() ? 'flex' : 'none';
   const navPapelera = document.getElementById('nav-papelera'); if(navPapelera) navPapelera.style.display = isMasterUser() ? 'flex' : 'none';
   actualizarPapeleraFlotante();
+  actualizarSemaforoSalud();
   const secA = document.getElementById('sectionLabelAdmin'); if(secA) secA.style.display = isMasterUser() ? 'block' : 'none';
   const navFallas = document.getElementById('nav-fallas'); if(navFallas) navFallas.style.display = isMasterUser() ? 'flex' : 'none';
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeVerMantenimiento() ? 'flex' : 'none';
@@ -8843,6 +8856,40 @@ function edadEnHoras(rec){
   }
   return 0;
 }
+function actualizarSemaforoSalud(){
+  const btn = document.getElementById('btnSemaforoSalud');
+  const punto = document.getElementById('semaforoSaludPunto');
+  const cardBienvenida = document.getElementById('bienvenidaSemaforoCard');
+  const puntoBienvenida = document.getElementById('bienvenidaSemaforoPunto');
+  const textoBienvenida = document.getElementById('bienvenidaSemaforoTexto');
+  if(!btn) return;
+
+  if(!puedeEditarEstado()){ btn.style.display = 'none'; if(cardBienvenida) cardBienvenida.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  if(cardBienvenida) cardBienvenida.style.display = 'flex';
+
+  const cantidad = incidenciasAltaPrioridad().length;
+  let color, mensaje;
+  if(cantidad === 0){
+    color = '#3ddc84'; mensaje = 'Sistema estable';
+  } else if(cantidad <= 2){
+    color = '#FFA726'; mensaje = `${cantidad} incidencia(s) requieren atención`;
+  } else {
+    color = '#e53935'; mensaje = `${cantidad} incidencias críticas activas`;
+  }
+
+  punto.style.background = color;
+  punto.style.boxShadow = `0 0 0 3px ${color}33`;
+  btn.title = mensaje;
+
+  if(puntoBienvenida && textoBienvenida){
+    puntoBienvenida.style.background = color;
+    puntoBienvenida.style.boxShadow = `0 0 0 8px ${color}22`;
+    textoBienvenida.textContent = mensaje;
+    textoBienvenida.style.color = (cantidad === 0) ? 'var(--teal-dark)' : color;
+  }
+}
+
 function estaResuelta(rec, tabla){
   if(tabla === 'sistema') return rec.estado === 'Resuelta';
   return ESTADOS_RESUELTOS.includes(rec.estado);
@@ -9197,6 +9244,7 @@ function renderAll(){
   renderTableSistema();
   renderTableVt();
   actualizarNotificaciones();
+  actualizarSemaforoSalud();
   const criticasVisible = document.getElementById('subtabContent-criticas');
   if(criticasVisible && criticasVisible.style.display !== 'none') renderTableCriticas();
   const slaVisible = document.getElementById('subtabContent-sla');
