@@ -1777,7 +1777,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.67.1</div>
+<div id="versionLabel">V4.67.2</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1871,7 +1871,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.67.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.67.2
     </div>
   </div>
 </div>
@@ -3974,7 +3974,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.67.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.67.2'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -8868,25 +8868,39 @@ function actualizarSemaforoSalud(){
   btn.style.display = 'flex';
   if(cardBienvenida) cardBienvenida.style.display = 'flex';
 
-  const cantidad = incidenciasAltaPrioridad().length;
-  let color, mensaje;
-  if(cantidad === 0){
-    color = '#3ddc84'; mensaje = 'Sistema estable';
-  } else if(cantidad <= 2){
-    color = '#FFA726'; mensaje = `${cantidad} incidencia(s) requieren atención`;
+  // Total de incidencias pendientes (sin importar el umbral) en ambos sistemas.
+  const totalPendientes = records.filter(r=> r.eliminado!=='si' && !estaResuelta(r,'sistema')).length
+                         + vtRecords.filter(r=> r.eliminado!=='si' && !estaResuelta(r,'vt')).length;
+  // De esas, cuántas ya pasaron el umbral crítico configurado (mismo criterio de siempre).
+  const totalCriticas = incidenciasAltaPrioridad().length;
+
+  let color, mensaje, accion;
+  if(totalCriticas > 0){
+    color = '#e53935';
+    mensaje = `🔴 ${totalCriticas} incidencia(s) ya son críticas — llevan más del umbral sin resolver`;
+    accion = ()=>{ showPage('table'); setTimeout(()=> showSubtab('criticas'), 50); };
+  } else if(totalPendientes > 2){
+    color = '#FFA726';
+    mensaje = `🟡 ${totalPendientes} incidencias pendientes por resolver`;
+    accion = ()=> showPage('table');
   } else {
-    color = '#e53935'; mensaje = `${cantidad} incidencias críticas activas`;
+    color = '#3ddc84';
+    mensaje = totalPendientes === 0 ? 'Sistema estable — nada pendiente' : `${totalPendientes} pendiente(s), sin urgencia todavía`;
+    accion = ()=> showPage('table');
   }
 
   punto.style.background = color;
   punto.style.boxShadow = `0 0 0 3px ${color}33`;
   btn.title = mensaje;
+  btn.onclick = accion;
 
   if(puntoBienvenida && textoBienvenida){
     puntoBienvenida.style.background = color;
     puntoBienvenida.style.boxShadow = `0 0 0 8px ${color}22`;
-    textoBienvenida.textContent = mensaje;
-    textoBienvenida.style.color = (cantidad === 0) ? 'var(--teal-dark)' : color;
+    textoBienvenida.textContent = mensaje.replace(/^[🔴🟡]\s*/, '');
+    textoBienvenida.style.color = (color === '#3ddc84') ? 'var(--teal-dark)' : color;
+    const cardBienvenidaEl = document.getElementById('bienvenidaSemaforoCard');
+    if(cardBienvenidaEl) cardBienvenidaEl.onclick = accion;
   }
 }
 
