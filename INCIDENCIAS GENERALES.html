@@ -1431,6 +1431,18 @@
   .bienvenida-sistema-card .oi{font-size:30px;margin-bottom:4px;}
   .bienvenida-sistema-card b{font-size:12px;color:var(--teal-dark);}
   .bienvenida-sistema-card span:last-child{font-size:10px;color:var(--gray-text);font-weight:600;}
+  .confirmacion-resolucion-card{
+    background:var(--gray-light); border-radius:14px; padding:16px 18px; margin-bottom:14px;
+    border:1.5px solid #e7edf0;
+  }
+  .confirmacion-resolucion-card .crc-titulo{font-size:13.5px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;}
+  .confirmacion-resolucion-card .crc-texto{font-size:12.5px;color:var(--gray-text);margin-bottom:4px;line-height:1.5;}
+  .confirmacion-resolucion-card .crc-respuesta{
+    background:#fff; border-radius:10px; padding:10px 12px; font-size:12.5px; color:var(--teal-dark);
+    font-weight:600; margin:8px 0 12px 0; border-left:3px solid var(--orange);
+  }
+  .confirmacion-resolucion-card .crc-botones{display:flex;gap:10px;}
+  .confirmacion-resolucion-card .crc-botones button{flex:1;padding:10px;border-radius:10px;border:none;font-weight:800;font-size:13px;cursor:pointer;}
   .bienvenida-cinta-card{overflow:hidden;padding:0;}
   .bienvenida-cinta-titulo{
     padding:16px 20px 6px 20px;font-weight:800;color:var(--teal-dark);font-size:14px;
@@ -1777,7 +1789,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.67.2</div>
+<div id="versionLabel">V4.68.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1871,7 +1883,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.67.2
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.68.0
     </div>
   </div>
 </div>
@@ -2161,6 +2173,14 @@
       <button class="btn btn-secondary" onclick="resolverConfirmarPersonalizado(false)">Cancelar</button>
       <button class="btn btn-primary" onclick="resolverConfirmarPersonalizado(true)">Confirmar</button>
     </div>
+  </div>
+</div>
+
+<div id="confirmarResolucionModal" style="display:none;position:fixed;inset:0;z-index:420;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);">
+    <h2 style="margin-bottom:6px;">✅ ¿Se resolvió tu incidencia?</h2>
+    <div class="subtitle" style="margin-bottom:18px;">Un Fiscalizador marcó como atendida una incidencia que tú reportaste. Confirma si el problema realmente se solucionó.</div>
+    <div id="confirmarResolucionLista"></div>
   </div>
 </div>
 
@@ -3974,7 +3994,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.67.2'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.68.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -7673,7 +7693,7 @@ function goBackFromResumen(){
   else goTo('tom-comentarios');
 }
 function finalizarIncidencia(){
-  const nuevoRegistro = Object.assign({}, formData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoEl:fechaHoraRD()});
+  const nuevoRegistro = Object.assign({}, formData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoPorUsuario: currentUser ? currentUser.usuario : '', registradoEl:fechaHoraRD()});
   let tablaDestino;
   if(formData.sistema){
     // Santo Domingo (autobuses) -> historial Sistema de Transporte
@@ -7754,7 +7774,7 @@ function buildVtResumen(){
   document.getElementById('vtResumenBox').innerHTML = rows.map(r=>`<div class="summary-row"><b>${r[0]}</b><span>${r[1]}</span></div>`).join('');
 }
 function finalizarVt(){
-  const nuevoRegistroVt = Object.assign({}, vtData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoEl:fechaHoraRD()});
+  const nuevoRegistroVt = Object.assign({}, vtData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoPorUsuario: currentUser ? currentUser.usuario : '', registradoEl:fechaHoraRD()});
   vtRecords.push(nuevoRegistroVt);
   saveVtRecords();
   updateSidebarCount();
@@ -9259,6 +9279,7 @@ function renderAll(){
   renderTableVt();
   actualizarNotificaciones();
   actualizarSemaforoSalud();
+  revisarConfirmacionesPendientes();
   const criticasVisible = document.getElementById('subtabContent-criticas');
   if(criticasVisible && criticasVisible.style.display !== 'none') renderTableCriticas();
   const slaVisible = document.getElementById('subtabContent-sla');
@@ -9520,6 +9541,122 @@ function cerrarEditorIncidencia(){
   editingRecord = null;
 }
 
+// Revisa si la cuenta actual tiene incidencias suyas con una resolución propuesta esperando
+// su confirmación (aceptar/rechazar), y si hay alguna, se lo muestra de inmediato.
+function revisarConfirmacionesPendientes(){
+  if(!currentUser || !currentUser.usuario) return;
+  const pendientesSistema = records.filter(r=> r.eliminado!=='si' && r.confirmacionPendiente==='si' && r.registradoPorUsuario===currentUser.usuario).map(r=>Object.assign({_tabla:'sistema'}, r));
+  const pendientesVt = vtRecords.filter(r=> r.eliminado!=='si' && r.confirmacionPendiente==='si' && r.registradoPorUsuario===currentUser.usuario).map(r=>Object.assign({_tabla:'vt'}, r));
+  const todas = pendientesSistema.concat(pendientesVt);
+  const modal = document.getElementById('confirmarResolucionModal');
+  if(!modal) return;
+  if(todas.length === 0){ modal.style.display = 'none'; return; }
+
+  const cont = document.getElementById('confirmarResolucionLista');
+  cont.innerHTML = todas.map(r=>{
+    const referencia = r._tabla === 'sistema' ? (r.ficha || r.sistema || '#'+r.id) : (r.estacion || '#'+r.id);
+    return `<div class="confirmacion-resolucion-card">
+      <div class="crc-titulo">🚌 ${escapeHtml(String(referencia))}</div>
+      <div class="crc-texto">Falla reportada: <b>${escapeHtml(String(r.falla||'—'))}</b></div>
+      <div class="crc-texto">Marcada por: <b>${escapeHtml(String(r.propuestoPor||'—'))}</b></div>
+      <div class="crc-respuesta">💬 "${escapeHtml(String(r.resolucionPropuesta||''))}"</div>
+      <div class="crc-botones">
+        <button style="background:#fdecea;color:#c62828;" onclick="rechazarResolucionPropuesta('${r._tabla}', '${attrJs(r.id)}')">❌ No se resolvió</button>
+        <button style="background:#e3f6ea;color:#237a45;" onclick="aceptarResolucionPropuesta('${r._tabla}', '${attrJs(r.id)}')">✅ Sí, se resolvió</button>
+      </div>
+    </div>`;
+  }).join('');
+  modal.style.display = 'flex';
+}
+async function aceptarResolucionPropuesta(tabla, id){
+  const list = tabla === 'sistema' ? records : vtRecords;
+  const rec = list.find(r=>String(r.id)===String(id));
+  if(!rec) return;
+
+  const updates = {};
+  const estadoAnterior = rec.estado;
+  rec.estado = rec.estadoPropuesto;
+  updates.estado = rec.estadoPropuesto;
+  if(tabla === 'sistema'){ rec.resolucion = rec.resolucionPropuesta; updates.resolucion = rec.resolucionPropuesta; }
+  else { rec.comentario = rec.resolucionPropuesta; updates.comentario = rec.resolucionPropuesta; }
+  rec.horaResuelta = fechaHoraRD(); updates.horaResuelta = rec.horaResuelta;
+  rec.resueltoPor = rec.propuestoPor; updates.resueltoPor = rec.propuestoPor;
+
+  rec.confirmacionPendiente = ''; updates.confirmacionPendiente = '';
+  rec.estadoPropuesto = ''; updates.estadoPropuesto = '';
+  rec.resolucionPropuesta = ''; updates.resolucionPropuesta = '';
+  rec.propuestoPor = ''; updates.propuestoPor = '';
+
+  if(!Array.isArray(rec.historialCambios)) rec.historialCambios = [];
+  rec.historialCambios.push({fecha: fechaHoraRD(), usuario: currentUser.nombre, cambio: `Confirmó que la resolución sí funcionó — Estado: "${estadoAnterior||'—'}" → "${rec.estado}"`});
+  updates.historialCambios = JSON.stringify(rec.historialCambios);
+
+  if(tabla === 'sistema'){ saveRecords(); renderTableSistema(); } else { saveVtRecords(); renderTableVt(); }
+  actualizarEstadoEnSheet(tabla, id, updates);
+  const referencia = tabla === 'sistema' ? (rec.ficha || rec.sistema || '#'+id) : (rec.estacion || '#'+id);
+  registrarAuditoria('Confirmó la resolución de "' + referencia + '" (' + tabla + ' #' + id + ')', `Estado final: "${rec.estado}"`);
+  revisarConfirmacionesPendientes();
+}
+async function rechazarResolucionPropuesta(tabla, id){
+  const list = tabla === 'sistema' ? records : vtRecords;
+  const rec = list.find(r=>String(r.id)===String(id));
+  if(!rec) return;
+  const motivo = await promptPersonalizado('¿Sigue fallando? Cuéntanos brevemente qué pasó (opcional):', '');
+  if(motivo === null) return; // canceló, no se rechaza nada todavía
+
+  const updates = {};
+  const estadoNuevo = (tabla === 'sistema') ? 'Persistente' : 'FALLA PERSISTE';
+  const estadoAnterior = rec.estado;
+  rec.estado = estadoNuevo; updates.estado = estadoNuevo;
+  rec.veces = (Number(rec.veces) || 1) + 1; updates.veces = rec.veces;
+  rec.reportada = 'Sí'; updates.reportada = 'Sí';
+
+  rec.confirmacionPendiente = ''; updates.confirmacionPendiente = '';
+  rec.estadoPropuesto = ''; updates.estadoPropuesto = '';
+  rec.resolucionPropuesta = ''; updates.resolucionPropuesta = '';
+  rec.propuestoPor = ''; updates.propuestoPor = '';
+
+  if(!Array.isArray(rec.historialCambios)) rec.historialCambios = [];
+  rec.historialCambios.push({fecha: fechaHoraRD(), usuario: currentUser.nombre, cambio: `Rechazó la resolución — sigue fallando. Estado: "${estadoAnterior||'—'}" → "${estadoNuevo}"` + (motivo ? ` — ${motivo}` : '')});
+  updates.historialCambios = JSON.stringify(rec.historialCambios);
+
+  if(tabla === 'sistema'){ saveRecords(); renderTableSistema(); } else { saveVtRecords(); renderTableVt(); }
+  actualizarEstadoEnSheet(tabla, id, updates);
+  const referencia = tabla === 'sistema' ? (rec.ficha || rec.sistema || '#'+id) : (rec.estacion || '#'+id);
+  registrarAuditoria('Rechazó la resolución de "' + referencia + '" (' + tabla + ' #' + id + ')', `Se marca como reincidente — Estado: "${estadoNuevo}"` + (motivo ? ` | Motivo: "${motivo}"` : ''));
+  revisarConfirmacionesPendientes();
+}
+async function proponerResolucionIncidencia(tabla, rec, nuevoEstado, solucionTexto){
+  rec.confirmacionPendiente = 'si';
+  rec.estadoPropuesto = nuevoEstado;
+  rec.resolucionPropuesta = solucionTexto;
+  rec.propuestoPor = currentUser ? currentUser.nombre : 'Desconocido';
+
+  if(!Array.isArray(rec.historialCambios)) rec.historialCambios = [];
+  rec.historialCambios.push({
+    fecha: fechaHoraRD(),
+    usuario: currentUser ? currentUser.nombre : 'Desconocido',
+    cambio: `Propuso marcar como "${nuevoEstado}" — esperando que "${rec.registradoPorUsuario}" confirme o rechace la resolución.`
+  });
+
+  if(tabla === 'sistema'){ saveRecords(); renderTableSistema(); }
+  else { saveVtRecords(); renderTableVt(); }
+  marcarEdicionLocal(rec.id);
+
+  actualizarEstadoEnSheet(tabla, rec.id, {
+    confirmacionPendiente: 'si',
+    estadoPropuesto: nuevoEstado,
+    resolucionPropuesta: solucionTexto,
+    propuestoPor: rec.propuestoPor,
+    historialCambios: JSON.stringify(rec.historialCambios)
+  });
+
+  const referencia = tabla === 'sistema' ? (rec.ficha || rec.sistema || '#'+rec.id) : (rec.estacion || '#'+rec.id);
+  registrarAuditoria('Propuso resolución para "' + referencia + '" (' + tabla + ' #' + rec.id + ')', `Estado propuesto: "${nuevoEstado}" | Respuesta: "${solucionTexto}" | Esperando confirmación de: ${rec.registradoPorUsuario}`);
+
+  alert('✅ Se envió la propuesta de resolución. La incidencia quedará como "Pendiente de confirmación" hasta que la persona que la reportó la acepte o la rechace.');
+  cerrarEditorIncidencia();
+}
 async function guardarEdicionIncidencia(){
   if(!editingRecord) return;
   const nuevoEstado = document.getElementById('editEstadoSelect').value;
@@ -9538,6 +9675,15 @@ async function guardarEdicionIncidencia(){
   const list = tabla === 'sistema' ? records : vtRecords;
   const rec = list.find(r=>String(r.id)===String(id));
   if(!rec) return;
+
+  // Si se está marcando como RESUELTA y quien reportó tiene una cuenta distinta a quien resuelve,
+  // no se aplica de una vez — se le pide confirmación a quien reportó (aceptar o rechazar).
+  const reportanteConCuenta = !!rec.registradoPorUsuario;
+  const esElMismoQuienReporto = currentUser && rec.registradoPorUsuario === currentUser.usuario;
+  if(necesitaSolucion && reportanteConCuenta && !esElMismoQuienReporto){
+    await proponerResolucionIncidencia(tabla, rec, nuevoEstado, solucionTexto);
+    return;
+  }
 
   const updates = {};
   const estadoAnterior = rec.estado;
