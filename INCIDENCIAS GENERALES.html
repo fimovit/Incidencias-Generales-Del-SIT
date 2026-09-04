@@ -71,6 +71,25 @@
     --radius:16px;
     --fimovit-wm-logo:none;
   }
+  /* ---------- Modo Falla General: toda la interfaz cambia a rojo mientras esté activa ---------- */
+  body.falla-general-modo{
+    --teal:#c62828;
+    --teal-2:#e53935;
+    --teal-dark:#7a1a11;
+    --teal-light:#fdecea;
+    --orange:#e53935;
+    --orange-2:#ff6659;
+    --orange-light:#fff0ee;
+    --gray-light:#fff5f4;
+  }
+  .falla-general-banner-global{
+    display:none; position:sticky; top:0; z-index:500; background:#7a1a11; color:#fff;
+    padding:10px 20px; text-align:center; font-weight:800; font-size:13px; letter-spacing:.3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.25); cursor:pointer;
+  }
+  body.falla-general-modo .falla-general-banner-global{ display:block; }
+  @keyframes fallaGeneralParpadeo{ 0%,100%{opacity:1;} 50%{opacity:.75;} }
+  body.falla-general-modo .falla-general-banner-global{ animation: fallaGeneralParpadeo 1.6s ease-in-out infinite; }
   #busquedaGlobalInput::placeholder{color:#8fc2d4;}
   .bulk-actions-bar{
     display:flex;align-items:center;gap:10px;background:var(--orange-light);border:1px solid var(--orange);
@@ -1787,9 +1806,11 @@
 </head>
 <body>
 
+<div class="falla-general-banner-global" id="fallaGeneralBannerGlobal" onclick="showPage('mantenimiento')">🚨 FALLA GENERAL DEL SISTEMA ACTIVA — Toca aquí para ver los detalles</div>
+
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.69.0</div>
+<div id="versionLabel">V4.70.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1883,7 +1904,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.69.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.70.0
     </div>
   </div>
 </div>
@@ -4042,7 +4063,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.69.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.70.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5294,20 +5315,26 @@ let fallaGeneralActiva = null;
 let fallaGeneralHistorialCache = [];
 
 async function cargarFallaGeneral(){
-  const card = document.getElementById('fallaGeneralCard');
-  if(!card) return;
-  card.style.display = puedeEditarEstado() ? 'block' : 'none';
-  if(!puedeEditarEstado() || !isLiveEnabled()) return;
-
+  if(!isLiveEnabled()) return;
   try{
     const res = await fetch(liveUrl + '?sheet=fallageneral', {method:'GET'});
     const data = await res.json();
-    if(!Array.isArray(data)){ return; }
-    const vivas = data.filter(f=> f.eliminado !== 'si');
-    fallaGeneralActiva = vivas.find(f=> f.estado === 'Activa') || null;
-    fallaGeneralHistorialCache = vivas.filter(f=> f.estado !== 'Activa').sort((a,b)=> Number(b.id) - Number(a.id));
-    renderFallaGeneral();
+    if(Array.isArray(data)){
+      const vivas = data.filter(f=> f.eliminado !== 'si');
+      fallaGeneralActiva = vivas.find(f=> f.estado === 'Activa') || null;
+      fallaGeneralHistorialCache = vivas.filter(f=> f.estado !== 'Activa').sort((a,b)=> Number(b.id) - Number(a.id));
+    }
   }catch(err){ console.error('No se pudo cargar Falla General:', err); }
+
+  actualizarModoFallaGeneral();
+  const card = document.getElementById('fallaGeneralCard');
+  if(card){
+    card.style.display = puedeEditarEstado() ? 'block' : 'none';
+    if(puedeEditarEstado()) renderFallaGeneral();
+  }
+}
+function actualizarModoFallaGeneral(){
+  document.body.classList.toggle('falla-general-modo', !!fallaGeneralActiva);
 }
 function renderFallaGeneral(){
   const activaBox = document.getElementById('fallaGeneralActivaBox');
@@ -5350,6 +5377,7 @@ async function guardarFallaGeneral(){
   const registradoPor = currentUser ? currentUser.nombre : 'Desconocido';
 
   fallaGeneralActiva = { id, fechaInicio, causa, estado:'Activa', fechaResolucion:'', causaResolucion:'', registradoPor, eliminado:'no' };
+  actualizarModoFallaGeneral();
   document.getElementById('fallaGeneralModal').style.display = 'none';
   renderFallaGeneral();
 
@@ -5377,6 +5405,7 @@ async function guardarResolucionFallaGeneral(){
   const resuelta = Object.assign({}, fallaGeneralActiva, {estado:'Resuelta', fechaResolucion, causaResolucion});
 
   fallaGeneralActiva = null;
+  actualizarModoFallaGeneral();
   fallaGeneralHistorialCache.unshift(resuelta);
   document.getElementById('fallaGeneralResolverModal').style.display = 'none';
   renderFallaGeneral();
@@ -6764,6 +6793,7 @@ function showApp(){
   const navPapelera = document.getElementById('nav-papelera'); if(navPapelera) navPapelera.style.display = isMasterUser() ? 'flex' : 'none';
   actualizarPapeleraFlotante();
   actualizarSemaforoSalud();
+  cargarFallaGeneral();
   const secA = document.getElementById('sectionLabelAdmin'); if(secA) secA.style.display = isMasterUser() ? 'block' : 'none';
   const navFallas = document.getElementById('nav-fallas'); if(navFallas) navFallas.style.display = isMasterUser() ? 'flex' : 'none';
   const navMant = document.getElementById('nav-mantenimiento'); if(navMant) navMant.style.display = puedeVerMantenimiento() ? 'flex' : 'none';
@@ -7851,6 +7881,10 @@ function goBackFromResumen(){
   else goTo('tom-comentarios');
 }
 function finalizarIncidencia(){
+  if(fallaGeneralActiva && esUsuarioBasico()){
+    alert('🚨 Actualmente hay una FALLA GENERAL del sistema activa en Santiago.\n\nNo se pueden registrar nuevas incidencias mientras se resuelve. Intenta de nuevo más tarde.');
+    return;
+  }
   const nuevoRegistro = Object.assign({}, formData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoPorUsuario: currentUser ? currentUser.usuario : '', registradoEl:fechaHoraRD()});
   let tablaDestino;
   if(formData.sistema){
@@ -7932,6 +7966,10 @@ function buildVtResumen(){
   document.getElementById('vtResumenBox').innerHTML = rows.map(r=>`<div class="summary-row"><b>${r[0]}</b><span>${r[1]}</span></div>`).join('');
 }
 function finalizarVt(){
+  if(fallaGeneralActiva && esUsuarioBasico()){
+    alert('🚨 Actualmente hay una FALLA GENERAL del sistema activa en Santiago.\n\nNo se pueden registrar nuevas incidencias mientras se resuelve. Intenta de nuevo más tarde.');
+    return;
+  }
   const nuevoRegistroVt = Object.assign({}, vtData, {id:Date.now(), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoPorUsuario: currentUser ? currentUser.usuario : '', registradoEl:fechaHoraRD()});
   vtRecords.push(nuevoRegistroVt);
   saveVtRecords();
@@ -9438,6 +9476,7 @@ function renderAll(){
   actualizarNotificaciones();
   actualizarSemaforoSalud();
   revisarConfirmacionesPendientes();
+  cargarFallaGeneral();
   const criticasVisible = document.getElementById('subtabContent-criticas');
   if(criticasVisible && criticasVisible.style.display !== 'none') renderTableCriticas();
   const slaVisible = document.getElementById('subtabContent-sla');
