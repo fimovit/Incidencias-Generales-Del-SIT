@@ -1789,7 +1789,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.68.0</div>
+<div id="versionLabel">V4.69.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1883,7 +1883,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.68.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.69.0
     </div>
   </div>
 </div>
@@ -2172,6 +2172,36 @@
     <div class="btn-row" style="margin-top:0;">
       <button class="btn btn-secondary" onclick="resolverConfirmarPersonalizado(false)">Cancelar</button>
       <button class="btn btn-primary" onclick="resolverConfirmarPersonalizado(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="fallaGeneralModal" style="display:none;position:fixed;inset:0;z-index:420;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="document.getElementById('fallaGeneralModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="margin-bottom:6px;">🚨 Marcar Falla General</h2>
+    <div class="subtitle" style="margin-bottom:18px;">Esto indica que TODO el sistema de Santiago (TOMs y torniquetes) está fuera de servicio, no un equipo puntual.</div>
+    <label class="req">Causa de la falla</label>
+    <textarea id="fallaGeneralCausaInput" rows="3" placeholder="Ej: Corte eléctrico general en la estación, falla del servidor central, etc."></textarea>
+    <div class="error-msg" id="err-fallaGeneralCausa">Debes indicar la causa de la falla.</div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="document.getElementById('fallaGeneralModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarFallaGeneral()">🚨 Confirmar Falla General</button>
+    </div>
+  </div>
+</div>
+
+<div id="fallaGeneralResolverModal" style="display:none;position:fixed;inset:0;z-index:420;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="document.getElementById('fallaGeneralResolverModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="margin-bottom:6px;">✅ Resolver Falla General</h2>
+    <div class="subtitle" style="margin-bottom:18px;">Indica qué se hizo para resolver la falla general.</div>
+    <label class="req">Causa/solución de la resolución</label>
+    <textarea id="fallaGeneralResolucionInput" rows="3" placeholder="Ej: Se restableció el servicio eléctrico, se reinició el servidor central, etc."></textarea>
+    <div class="error-msg" id="err-fallaGeneralResolucion">Debes indicar cómo se resolvió.</div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="document.getElementById('fallaGeneralResolverModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarResolucionFallaGeneral()">✅ Confirmar Resolución</button>
     </div>
   </div>
 </div>
@@ -3480,6 +3510,24 @@
       </div>
     </div>
 
+    <div class="card" id="fallaGeneralCard" style="margin-bottom:22px;display:none;">
+      <h2 style="margin-bottom:6px;">🚨 Falla General del Sistema</h2>
+      <div class="subtitle" style="margin-bottom:14px;">Cuando TODO el sistema de Santiago (TOMs y torniquetes) queda fuera de servicio a la vez — no una falla puntual de un equipo.</div>
+
+      <div id="fallaGeneralActivaBox" style="display:none;background:#fdecea;border:1.5px solid #f3c9c6;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:800;color:#c62828;margin-bottom:6px;">🚨 FALLA GENERAL ACTIVA</div>
+        <div style="font-size:13px;color:var(--teal-dark);margin-bottom:4px;">Desde: <b id="fallaGeneralInicioTexto">—</b></div>
+        <div style="font-size:13px;color:var(--teal-dark);margin-bottom:14px;">Causa: <b id="fallaGeneralCausaTexto">—</b></div>
+        <button class="btn btn-primary" onclick="abrirModalResolverFallaGeneral()">✅ Marcar como Resuelta</button>
+      </div>
+
+      <div id="fallaGeneralBotonBox">
+        <button class="btn btn-secondary" style="background:#fdecea;color:#c62828;" onclick="abrirModalFallaGeneral()">🚨 Marcar Falla General</button>
+      </div>
+
+      <div id="fallaGeneralHistorial" style="margin-top:18px;"></div>
+    </div>
+
     <div class="mant-kpi-row">
       <div class="mant-kpi-card">
         <div class="mant-kpi-icono">🗂️</div>
@@ -3994,7 +4042,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.68.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.69.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5241,6 +5289,108 @@ async function guardarRondaMantenimiento(){
   alert('✔ Ronda de inspección guardada.' + (isLiveEnabled() ? '' : '\n\n⚠️ No estás conectado en vivo — esto solo se guardó en este navegador.'));
 }
 
+/* ================= FALLA GENERAL DEL SISTEMA (Santiago) ================= */
+let fallaGeneralActiva = null;
+let fallaGeneralHistorialCache = [];
+
+async function cargarFallaGeneral(){
+  const card = document.getElementById('fallaGeneralCard');
+  if(!card) return;
+  card.style.display = puedeEditarEstado() ? 'block' : 'none';
+  if(!puedeEditarEstado() || !isLiveEnabled()) return;
+
+  try{
+    const res = await fetch(liveUrl + '?sheet=fallageneral', {method:'GET'});
+    const data = await res.json();
+    if(!Array.isArray(data)){ return; }
+    const vivas = data.filter(f=> f.eliminado !== 'si');
+    fallaGeneralActiva = vivas.find(f=> f.estado === 'Activa') || null;
+    fallaGeneralHistorialCache = vivas.filter(f=> f.estado !== 'Activa').sort((a,b)=> Number(b.id) - Number(a.id));
+    renderFallaGeneral();
+  }catch(err){ console.error('No se pudo cargar Falla General:', err); }
+}
+function renderFallaGeneral(){
+  const activaBox = document.getElementById('fallaGeneralActivaBox');
+  const botonBox = document.getElementById('fallaGeneralBotonBox');
+  if(fallaGeneralActiva){
+    activaBox.style.display = 'block';
+    botonBox.style.display = 'none';
+    document.getElementById('fallaGeneralInicioTexto').textContent = fallaGeneralActiva.fechaInicio || '—';
+    document.getElementById('fallaGeneralCausaTexto').textContent = fallaGeneralActiva.causa || '—';
+  } else {
+    activaBox.style.display = 'none';
+    botonBox.style.display = 'block';
+  }
+
+  const cont = document.getElementById('fallaGeneralHistorial');
+  if(fallaGeneralHistorialCache.length === 0){
+    cont.innerHTML = '';
+    return;
+  }
+  cont.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">Historial de fallas generales anteriores</h3>' +
+    fallaGeneralHistorialCache.map(f=>`<div class="fdi-card" style="cursor:default;margin-bottom:10px;">
+      <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
+      <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
+      <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
+    </div>`).join('');
+}
+function abrirModalFallaGeneral(){
+  document.getElementById('fallaGeneralCausaInput').value = '';
+  document.getElementById('err-fallaGeneralCausa').style.display = 'none';
+  document.getElementById('fallaGeneralModal').style.display = 'flex';
+}
+async function guardarFallaGeneral(){
+  const causa = document.getElementById('fallaGeneralCausaInput').value.trim();
+  if(!causa){ document.getElementById('err-fallaGeneralCausa').style.display = 'block'; return; }
+  if(!isLiveEnabled()){ alert('El modo en vivo no está activo.'); return; }
+
+  const id = Date.now();
+  const fechaInicio = fechaHoraRD();
+  const registradoPor = currentUser ? currentUser.nombre : 'Desconocido';
+
+  fallaGeneralActiva = { id, fechaInicio, causa, estado:'Activa', fechaResolucion:'', causaResolucion:'', registradoPor, eliminado:'no' };
+  document.getElementById('fallaGeneralModal').style.display = 'none';
+  renderFallaGeneral();
+
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'fallageneral', action:'agregar', id, fechaInicio, causa, registradoPor})
+    });
+    registrarAuditoria('🚨 Marcó FALLA GENERAL del sistema (Santiago)', `Causa: "${causa}" | Inicio: ${fechaInicio}`);
+  }catch(err){ console.error('No se pudo guardar la Falla General:', err); alert('Ocurrió un error al guardar. Verifica tu conexión.'); }
+}
+function abrirModalResolverFallaGeneral(){
+  document.getElementById('fallaGeneralResolucionInput').value = '';
+  document.getElementById('err-fallaGeneralResolucion').style.display = 'none';
+  document.getElementById('fallaGeneralResolverModal').style.display = 'flex';
+}
+async function guardarResolucionFallaGeneral(){
+  if(!fallaGeneralActiva) return;
+  const causaResolucion = document.getElementById('fallaGeneralResolucionInput').value.trim();
+  if(!causaResolucion){ document.getElementById('err-fallaGeneralResolucion').style.display = 'block'; return; }
+
+  const fechaResolucion = fechaHoraRD();
+  const id = fallaGeneralActiva.id;
+  const resuelta = Object.assign({}, fallaGeneralActiva, {estado:'Resuelta', fechaResolucion, causaResolucion});
+
+  fallaGeneralActiva = null;
+  fallaGeneralHistorialCache.unshift(resuelta);
+  document.getElementById('fallaGeneralResolverModal').style.display = 'none';
+  renderFallaGeneral();
+
+  try{
+    await fetch(liveUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({sheet:'fallageneral', action:'resolver', id, fechaResolucion, causaResolucion})
+    });
+    registrarAuditoria('✅ Resolvió FALLA GENERAL del sistema (Santiago)', `Causa de la resolución: "${causaResolucion}" | Resuelta: ${fechaResolucion}`);
+  }catch(err){ console.error('No se pudo guardar la resolución de la Falla General:', err); alert('Ocurrió un error al guardar. Verifica tu conexión.'); }
+}
+
 async function cargarMantenimiento(){
   inicializarFormularioMantenimiento();
   calcularPrediccionMantenimiento();
@@ -5485,6 +5635,12 @@ function renderGemeloSantiago(){
   const cont = document.getElementById('gemeloSantiagoBody');
   if(!cont) return;
   let html = '';
+  if(fallaGeneralActiva){
+    html += `<div style="background:#fdecea;border:1.5px solid #f3c9c6;border-radius:14px;padding:16px 20px;margin-bottom:16px;">
+      <div style="font-size:13.5px;font-weight:800;color:#c62828;margin-bottom:4px;">🚨 FALLA GENERAL ACTIVA — Todos los TOMs y torniquetes de Santiago están afectados</div>
+      <div style="font-size:12px;color:var(--teal-dark);">Desde ${escapeHtml(String(fallaGeneralActiva.fechaInicio||'—'))} · Causa: ${escapeHtml(String(fallaGeneralActiva.causa||'—'))}</div>
+    </div>`;
+  }
   VT_ESTACIONES.forEach(estacion=>{
     const esTerminal = estacion.indexOf('TERMINAL CENTRAL') !== -1;
     const gates = VT_GATES_BASE.concat(esTerminal ? VT_GATES_EXTRA : []);
@@ -7008,11 +7164,13 @@ function showPage(name){
     document.getElementById('pestanaActaTab').style.display = 'block';
     if(esAdminPlus) cargarEscaneos();
     cargarMantenimiento();
+    cargarFallaGeneral();
   }
   if(name==='gemelo'){
     if(!puedeEditarEstado()){ showPage('form'); return; }
     volverASeleccionGemelo();
     aplicarRestriccionGemelo();
+    cargarFallaGeneral().then(renderGemeloDigital);
     renderGemeloDigital();
   }
   if(name==='manual'){
