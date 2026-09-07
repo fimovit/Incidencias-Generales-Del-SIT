@@ -1810,7 +1810,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.71.1</div>
+<div id="versionLabel">V4.71.2</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1904,7 +1904,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.71.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.71.2
     </div>
   </div>
 </div>
@@ -2218,6 +2218,15 @@
       <button class="btn btn-secondary" onclick="document.getElementById('fallaGeneralModal').style.display='none'">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarFallaGeneral()">🚨 Confirmar Falla General</button>
     </div>
+  </div>
+</div>
+
+<div id="fallaGeneralEquiposDetalleModal" style="display:none;position:fixed;inset:0;z-index:425;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+    <button onclick="document.getElementById('fallaGeneralEquiposDetalleModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    <h2 style="margin-bottom:6px;">🔧 Equipos afectados</h2>
+    <div class="subtitle" style="margin-bottom:18px;" id="fallaGeneralEquiposDetalleSubtitulo">—</div>
+    <div id="fallaGeneralEquiposDetalleLista"></div>
   </div>
 </div>
 
@@ -4072,7 +4081,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.71.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.71.2'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5361,7 +5370,7 @@ function renderFallaGeneral(){
       elEquipos.style.cssText = 'font-size:13px;color:var(--teal-dark);margin-bottom:14px;';
       document.getElementById('fallaGeneralCausaTexto').parentElement.insertAdjacentElement('afterend', elEquipos);
     }
-    elEquipos.innerHTML = `Equipos afectados: <b>${listaEquipos.length}</b>`;
+    elEquipos.innerHTML = `Equipos afectados: <b>${listaEquipos.length}</b> <span style="color:var(--orange);font-weight:700;text-decoration:underline;cursor:pointer;" onclick="mostrarEquiposFallaGeneral('${attrJs(fallaGeneralActiva.id)}')">Ver lista →</span>`;
   } else {
     activaBox.style.display = 'none';
     botonBox.style.display = 'block';
@@ -5373,13 +5382,44 @@ function renderFallaGeneral(){
     cont.innerHTML = '';
   } else {
     cont.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">Historial de fallas generales anteriores</h3>' +
-      fallaGeneralHistorialCache.map(f=>`<div class="fdi-card" style="cursor:default;margin-bottom:10px;">
+      fallaGeneralHistorialCache.map(f=>`<div class="fdi-card" style="margin-bottom:10px;" onclick="mostrarEquiposFallaGeneral('${attrJs(f.id)}')" title="Clic para ver los equipos afectados">
         <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
         <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
         <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
         <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--orange);font-weight:700;">🔧 Ver equipos afectados →</div>
       </div>`).join('');
   }
+}
+function mostrarEquiposFallaGeneral(id){
+  const todas = fallaGeneralActiva ? [fallaGeneralActiva].concat(fallaGeneralHistorialCache) : fallaGeneralHistorialCache;
+  const falla = todas.find(f=> String(f.id) === String(id));
+  if(!falla) return;
+
+  const equipos = (falla.equiposAfectados || '').split(' ;;; ').filter(Boolean);
+  document.getElementById('fallaGeneralEquiposDetalleSubtitulo').textContent =
+    `Falla del ${falla.fechaInicio || '—'} — Causa: ${falla.causa || '—'}`;
+
+  const cont = document.getElementById('fallaGeneralEquiposDetalleLista');
+  if(equipos.length === 0){
+    cont.innerHTML = '<div class="empty-state">No se registraron equipos específicos para esta falla.</div>';
+  } else {
+    // Agrupa por estación para que sea fácil de leer.
+    const porEstacion = {};
+    equipos.forEach(e=>{
+      const [est, equipo] = e.split('|||');
+      if(!porEstacion[est]) porEstacion[est] = [];
+      porEstacion[est].push(equipo);
+    });
+    cont.innerHTML = Object.entries(porEstacion).map(([est, lista])=>`
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;">📍 ${escapeHtml(est||'—')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${lista.map(eq=>`<span style="background:var(--gray-light);border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:700;color:var(--gray-text);">${(eq||'').indexOf('TOM')===0?'🖥️':'🚧'} ${escapeHtml(eq||'—')}</span>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('fallaGeneralEquiposDetalleModal').style.display = 'flex';
 }
 function renderEquiposFallaGeneral(){
   const cont = document.getElementById('fallaGeneralEquiposBox');
