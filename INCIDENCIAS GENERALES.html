@@ -1810,7 +1810,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.70.0</div>
+<div id="versionLabel">V4.71.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1904,7 +1904,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.70.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.71.0
     </div>
   </div>
 </div>
@@ -2198,13 +2198,22 @@
 </div>
 
 <div id="fallaGeneralModal" style="display:none;position:fixed;inset:0;z-index:420;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
-  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
+  <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;">
     <button onclick="document.getElementById('fallaGeneralModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:var(--gray-light);border:none;color:var(--gray-text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
     <h2 style="margin-bottom:6px;">🚨 Marcar Falla General</h2>
     <div class="subtitle" style="margin-bottom:18px;">Esto indica que TODO el sistema de Santiago (TOMs y torniquetes) está fuera de servicio, no un equipo puntual.</div>
     <label class="req">Causa de la falla</label>
     <textarea id="fallaGeneralCausaInput" rows="3" placeholder="Ej: Corte eléctrico general en la estación, falla del servidor central, etc."></textarea>
     <div class="error-msg" id="err-fallaGeneralCausa">Debes indicar la causa de la falla.</div>
+
+    <label class="req" style="margin-top:14px;">¿Qué equipos están afectados?</label>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <input type="checkbox" id="fallaGeneralTodosChk" onchange="toggleTodosEquiposFallaGeneral(this.checked)" style="width:16px;height:16px;">
+      <label for="fallaGeneralTodosChk" style="margin:0;font-size:12.5px;font-weight:700;color:var(--teal-dark);">Marcar/desmarcar todos los equipos</label>
+    </div>
+    <div id="fallaGeneralEquiposBox" style="max-height:260px;overflow-y:auto;background:var(--gray-light);border-radius:12px;padding:12px 14px;"></div>
+    <div class="error-msg" id="err-fallaGeneralEquipos">Selecciona al menos un equipo afectado.</div>
+
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="document.getElementById('fallaGeneralModal').style.display='none'">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarFallaGeneral()">🚨 Confirmar Falla General</button>
@@ -3547,6 +3556,7 @@
       </div>
 
       <div id="fallaGeneralHistorial" style="margin-top:18px;"></div>
+      <div id="fallaGeneralHistorialDetallado" style="margin-top:18px;display:none;"></div>
     </div>
 
     <div class="mant-kpi-row">
@@ -4063,7 +4073,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.70.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.71.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5344,39 +5354,120 @@ function renderFallaGeneral(){
     botonBox.style.display = 'none';
     document.getElementById('fallaGeneralInicioTexto').textContent = fallaGeneralActiva.fechaInicio || '—';
     document.getElementById('fallaGeneralCausaTexto').textContent = fallaGeneralActiva.causa || '—';
+    const listaEquipos = (fallaGeneralActiva.equiposAfectados || '').split(' ;;; ').filter(Boolean);
+    let elEquipos = document.getElementById('fallaGeneralEquiposTexto');
+    if(!elEquipos){
+      elEquipos = document.createElement('div');
+      elEquipos.id = 'fallaGeneralEquiposTexto';
+      elEquipos.style.cssText = 'font-size:13px;color:var(--teal-dark);margin-bottom:14px;';
+      document.getElementById('fallaGeneralCausaTexto').parentElement.insertAdjacentElement('afterend', elEquipos);
+    }
+    elEquipos.innerHTML = `Equipos afectados: <b>${listaEquipos.length}</b>`;
   } else {
     activaBox.style.display = 'none';
     botonBox.style.display = 'block';
   }
 
+  // Historial básico (fecha/causa/resolución), visible para Fiscalizador y Administradores.
   const cont = document.getElementById('fallaGeneralHistorial');
   if(fallaGeneralHistorialCache.length === 0){
     cont.innerHTML = '';
+  } else {
+    cont.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">Historial de fallas generales anteriores</h3>' +
+      fallaGeneralHistorialCache.map(f=>`<div class="fdi-card" style="cursor:default;margin-bottom:10px;">
+        <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
+        <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
+      </div>`).join('');
+  }
+
+  // Historial DETALLADO con equipos afectados — exclusivo de Administrador Plus.
+  const contDetallado = document.getElementById('fallaGeneralHistorialDetallado');
+  if(!contDetallado) return;
+  if(!puedeExportar()){
+    contDetallado.style.display = 'none';
+    contDetallado.innerHTML = '';
     return;
   }
-  cont.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">Historial de fallas generales anteriores</h3>' +
-    fallaGeneralHistorialCache.map(f=>`<div class="fdi-card" style="cursor:default;margin-bottom:10px;">
-      <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
-      <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
-      <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
-      <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
-    </div>`).join('');
+  contDetallado.style.display = 'block';
+  const todas = fallaGeneralActiva ? [fallaGeneralActiva].concat(fallaGeneralHistorialCache) : fallaGeneralHistorialCache;
+  if(todas.length === 0){
+    contDetallado.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">📋 Historial completo de Fallas Generales (Administrador Plus)</h3><div class="empty-state">Todavía no hay ninguna falla general registrada.</div>';
+    return;
+  }
+  contDetallado.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">📋 Historial completo de Fallas Generales (Administrador Plus)</h3>' +
+    todas.map(f=>{
+      const equipos = (f.equiposAfectados || '').split(' ;;; ').filter(Boolean);
+      const equiposHtml = equipos.length === 0 ? '<span style="color:#96a2a8;">Sin equipos registrados</span>' :
+        '<ul style="margin:6px 0 0 0;padding-left:18px;font-size:11.5px;color:var(--gray-text);">' +
+        equipos.map(e=>{
+          const [est, gate] = e.split('|||');
+          return `<li>${escapeHtml(est||'')} — ${escapeHtml(gate||'')}</li>`;
+        }).join('') + '</ul>';
+      return `<div class="fdi-card" style="cursor:default;margin-bottom:12px;${f.estado==='Activa' ? 'border-left:4px solid #e53935;' : ''}">
+        <div class="fdi-fila"><span class="fdi-lbl">Estado</span><span class="fdi-val" style="font-weight:800;color:${f.estado==='Activa'?'#e53935':'#237a45'};">${escapeHtml(String(f.estado||''))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">👤 Registrado por</span><span class="fdi-val">${escapeHtml(String(f.registradoPor||'—'))}</span></div>
+        <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
+        <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
+        <div style="margin-top:8px;font-size:11.5px;font-weight:700;color:var(--teal-dark);">🔧 Equipos afectados (${equipos.length}):</div>
+        ${equiposHtml}
+      </div>`;
+    }).join('');
+}
+function renderEquiposFallaGeneral(){
+  const cont = document.getElementById('fallaGeneralEquiposBox');
+  let html = '';
+  VT_ESTACIONES.forEach(estacion=>{
+    const esTerminal = estacion.indexOf('TERMINAL CENTRAL') !== -1;
+    const gates = VT_GATES_BASE.concat(esTerminal ? VT_GATES_EXTRA : []);
+    html += `<div style="margin-bottom:10px;">
+      <div style="font-size:11.5px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;">📍 ${escapeHtml(estacion)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;">
+        ${gates.map(gate=>{
+          const valor = estacion + '|||' + gate;
+          return `<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-text);font-weight:600;">
+            <input type="checkbox" class="fg-equipo-chk" value="${attrJs(valor)}" onchange="actualizarEstadoTodosFallaGeneral()" style="width:14px;height:14px;">
+            ${escapeHtml(gate)}
+          </label>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  cont.innerHTML = html;
+  document.getElementById('fallaGeneralTodosChk').checked = false;
+}
+function toggleTodosEquiposFallaGeneral(marcar){
+  document.querySelectorAll('.fg-equipo-chk').forEach(chk=> chk.checked = marcar);
+}
+function actualizarEstadoTodosFallaGeneral(){
+  const todos = document.querySelectorAll('.fg-equipo-chk');
+  const marcados = document.querySelectorAll('.fg-equipo-chk:checked');
+  document.getElementById('fallaGeneralTodosChk').checked = (todos.length === marcados.length);
 }
 function abrirModalFallaGeneral(){
   document.getElementById('fallaGeneralCausaInput').value = '';
   document.getElementById('err-fallaGeneralCausa').style.display = 'none';
+  document.getElementById('err-fallaGeneralEquipos').style.display = 'none';
+  renderEquiposFallaGeneral();
   document.getElementById('fallaGeneralModal').style.display = 'flex';
 }
 async function guardarFallaGeneral(){
   const causa = document.getElementById('fallaGeneralCausaInput').value.trim();
   if(!causa){ document.getElementById('err-fallaGeneralCausa').style.display = 'block'; return; }
+  const equiposSeleccionados = Array.from(document.querySelectorAll('.fg-equipo-chk:checked')).map(chk=> chk.value);
+  if(equiposSeleccionados.length === 0){ document.getElementById('err-fallaGeneralEquipos').style.display = 'block'; return; }
+  document.getElementById('err-fallaGeneralEquipos').style.display = 'none';
   if(!isLiveEnabled()){ alert('El modo en vivo no está activo.'); return; }
 
   const id = Date.now();
   const fechaInicio = fechaHoraRD();
   const registradoPor = currentUser ? currentUser.nombre : 'Desconocido';
+  const equiposAfectados = equiposSeleccionados.join(' ;;; ');
 
-  fallaGeneralActiva = { id, fechaInicio, causa, estado:'Activa', fechaResolucion:'', causaResolucion:'', registradoPor, eliminado:'no' };
+  fallaGeneralActiva = { id, fechaInicio, causa, estado:'Activa', fechaResolucion:'', causaResolucion:'', registradoPor, eliminado:'no', equiposAfectados };
   actualizarModoFallaGeneral();
   document.getElementById('fallaGeneralModal').style.display = 'none';
   renderFallaGeneral();
@@ -5385,9 +5476,9 @@ async function guardarFallaGeneral(){
     await fetch(liveUrl, {
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({sheet:'fallageneral', action:'agregar', id, fechaInicio, causa, registradoPor})
+      body: JSON.stringify({sheet:'fallageneral', action:'agregar', id, fechaInicio, causa, registradoPor, equiposAfectados})
     });
-    registrarAuditoria('🚨 Marcó FALLA GENERAL del sistema (Santiago)', `Causa: "${causa}" | Inicio: ${fechaInicio}`);
+    registrarAuditoria('🚨 Marcó FALLA GENERAL del sistema (Santiago)', `Causa: "${causa}" | Inicio: ${fechaInicio} | Equipos afectados: ${equiposSeleccionados.length}`);
   }catch(err){ console.error('No se pudo guardar la Falla General:', err); alert('Ocurrió un error al guardar. Verifica tu conexión.'); }
 }
 function abrirModalResolverFallaGeneral(){
@@ -10081,8 +10172,19 @@ function toggleSeleccionarTodos(tabla, checkbox){
   document.querySelectorAll('.chk-' + tabla).forEach(chk=> chk.checked = checkbox.checked);
   actualizarBarraLote(tabla);
 }
+let seleccionSistemaIds = new Set();
+let seleccionVtIds = new Set();
 function idsSeleccionados(tabla){
-  return Array.from(document.querySelectorAll('.chk-' + tabla + ':checked')).map(chk=> chk.value);
+  return Array.from(tabla === 'sistema' ? seleccionSistemaIds : seleccionVtIds);
+}
+function toggleSeleccionFila(tabla, id, marcado){
+  const set = tabla === 'sistema' ? seleccionSistemaIds : seleccionVtIds;
+  if(marcado) set.add(String(id)); else set.delete(String(id));
+  actualizarBarraLote(tabla);
+}
+function limpiarSeleccionLote(tabla){
+  (tabla === 'sistema' ? seleccionSistemaIds : seleccionVtIds).clear();
+  actualizarBarraLote(tabla);
 }
 function actualizarBarraLote(tabla){
   const seleccionados = idsSeleccionados(tabla);
@@ -10116,6 +10218,7 @@ async function aplicarCambioEstadoLote(tabla){
   });
   if(tabla === 'sistema') saveRecords(); else saveVtRecords();
   registrarAuditoria('Cambio de estado en lote → "' + nuevoEstado + '"', `${seleccionados.length} incidencia(s): ${referencias.join(', ')}`);
+  limpiarSeleccionLote(tabla);
   if(tabla === 'sistema') renderTableSistema(); else renderTableVt();
 }
 async function enviarPapeleraLote(tabla){
@@ -10136,6 +10239,7 @@ async function enviarPapeleraLote(tabla){
   if(tabla === 'sistema') saveRecords(); else saveVtRecords();
   registrarAuditoria('Envío a papelera en lote', `${seleccionados.length} incidencia(s): ${referencias.join(', ')}`);
   actualizarPapeleraFlotante();
+  limpiarSeleccionLote(tabla);
   if(tabla === 'sistema') renderTableSistema(); else renderTableVt();
 }
 
@@ -11513,7 +11617,7 @@ function renderTableSistema(){
       tr.id = 'row-sistema-' + r.id;
       if(canEdit){ tr.style.cursor = 'pointer'; tr.title = 'Clic para actualizar el estado'; tr.onclick = ()=> abrirEditorIncidencia('sistema', r.id); }
       const esPrioridad = !estaResuelta(r,'sistema') && edadEnHoras(r) > umbralCriticoHoras();
-      tr.innerHTML = `<td style="display:${canEdit?'':'none'};"><input type="checkbox" class="chk-sistema" value="${r.id}" onclick="event.stopPropagation(); actualizarBarraLote('sistema');"></td>
+      tr.innerHTML = `<td style="display:${canEdit?'':'none'};"><input type="checkbox" class="chk-sistema" value="${r.id}" ${seleccionSistemaIds.has(String(r.id))?'checked':''} onclick="event.stopPropagation(); toggleSeleccionFila('sistema', '${attrJs(r.id)}', this.checked);"></td>
         <td>${i+1}</td><td>${escapeHtml(r.fecha||'')}</td><td>${escapeHtml(r.provincia||'')}</td><td>${escapeHtml(r.sistema||'')}</td><td>${escapeHtml(r.detalle||'')}</td>
         <td>${escapeHtml(r.ficha||'')}</td><td>${escapeHtml(r.falla||'')}</td><td>${escapeHtml(r.veces||'')}</td><td>${escapeHtml(r.reportada||'')}</td>
         <td>${estadoBadge(r.estado)}${esPrioridad ? '<span class="row-priority-flag">🚨 +' + umbralCriticoHoras() + 'H</span>' : ''}</td>
@@ -11541,6 +11645,7 @@ function renderTableSistema(){
   const tend1 = tendenciaPorDia(activosSistema, 14);
   drawLineChart('chartTendencia1', 'chartTendencia1_ref', tend1.etiquetas, tend1.valores, '#005879');
   ajustarZoomTablaMovil('dataTable1');
+  actualizarBarraLote('sistema');
 }
 function renderTableVt(){
   const tbody = document.getElementById('tableBody2');
@@ -11574,7 +11679,7 @@ function renderTableVt(){
       tr.id = 'row-vt-' + r.id;
       if(canEdit){ tr.style.cursor = 'pointer'; tr.title = 'Clic para actualizar el estado'; tr.onclick = ()=> abrirEditorIncidencia('vt', r.id); }
       const esPrioridad = !estaResuelta(r,'vt') && edadEnHoras(r) > umbralCriticoHoras();
-      tr.innerHTML = `<td style="display:${canEdit?'':'none'};"><input type="checkbox" class="chk-vt" value="${r.id}" onclick="event.stopPropagation(); actualizarBarraLote('vt');"></td>
+      tr.innerHTML = `<td style="display:${canEdit?'':'none'};"><input type="checkbox" class="chk-vt" value="${r.id}" ${seleccionVtIds.has(String(r.id))?'checked':''} onclick="event.stopPropagation(); toggleSeleccionFila('vt', '${attrJs(r.id)}', this.checked);"></td>
         <td>${i+1}</td><td>${escapeHtml(r.tipoReporte||'Validador/Torniquete')}</td><td>${escapeHtml(r.fecha||'')}</td><td>${escapeHtml(r.estacion||'')}</td><td>${escapeHtml(r.gate||'')}</td><td>${escapeHtml(r.falla||'')}</td>
         <td>${escapeHtml(r.veces||'')}</td><td>${escapeHtml(r.reportada||'')}</td><td>${escapeHtml(r.repiteMismoEquipo||'')}</td><td>${estadoBadge(r.estado)}${esPrioridad ? '<span class="row-priority-flag">🚨 +' + umbralCriticoHoras() + 'H</span>' : ''}</td>
         <td>${estaResuelta(r,'vt') ? '—' : `<span class="timer-badge timer-normal" id="timer-vt-${r.id}">—</span>`}</td>
@@ -11603,6 +11708,7 @@ function renderTableVt(){
   const tend2 = tendenciaPorDia(activosVt, 14);
   drawLineChart('chartTendencia2', 'chartTendencia2_ref', tend2.etiquetas, tend2.valores, '#F06624');
   ajustarZoomTablaMovil('dataTable2');
+  actualizarBarraLote('vt');
 }
 
 function drawBarChart(canvasId, refName, dataObj, color, onClickLabel){
