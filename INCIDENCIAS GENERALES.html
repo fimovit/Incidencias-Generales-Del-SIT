@@ -1810,7 +1810,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.71.0</div>
+<div id="versionLabel">V4.71.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1904,7 +1904,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.71.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.71.1
     </div>
   </div>
 </div>
@@ -3556,7 +3556,6 @@
       </div>
 
       <div id="fallaGeneralHistorial" style="margin-top:18px;"></div>
-      <div id="fallaGeneralHistorialDetallado" style="margin-top:18px;display:none;"></div>
     </div>
 
     <div class="mant-kpi-row">
@@ -4073,7 +4072,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.71.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.71.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -5381,41 +5380,6 @@ function renderFallaGeneral(){
         <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
       </div>`).join('');
   }
-
-  // Historial DETALLADO con equipos afectados — exclusivo de Administrador Plus.
-  const contDetallado = document.getElementById('fallaGeneralHistorialDetallado');
-  if(!contDetallado) return;
-  if(!puedeExportar()){
-    contDetallado.style.display = 'none';
-    contDetallado.innerHTML = '';
-    return;
-  }
-  contDetallado.style.display = 'block';
-  const todas = fallaGeneralActiva ? [fallaGeneralActiva].concat(fallaGeneralHistorialCache) : fallaGeneralHistorialCache;
-  if(todas.length === 0){
-    contDetallado.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">📋 Historial completo de Fallas Generales (Administrador Plus)</h3><div class="empty-state">Todavía no hay ninguna falla general registrada.</div>';
-    return;
-  }
-  contDetallado.innerHTML = '<h3 style="font-size:13px;color:var(--gray-text);margin-bottom:10px;">📋 Historial completo de Fallas Generales (Administrador Plus)</h3>' +
-    todas.map(f=>{
-      const equipos = (f.equiposAfectados || '').split(' ;;; ').filter(Boolean);
-      const equiposHtml = equipos.length === 0 ? '<span style="color:#96a2a8;">Sin equipos registrados</span>' :
-        '<ul style="margin:6px 0 0 0;padding-left:18px;font-size:11.5px;color:var(--gray-text);">' +
-        equipos.map(e=>{
-          const [est, gate] = e.split('|||');
-          return `<li>${escapeHtml(est||'')} — ${escapeHtml(gate||'')}</li>`;
-        }).join('') + '</ul>';
-      return `<div class="fdi-card" style="cursor:default;margin-bottom:12px;${f.estado==='Activa' ? 'border-left:4px solid #e53935;' : ''}">
-        <div class="fdi-fila"><span class="fdi-lbl">Estado</span><span class="fdi-val" style="font-weight:800;color:${f.estado==='Activa'?'#e53935':'#237a45'};">${escapeHtml(String(f.estado||''))}</span></div>
-        <div class="fdi-fila"><span class="fdi-lbl">📅 Inicio</span><span class="fdi-val">${escapeHtml(String(f.fechaInicio||'—'))}</span></div>
-        <div class="fdi-fila"><span class="fdi-lbl">⚠️ Causa</span><span class="fdi-val">${escapeHtml(String(f.causa||'—'))}</span></div>
-        <div class="fdi-fila"><span class="fdi-lbl">👤 Registrado por</span><span class="fdi-val">${escapeHtml(String(f.registradoPor||'—'))}</span></div>
-        <div class="fdi-fila"><span class="fdi-lbl">✅ Resuelta</span><span class="fdi-val">${escapeHtml(String(f.fechaResolucion||'—'))}</span></div>
-        <div class="fdi-fila fdi-solucion"><span class="fdi-val" style="font-weight:500;">${escapeHtml(String(f.causaResolucion||''))}</span></div>
-        <div style="margin-top:8px;font-size:11.5px;font-weight:700;color:var(--teal-dark);">🔧 Equipos afectados (${equipos.length}):</div>
-        ${equiposHtml}
-      </div>`;
-    }).join('');
 }
 function renderEquiposFallaGeneral(){
   const cont = document.getElementById('fallaGeneralEquiposBox');
@@ -5423,14 +5387,26 @@ function renderEquiposFallaGeneral(){
   VT_ESTACIONES.forEach(estacion=>{
     const esTerminal = estacion.indexOf('TERMINAL CENTRAL') !== -1;
     const gates = VT_GATES_BASE.concat(esTerminal ? VT_GATES_EXTRA : []);
-    html += `<div style="margin-bottom:10px;">
+    const toms = ['TOM - 01', 'TOM - 02'];
+    html += `<div style="margin-bottom:14px;">
       <div style="font-size:11.5px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;">📍 ${escapeHtml(estacion)}</div>
+      <div style="font-size:10px;font-weight:700;color:#8a97a3;text-transform:uppercase;margin:6px 0 4px 0;">🚧 Torniquetes</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;">
         ${gates.map(gate=>{
           const valor = estacion + '|||' + gate;
           return `<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-text);font-weight:600;">
             <input type="checkbox" class="fg-equipo-chk" value="${attrJs(valor)}" onchange="actualizarEstadoTodosFallaGeneral()" style="width:14px;height:14px;">
             ${escapeHtml(gate)}
+          </label>`;
+        }).join('')}
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#8a97a3;text-transform:uppercase;margin:8px 0 4px 0;">🖥️ TOMs</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;">
+        ${toms.map(tom=>{
+          const valor = estacion + '|||' + tom;
+          return `<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-text);font-weight:600;">
+            <input type="checkbox" class="fg-equipo-chk" value="${attrJs(valor)}" onchange="actualizarEstadoTodosFallaGeneral()" style="width:14px;height:14px;">
+            ${escapeHtml(tom)}
           </label>`;
         }).join('')}
       </div>
