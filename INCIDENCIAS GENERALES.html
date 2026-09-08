@@ -598,14 +598,24 @@
   }
   .sidebar .brand strong{font-size:19px;letter-spacing:.3px;display:block;font-family:'Poppins';}
   .sidebar .brand span{display:block;font-size:10.5px;color:#8fc2d4;margin-top:2px;}
-  .nav-slider-pill{
-    position:absolute; left:10px; width:calc(100% - 20px); top:0; height:0;
-    border-radius:10px;
-    background:linear-gradient(135deg, var(--teal-2), var(--teal));
-    box-shadow:0 6px 16px rgba(0,88,121,.5);
-    transition: top .42s cubic-bezier(.34,1.3,.64,1), height .32s cubic-bezier(.34,1.3,.64,1), opacity .25s ease;
-    z-index:0; pointer-events:none; opacity:0;
+  @property --notch-y{
+    syntax: '<length>'; inherits: true; initial-value: 40px;
   }
+  .sidebar{
+    --notch-y:40px;
+    transition: --notch-y .42s cubic-bezier(.34,1.3,.64,1);
+    -webkit-mask-image:radial-gradient(circle 26px at 100% var(--notch-y), transparent 24px, #000 27px);
+    mask-image:radial-gradient(circle 26px at 100% var(--notch-y), transparent 24px, #000 27px);
+  }
+  .nav-bubble{
+    position:fixed; left:228px; top:calc(var(--notch-y) - 24px); width:48px; height:48px;
+    border-radius:50%; background:linear-gradient(145deg, var(--orange-2), var(--orange));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 14px rgba(240,102,36,.4), 0 2px 6px rgba(0,0,0,.25);
+    transition: top .42s cubic-bezier(.34,1.3,.64,1), opacity .25s ease, transform .38s cubic-bezier(.34,1.3,.64,1);
+    z-index:100; font-size:19px; opacity:0; transform:scale(.7); pointer-events:none;
+  }
+  .nav-bubble.activo{ opacity:1; transform:scale(1); }
   .nav-btn{
     position:relative; z-index:1;
     background:none;border:none;color:#bfe0ea;text-align:left;
@@ -618,9 +628,9 @@
   .nav-btn:hover{background:rgba(255,255,255,.07);color:var(--orange-2);border-left-color:var(--orange);transform:translateX(3px);}
   .nav-btn:active{transform:translateX(3px) scale(.97);}
   .nav-btn:hover .ic{transform:scale(1.18) rotate(-6deg);}
-  .nav-btn.active:hover{color:var(--white);transform:translateX(3px);}
+  .nav-btn.active:hover{color:var(--orange);transform:translateX(3px);}
   .nav-btn.active{
-    color:var(--white);font-weight:600;
+    color:var(--orange);font-weight:700;
     animation: navActivePop .38s cubic-bezier(.34,1.3,.64,1);
   }
   @keyframes navActivePop{
@@ -628,8 +638,8 @@
     60%{ transform:scale(1.015); }
     100%{ transform:scale(1); }
   }
-  .nav-btn .ic{font-size:16px;display:inline-block;transition:transform .3s cubic-bezier(.34,1.3,.64,1);}
-  .nav-btn.active .ic{transform:scale(1.08);}
+  .nav-btn .ic{font-size:16px;display:inline-block;transition:opacity .2s ease, transform .3s cubic-bezier(.34,1.3,.64,1);}
+  .nav-btn.active .ic{opacity:0;}
   .sidebar-section-label{
     font-size:10px;color:#5f8797;text-transform:uppercase;letter-spacing:.8px;font-weight:800;
     margin:18px 22px 8px 22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);
@@ -708,6 +718,7 @@
     width:360px;max-width:calc(100vw - 40px);
   }
   @media(max-width:768px){
+    #navBubble{ display:none !important; }
     .notif-panel-flotante{
       position:fixed !important;inset:0 !important;left:0 !important;right:0 !important;top:0 !important;
       width:auto !important;max-width:none !important;max-height:none !important;
@@ -1845,7 +1856,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.73.0</div>
+<div id="versionLabel">V4.74.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1939,7 +1950,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.73.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.74.0
     </div>
   </div>
 </div>
@@ -2382,7 +2393,6 @@
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebarMain">
-  <div class="nav-slider-pill" id="navSliderPill"></div>
   <div class="brand">
     <img class="logo-blanco-img" alt="FIMOVIT">
   </div>
@@ -2446,6 +2456,8 @@
     </div>
   </div>
 </div>
+
+<div class="nav-bubble" id="navBubble"><span id="navBubbleIc">🏠</span></div>
 
 <div class="main">
 
@@ -4118,7 +4130,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.73.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.74.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -7252,16 +7264,27 @@ setInterval(tickClock, 1000); tickClock();
 /* ================= NAVEGACIÓN DE PÁGINAS ================= */
 // Desliza el "pill" de fondo detrás del botón de menú activo, con una animación suave.
 function moverIndicadorNav(){
-  const pill = document.getElementById('navSliderPill');
-  if(!pill) return;
+  const bubble = document.getElementById('navBubble');
+  const sidebar = document.getElementById('sidebarMain');
+  if(!bubble || !sidebar) return;
   requestAnimationFrame(()=>{
     const activo = document.querySelector('.sidebar .nav-btn.active');
-    if(!activo || activo.offsetParent === null){ pill.style.opacity = '0'; return; }
-    pill.style.top = activo.offsetTop + 'px';
-    pill.style.height = activo.offsetHeight + 'px';
-    pill.style.opacity = '1';
+    if(!activo || activo.offsetParent === null){ bubble.classList.remove('activo'); return; }
+    const rectBoton = activo.getBoundingClientRect();
+    const rectSidebar = sidebar.getBoundingClientRect();
+    const centroY = rectBoton.top + rectBoton.height / 2;
+    sidebar.style.setProperty('--notch-y', (centroY - rectSidebar.top) + 'px');
+    bubble.style.top = (centroY - 24) + 'px';
+    const iconoEl = activo.querySelector('.ic');
+    if(iconoEl) document.getElementById('navBubbleIc').textContent = iconoEl.textContent;
+    bubble.classList.add('activo');
   });
 }
+document.addEventListener('DOMContentLoaded', ()=>{
+  const sidebarEl = document.getElementById('sidebarMain');
+  if(sidebarEl) sidebarEl.addEventListener('scroll', moverIndicadorNav);
+});
+window.addEventListener('resize', moverIndicadorNav);
 // Mueve el "notch" curvo y la burbuja elevada de la barra inferior móvil hacia la pestaña activa.
 function actualizarNotchMovil(name){
   const bar = document.getElementById('mobileBottomTabs');
