@@ -1871,7 +1871,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.75.1</div>
+<div id="versionLabel">V4.76.1</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -1965,7 +1965,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.75.1
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.76.1
     </div>
   </div>
 </div>
@@ -4154,7 +4154,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.75.1'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.76.1'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -11995,11 +11995,48 @@ async function exportarExcel(){
     XLSX.utils.book_append_sheet(wb, ws1, "Sistema de Transporte");
   }
   if(vtRecords.length){
-    const data2 = vtRecords.map((r,i)=>({'#':i+1,'Tipo':r.tipoReporte||'Validador/Torniquete','Fecha':r.fecha,'Estación':r.estacion,'Gate / TOM':r.gate,'Falla':r.falla,'Veces Ocurrida':r.veces,
-      'Reportada Antes':r.reportada,'Se Repite en Equipo':r.repiteMismoEquipo||'','Estado Actual':r.estado,'Comentario':r.comentario,'Asignado a':r.asignadoA||'','Hora Resuelta':r.horaResuelta||'','Resuelto por':r.resueltoPor||'','Registrado por':r.registradoPor,'Registrado el':r.registradoEl}));
-    const ws2 = XLSX.utils.json_to_sheet(data2);
-    ws2['!cols'] = [{wch:4},{wch:18},{wch:14},{wch:30},{wch:12},{wch:26},{wch:14},{wch:16},{wch:16},{wch:16},{wch:34},{wch:16},{wch:18},{wch:20},{wch:20},{wch:20}];
-    XLSX.utils.book_append_sheet(wb, ws2, "Validador-Torniquete");
+    // Se separan por tipo de equipo: si el "gate" empieza con "TOM" es un TOM, si no, es Torniquete/Gate.
+    const tomsRecs = vtRecords.filter(r=> /^TOM/i.test(String(r.gate||'').trim()));
+    const gatesRecs = vtRecords.filter(r=> !/^TOM/i.test(String(r.gate||'').trim()));
+
+    const anchosRef = [{wch:18},{wch:38},{wch:44},{wch:24},{wch:20},{wch:20},{wch:26},{wch:20},{wch:60}];
+    // Orden EXACTO de columnas, tal como en tus archivos de referencia — se fuerza explícitamente
+    // con la opción "header" para que nunca dependa del orden interno de las propiedades del objeto.
+    const headerToms  = ['Fecha del Reporte','ESTACION DONDE OCURRIO INCIDENCIA','SELECCIONE TOM QUE PRESENTE INCIDENCIA','DESCRIPCION DE FALLA','¿CUANTAS VECES HA OCURRIDO ESTA FALLA?','ESTA FALLA HABIA SIDO REPORTADA','SE REPITE ESTA INCIDENCIA EN EL MISMO EQUIPO','ESTATUS ACTUAL QUE PERMANECE','AGREGA UN COMENTARIO ADICIONAL SOBRE LA SOLUCION APLICADA'];
+    const headerGates = ['Fecha del Reporte','ESTACION DONDE OCURRIO INCIDENCIA','SELECCIONE GATE QUE PRESENTE INCIDENCIA','DESCRIPCION DE FALLA','¿CUANTAS VECES HA OCURRIDO ESTA FALLA?','ESTA FALLA HABIA SIDO REPORTADA','SE REPITE ESTA INCIDENCIA EN EL MISMO EQUIPO','ESTATUS ACTUAL QUE PERMANECE','AGREGA UN COMENTARIO ADICIONAL SOBRE LA SOLUCION APLICADA'];
+
+    if(tomsRecs.length){
+      const dataToms = tomsRecs.map(r=>({
+        'Fecha del Reporte': r.fecha,
+        'ESTACION DONDE OCURRIO INCIDENCIA': r.estacion,
+        'SELECCIONE TOM QUE PRESENTE INCIDENCIA': r.gate,
+        'DESCRIPCION DE FALLA': r.falla,
+        '¿CUANTAS VECES HA OCURRIDO ESTA FALLA?': r.veces,
+        'ESTA FALLA HABIA SIDO REPORTADA': String(r.reportada||'').replace('Sí','Si'),
+        'SE REPITE ESTA INCIDENCIA EN EL MISMO EQUIPO': String(r.repiteMismoEquipo||'').replace('Sí','Si'),
+        'ESTATUS ACTUAL QUE PERMANECE': r.estado,
+        'AGREGA UN COMENTARIO ADICIONAL SOBRE LA SOLUCION APLICADA': r.comentario||''
+      }));
+      const wsToms = XLSX.utils.json_to_sheet(dataToms, {header: headerToms});
+      wsToms['!cols'] = anchosRef;
+      XLSX.utils.book_append_sheet(wb, wsToms, "DatosTOMS");
+    }
+    if(gatesRecs.length){
+      const dataGates = gatesRecs.map(r=>({
+        'Fecha del Reporte': r.fecha,
+        'ESTACION DONDE OCURRIO INCIDENCIA': r.estacion,
+        'SELECCIONE GATE QUE PRESENTE INCIDENCIA': r.gate,
+        'DESCRIPCION DE FALLA': r.falla,
+        '¿CUANTAS VECES HA OCURRIDO ESTA FALLA?': r.veces,
+        'ESTA FALLA HABIA SIDO REPORTADA': String(r.reportada||'').replace('Sí','Si'),
+        'SE REPITE ESTA INCIDENCIA EN EL MISMO EQUIPO': String(r.repiteMismoEquipo||'').replace('Sí','Si'),
+        'ESTATUS ACTUAL QUE PERMANECE': r.estado,
+        'AGREGA UN COMENTARIO ADICIONAL SOBRE LA SOLUCION APLICADA': r.comentario||''
+      }));
+      const wsGates = XLSX.utils.json_to_sheet(dataGates, {header: headerGates});
+      wsGates['!cols'] = anchosRef;
+      XLSX.utils.book_append_sheet(wb, wsGates, "DatosGATES");
+    }
   }
 
   // ---- Hoja de Resumen: fórmulas de Excel reales (se recalculan solas si editas los datos) ----
@@ -12024,18 +12061,38 @@ async function exportarExcel(){
     sistemasConteo = sistemasUnicos.map(sis=>({label:sis, value: records.filter(r=>r.sistema===sis).length}));
   }
   if(vtRecords.length){
-    filas.push(['VALIDADOR / TORNIQUETE (Santiago)']);
-    filas.push(['Total incidencias registradas', {t:'n', f:"COUNTA('Validador-Torniquete'!A:A)-1"}]);
-    ESTADOS_RESUMEN.forEach(estado=>{
-      filas.push([estado, {t:'n', f:`COUNTIF('Validador-Torniquete'!J:J,"${estado}")`}]);
-    });
-    filas.push([]);
-    filas.push(['Incidencias por estación (para insertar gráfico: selecciona esta tabla → Insertar → Gráfico)']);
+    const tomsRecsResumen = vtRecords.filter(r=> /^TOM/i.test(String(r.gate||'').trim()));
+    const gatesRecsResumen = vtRecords.filter(r=> !/^TOM/i.test(String(r.gate||'').trim()));
+
+    if(tomsRecsResumen.length){
+      filas.push(['TOMS — BOLETERÍA (Santiago)']);
+      filas.push(['Total incidencias registradas', {t:'n', f:"COUNTA(DatosTOMS!A:A)-1"}]);
+      ESTADOS_RESUMEN.forEach(estado=>{
+        filas.push([estado, {t:'n', f:`COUNTIF(DatosTOMS!H:H,"${estado}")`}]);
+      });
+      filas.push([]);
+      filas.push(['Incidencias por estación (para insertar gráfico: selecciona esta tabla → Insertar → Gráfico)']);
+      const estacionesToms = Array.from(new Set(tomsRecsResumen.map(r=>r.estacion).filter(Boolean)));
+      estacionesToms.forEach(est=>{
+        filas.push([est, {t:'n', f:`COUNTIF(DatosTOMS!B:B,"${String(est).replace(/"/g,'""')}")`}]);
+      });
+      filas.push([]);
+    }
+    if(gatesRecsResumen.length){
+      filas.push(['TORNIQUETES / GATES (Santiago)']);
+      filas.push(['Total incidencias registradas', {t:'n', f:"COUNTA(DatosGATES!A:A)-1"}]);
+      ESTADOS_RESUMEN.forEach(estado=>{
+        filas.push([estado, {t:'n', f:`COUNTIF(DatosGATES!H:H,"${estado}")`}]);
+      });
+      filas.push([]);
+      filas.push(['Incidencias por estación (para insertar gráfico: selecciona esta tabla → Insertar → Gráfico)']);
+      const estacionesGates = Array.from(new Set(gatesRecsResumen.map(r=>r.estacion).filter(Boolean)));
+      estacionesGates.forEach(est=>{
+        filas.push([est, {t:'n', f:`COUNTIF(DatosGATES!B:B,"${String(est).replace(/"/g,'""')}")`}]);
+      });
+      filas.push([]);
+    }
     const estacionesUnicasXls = Array.from(new Set(vtRecords.map(r=>r.estacion).filter(Boolean)));
-    estacionesUnicasXls.forEach(est=>{
-      filas.push([est, {t:'n', f:`COUNTIF('Validador-Torniquete'!D:D,"${String(est).replace(/"/g,'""')}")`}]);
-    });
-    filas.push([]);
     estacionesConteo = estacionesUnicasXls.map(est=>({label:est, value: vtRecords.filter(r=>r.estacion===est).length}));
   }
 
