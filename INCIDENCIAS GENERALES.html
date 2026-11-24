@@ -1520,6 +1520,23 @@
   .sis-campo-acciones button{ width:28px; height:28px; border:none; border-radius:8px; background:var(--white); cursor:pointer; font-size:12px; }
   .sis-campo-acciones button:disabled{ opacity:.3; cursor:default; }
   .sis-campo-acciones button:hover:not(:disabled){ background:#fdecea; }
+  .sis-bases{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
+  .sis-base{ border:1.5px solid #e7edf0; border-radius:12px; padding:12px 14px; cursor:pointer; display:flex; flex-direction:column; gap:4px; transition:.2s ease; background:var(--white); }
+  .sis-base b{ font-size:13px; color:var(--teal-dark); }
+  .sis-base span{ font-size:11px; color:var(--gray-text); line-height:1.4; }
+  .sis-base:hover{ border-color:var(--teal-2); }
+  .sis-base.sel{ border-color:var(--orange); background:var(--orange-light); box-shadow:0 0 0 2px rgba(240,102,36,.18); }
+  .sis-pregunta{ background:var(--gray-light); border-radius:12px; padding:12px; margin-bottom:10px; }
+  .sis-pregunta-cab{ display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+  .sis-pregunta-cab input{ margin:0; flex:1; }
+  .sis-quitar{ border:none; background:var(--white); width:30px; height:30px; border-radius:8px; cursor:pointer; flex-shrink:0; }
+  .sis-quitar:hover{ background:#fdecea; }
+  .sis-nota{ font-size:11.5px; color:var(--gray-text); line-height:1.5; }
+  .sis-lista-modo{ display:flex; flex-direction:column; gap:8px; }
+  .sis-lista-modo select, .sis-lista-modo textarea{ margin:0; }
+  .sis-radio{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; margin:0; text-transform:none; letter-spacing:0; cursor:pointer; }
+  .sis-radio input{ width:auto; margin:0; }
+  .sis-lista-vista{ font-size:11px; color:#6b7c85; padding-left:4px; line-height:1.5; }
   /* ---------- Página de Bienvenida ---------- */
   .bienvenida-sistemas-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-top:10px;
@@ -1911,7 +1928,7 @@
 
 <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
 <div id="toastContainer"></div>
-<div id="versionLabel">V4.78.0</div>
+<div id="versionLabel">V4.79.0</div>
 
 <div id="nuevaVersionModal" style="display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:rgba(0,26,36,.7);">
   <div style="background:var(--white);border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 30px 60px rgba(0,0,0,.4);text-align:center;">
@@ -2005,7 +2022,7 @@
       </div>
     </div>
     <div class="login-version-footer">
-      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.78.0
+      <b>FIMOVIT</b> · Sistema de Gestión de Incidencias del SIT<br>Versión 4.79.0
     </div>
   </div>
 </div>
@@ -2309,8 +2326,9 @@
     </div>
     <div id="sisIconosSugeridos" style="display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 12px 0;"></div>
     <div id="sisCiudadBox">
-      <label>¿Dónde se registra?</label>
-      <select id="sisCiudad"><option value="Todas">Todas las provincias</option><option value="Santo Domingo">Solo Santo Domingo</option><option value="Santiago">Solo Santiago</option></select>
+      <label class="req">Provincia donde se registra</label>
+      <select id="sisCiudad" onchange="actualizarNotaDestino()"><option value="Santo Domingo">Santo Domingo</option><option value="Santiago">Santiago</option></select>
+      <div class="subtitle" id="sisDestinoNota" style="margin-top:-4px;"></div>
     </div>
 
     <h3 style="font-size:14px;color:var(--teal-dark);margin:16px 0 8px 0;">Disponibilidad</h3>
@@ -2329,15 +2347,19 @@
 
     <div id="sisFormularioIntegradoNota" style="display:none;margin-top:16px;padding:12px 14px;background:var(--gray-light);border-radius:12px;font-size:12.5px;color:var(--gray-text);">Este sistema usa su formulario integrado, que no se modifica aquí. Solo puedes cambiar su disponibilidad.</div>
     <div id="sisFormularioBox">
-      <h3 style="font-size:14px;color:var(--teal-dark);margin:18px 0 8px 0;">Formulario de incidencias</h3>
-      <select id="sisPlantilla" onchange="cargarPlantillaFormulario()">
-        <option value="">Cargar un formulario ya creado (plantilla)…</option>
-        <option value="equipo">Falla de equipo (basada en Validador / Torniquete)</option>
-        <option value="autobus">Falla de autobús o corredor (basada en Sistema de Transporte)</option>
-        <option value="blanco">En blanco (vaciar los campos)</option>
-      </select>
-      <div id="sisCamposBuilder"></div>
-      <button type="button" class="btn btn-secondary" style="margin-top:6px;font-size:12.5px;" onclick="agregarCampo()">➕ Agregar campo</button>
+      <h3 style="font-size:14px;color:var(--teal-dark);margin:18px 0 4px 0;">Formulario de incidencias</h3>
+      <div class="subtitle" style="margin-bottom:10px;">Copia el formulario de uno de los sistemas que ya existen (mismas preguntas, mismo orden y mismo formato) y cambia lo que necesites, o créalo desde cero.</div>
+      <div id="sisBasesBox" class="sis-bases"></div>
+      <div id="sisSinBase" class="sis-nota" style="margin-top:10px;">👆 Elige arriba qué formulario quieres copiar.</div>
+      <div id="sisPreguntasBox" style="display:none;margin-top:14px;">
+        <h4 style="font-size:13px;color:var(--teal-dark);margin:0 0 4px 0;">Preguntas del formulario</h4>
+        <div class="subtitle" style="margin-bottom:10px;">Puedes cambiar el texto de cada pregunta. En las listas, usa una lista que ya existe o crea una nueva con tus propias opciones.</div>
+        <div id="sisPreguntasBuilder"></div>
+      </div>
+      <div id="sisLibreBox" style="display:none;margin-top:14px;">
+        <div id="sisCamposBuilder"></div>
+        <button type="button" class="btn btn-secondary" style="margin-top:6px;font-size:12.5px;" onclick="agregarCampo()">➕ Agregar campo</button>
+      </div>
     </div>
 
     <div class="error-msg" id="err-sistemaModal" style="margin-top:12px;"></div>
@@ -2742,13 +2764,13 @@
         </div>
       </div>
 
-      <!-- STEP: FORMULARIO DE SISTEMA PERSONALIZADO -->
+      <!-- STEP: FORMULARIO DE UN SISTEMA NUEVO (se arma pregunta por pregunta, igual que los demás) -->
       <div class="step" data-step="custom-form" id="step-custom-form">
-        <h2><span class="num-badge">2</span> <span id="customFormTitulo">Formulario</span></h2>
+        <h2><span class="num-badge" id="customFormBadge">2</span> <span id="customFormTitulo">Formulario</span></h2>
         <div id="customFormCampos"></div>
         <div class="btn-row">
-          <button class="btn btn-secondary" onclick="goTo('provincia')">← Atrás</button>
-          <button class="btn btn-primary" onclick="enviarFormularioSistema()">Enviar incidencia ✓</button>
+          <button class="btn btn-secondary" onclick="wizardAtras()">← Atrás</button>
+          <button class="btn btn-primary" id="customFormSiguiente" onclick="wizardSiguiente()">Siguiente →</button>
         </div>
       </div>
 
@@ -4306,7 +4328,7 @@ document.documentElement.style.setProperty('--fimovit-wm-logo', `url("${LOGO_COL
 
 /* ================= VENTANAS EMERGENTES PROPIAS (en vez de los cuadros nativos del navegador) ================= */
 /* ================= AVISO DE NUEVA VERSIÓN EN TIEMPO REAL (consulta el Sheet, funciona hasta con la sesión ya abierta) ================= */
-const VERSION_ACTUAL = 'V4.78.0'; // debe coincidir siempre con el texto de #versionLabel
+const VERSION_ACTUAL = 'V4.79.0'; // debe coincidir siempre con el texto de #versionLabel
 let versionRemotaDescartada = null; // versión que la persona ya cerró con "Más tarde" en esta sesión
 let versionCheckIntervalo = null;
 
@@ -7623,78 +7645,198 @@ function ciudadPermitida(ciudad){
   return ciudad === 'Santiago' ? esStgo : !esStgo;
 }
 
-/* ---------- formularios ---------- */
-function normalizarFormulario(f){
-  const lista = (f && Array.isArray(f.campos)) ? f.campos : (Array.isArray(f) ? f : []);
-  const campos = lista.map((c,i)=>({
-    id: String(c.id || ('c' + (i+1))),
-    etiqueta: String(c.etiqueta || '').trim(),
-    tipo: TIPOS_CAMPO[c.tipo] ? c.tipo : 'texto',
-    requerido: c.requerido === true || c.requerido === 'si',
-    opciones: Array.isArray(c.opciones) ? c.opciones.map(x=> String(x).trim()).filter(Boolean) : []
-  }));
-  return {campos};
+/* ---------- formularios: copias de los formularios que ya existen ---------- */
+// Listas que el sistema ya usa en sus formularios actuales. Un sistema nuevo puede REUSAR cualquiera de
+// ellas (siempre al día con el original) o crear una lista nueva con sus propias opciones.
+const FALLAS_SD_ORIGINAL = ['GPS','SAM/VSAM','INTERNET','NO ACEPTA EMV','NO ACEPTA SDGO','NO ABRE TURNOCON TISCO','PANTALLA NEGRA EN VALIDADOR','Otras'];
+const FALLAS_TOM_ORIGINAL = ['FALLA SISTEMA NO RESPONDE','FALLA EN IMPRESION','FALLA VENTAS QRs RECARGAS & TARJETAS','FALLA RECARGAS TARJETAS','FALLA PANTALLA REDUCIDA'];
+const ESTADOS_SD_ORIGINAL = ['Resuelta','Persistente','Fuera de Servicio','Pendiente'];
+const ESTADOS_VT_ORIGINAL = ['FALLA PERSISTE','FUERA DE SERVICIO','SOLUCIONADO','OK'];
+const LISTAS_ORIGINALES = {
+  sd_corredores:{nombre:'Corredores reformados', get:()=> CORREDORES_REFORMADOS},
+  sd_teleferico:{nombre:'Estaciones del Teleférico SD L2', get:()=> TELEFERICO},
+  sd_metro:{nombre:'Estaciones del Metro SD', get:()=> METRO},
+  sd_omsa:{nombre:'Corredores OMSA', get:()=> OMSA},
+  omsa_rutas:{nombre:'Rutas de OP OMSA Santo Domingo', get:()=> OMSA_SD_RUTAS},
+  vt_estaciones:{nombre:'Estaciones de Santiago', get:()=> VT_ESTACIONES},
+  vt_gates:{nombre:'Gates de Santiago (cambian según la estación)', get:(v, ubic)=> VT_GATES_BASE.concat(/TERMINAL CENTRAL/i.test(ubic || '') ? VT_GATES_EXTRA : [])},
+  tom_equipos:{nombre:'TOM - 01 y TOM - 02', get:()=> ['TOM - 01','TOM - 02']},
+  vt_fallas:{nombre:'Fallas de Validador / Torniquete', get:()=> VT_FALLAS},
+  sd_fallas:{nombre:'Fallas de Sistema de Transporte', get:()=> FALLAS_SD_ORIGINAL},
+  tom_fallas:{nombre:'Fallas de TOMs', get:()=> FALLAS_TOM_ORIGINAL},
+  estados_sd:{nombre:'Estados: Resuelta, Persistente, Fuera de Servicio, Pendiente', get:()=> ESTADOS_SD_ORIGINAL},
+  estados_vt:{nombre:'Estados: Falla persiste, Fuera de servicio, Solucionado, OK', get:()=> ESTADOS_VT_ORIGINAL}
+};
+const FUENTES_UBICACION = ['vt_estaciones','sd_corredores','sd_teleferico','sd_metro','sd_omsa','omsa_rutas'];
+const FUENTES_EQUIPO = ['vt_gates','tom_equipos'];
+const FUENTES_FALLA = ['vt_fallas','sd_fallas','tom_fallas'];
+const TIPOS_PREGUNTA = {fecha:1, lista:1, texto:1, parrafo:1, numero:1, siNo:1, estado:1};
+const TIPO_PREGUNTA_TEXTO = {fecha:'Fecha', lista:'Lista', texto:'Texto corto', parrafo:'Texto largo', numero:'Número', siNo:'Sí / No', estado:'Estado (lista fija)'};
+function qBase(campo, etiqueta, corto, tipo, extra){
+  return Object.assign({id:campo, campo, etiqueta, corto, tipo, req:true, grid:false, icono:'📍', fuente:'', fuentes:[], dep:'', modo:'original', opciones:[], placeholder:'', otra:false, opcional:false, seguimiento:null}, extra || {});
 }
-function formularioDeSistema(cfg){ return normalizarFormulario(parseJsonSeguro(cfg && cfg.formulario, null)); }
-// Devuelve la lista de problemas de una definición de campos (vacía = válida).
-function validarDefinicionCampos(campos){
-  const errores = [];
-  if(!campos.length) errores.push('Agrega al menos un campo al formulario.');
-  if(campos.length > MAX_CAMPOS_FORMULARIO) errores.push('El formulario puede tener como máximo ' + MAX_CAMPOS_FORMULARIO + ' campos.');
-  campos.forEach((c,i)=>{
-    if(!String(c.etiqueta || '').trim()) errores.push('El campo ' + (i+1) + ' no tiene nombre.');
-    if(c.tipo === 'lista' && (c.opciones || []).length < 2) errores.push('El campo "' + (c.etiqueta || (i+1)) + '" es una lista: necesita al menos 2 opciones.');
-  });
-  return errores;
-}
-// valores = {idCampo: valor}. Devuelve {idCampo: mensaje} con los errores (vacío = todo bien).
-function validarRespuestasFormulario(campos, valores){
-  const errores = {};
-  campos.forEach(c=>{
-    const v = String((valores[c.id] === undefined || valores[c.id] === null) ? '' : valores[c.id]).trim();
-    if(c.requerido && !v){ errores[c.id] = 'Este campo es obligatorio.'; return; }
-    if(!v) return;
-    if(c.tipo === 'numero' && isNaN(Number(v))) errores[c.id] = 'Escribe un número válido.';
-    if(c.tipo === 'lista' && c.opciones.indexOf(v) === -1) errores[c.id] = 'Elige una de las opciones.';
-    if(c.tipo === 'siNo' && v !== 'Sí' && v !== 'No') errores[c.id] = 'Elige Sí o No.';
-  });
-  return errores;
-}
-function nuevoIdCampo(){ return 'c' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36); }
-const PLANTILLAS_FORMULARIO = {
-  blanco: {nombre:'En blanco (lo armo yo)', campos:[]},
-  equipo: {nombre:'Falla de equipo (basada en Validador / Torniquete)', campos:[
-    {etiqueta:'Fecha del reporte', tipo:'fecha', requerido:true},
-    {etiqueta:'Estación o ubicación', tipo:'texto', requerido:true},
-    {etiqueta:'Equipo que presenta la incidencia', tipo:'texto', requerido:true},
-    {etiqueta:'Descripción de la falla', tipo:'parrafo', requerido:true},
-    {etiqueta:'¿Cuántas veces ha ocurrido esta falla?', tipo:'numero', requerido:true},
-    {etiqueta:'¿Esta falla había sido reportada?', tipo:'siNo', requerido:true},
-    {etiqueta:'¿Se repite en el mismo equipo?', tipo:'siNo', requerido:false},
-    {etiqueta:'Estatus actual', tipo:'lista', requerido:true, opciones:['Pendiente','En proceso','Solucionado']},
-    {etiqueta:'Comentarios adicionales', tipo:'parrafo', requerido:false}
+// Cada base reproduce las preguntas, en el mismo orden, del formulario que ya usamos.
+const FORMULARIOS_BASE = {
+  sd:{nombre:'Sistema de Transporte (Santo Domingo)', desc:'Fecha → corredor/ruta → ficha → falla → veces → reportada → estado', crear:()=>[
+    qBase('fecha','Fecha de la incidencia','Fecha','fecha'),
+    qBase('ubicacion','Seleccione el corredor / estación / ruta','Ruta','lista',{grid:true, icono:'🚌', fuente:'sd_corredores', fuentes:FUENTES_UBICACION}),
+    qBase('equipo','Ficha de la unidad','Ficha','texto',{placeholder:'Ej: 0452'}),
+    qBase('falla','¿Cuál es la falla?','Falla','lista',{fuente:'sd_fallas', fuentes:FUENTES_FALLA, otra:true}),
+    qBase('veces','¿Cuántas veces ha ocurrido esta falla hoy?','Veces','numero'),
+    qBase('reportada','¿Esta falla ha sido reportada anteriormente?','Reportada','siNo'),
+    qBase('estado','Estado de la incidencia','Estado','estado',{fuente:'estados_sd', seguimiento:{para:['Resuelta'], etiqueta:'¿Cómo se resolvió?', req:true}})
   ]},
-  autobus: {nombre:'Falla de autobús o corredor (basada en Sistema de Transporte)', campos:[
-    {etiqueta:'Fecha del reporte', tipo:'fecha', requerido:true},
-    {etiqueta:'Corredor o ruta', tipo:'texto', requerido:true},
-    {etiqueta:'Ficha del autobús', tipo:'texto', requerido:true},
-    {etiqueta:'Descripción de la falla', tipo:'parrafo', requerido:true},
-    {etiqueta:'¿Cuántas veces ha ocurrido?', tipo:'numero', requerido:false},
-    {etiqueta:'¿Había sido reportada?', tipo:'siNo', requerido:false},
-    {etiqueta:'Estado', tipo:'lista', requerido:true, opciones:['Pendiente','En proceso','Resuelta']},
-    {etiqueta:'Comentarios', tipo:'parrafo', requerido:false}
+  omsa:{nombre:'OP OMSA Santo Domingo', desc:'Fecha → ruta → ficha → falla → veces → reportada → estado', crear:()=>[
+    qBase('fecha','Fecha de la incidencia','Fecha','fecha'),
+    qBase('ubicacion','Seleccione la ruta','Ruta','lista',{grid:true, icono:'🚌', fuente:'omsa_rutas', fuentes:FUENTES_UBICACION}),
+    qBase('equipo','Ficha del autobús','Ficha','texto',{placeholder:'Ej: 0452'}),
+    qBase('falla','¿Cuál es la falla?','Falla','lista',{fuente:'sd_fallas', fuentes:FUENTES_FALLA, otra:true}),
+    qBase('veces','¿Cuántas veces ha ocurrido esta falla hoy?','Veces','numero'),
+    qBase('reportada','¿Esta falla ha sido reportada anteriormente?','Reportada','siNo'),
+    qBase('estado','Estado de la incidencia','Estado','estado',{fuente:'estados_sd', seguimiento:{para:['Resuelta'], etiqueta:'¿Cómo se resolvió?', req:true}})
+  ]},
+  vt:{nombre:'Validador / Torniquete (Santiago)', desc:'Fecha → estación → gate → falla → veces → reportada → estado', crear:()=>[
+    qBase('fecha','Fecha del reporte','Fecha','fecha'),
+    qBase('ubicacion','Estación donde ocurrió la incidencia','Estación','lista',{grid:true, icono:'📍', fuente:'vt_estaciones', fuentes:FUENTES_UBICACION}),
+    qBase('equipo','¿Cuál gate presenta la incidencia?','Gate','lista',{grid:true, icono:'🚧', fuente:'vt_gates', fuentes:FUENTES_EQUIPO, dep:'ubicacion'}),
+    qBase('falla','Descripción de la falla','Falla','lista',{grid:true, icono:'⚠️', fuente:'vt_fallas', fuentes:FUENTES_FALLA}),
+    qBase('veces','¿Cuántas veces ha ocurrido esta falla?','Veces','numero'),
+    qBase('reportada','¿Esta falla había sido reportada?','Reportada','siNo'),
+    qBase('estado','Estado actual de la incidencia','Estado','estado',{fuente:'estados_vt', seguimiento:{para:['SOLUCIONADO','OK'], etiqueta:'Comentario adicional sobre la solución aplicada', req:false}})
+  ]},
+  tom:{nombre:'TOMs (Santiago)', desc:'Fecha → estación → TOM → falla → veces → reportada → se repite → estatus → comentarios', crear:()=>[
+    qBase('fecha','Fecha del reporte','Fecha','fecha'),
+    qBase('ubicacion','¿En qué estación ocurrió la incidencia?','Estación','lista',{grid:true, icono:'📍', fuente:'vt_estaciones', fuentes:FUENTES_UBICACION}),
+    qBase('equipo','Seleccione la TOM que tiene problemas','TOM','lista',{fuente:'tom_equipos', fuentes:FUENTES_EQUIPO}),
+    qBase('falla','Descripción de la falla','Falla','lista',{fuente:'tom_fallas', fuentes:FUENTES_FALLA}),
+    qBase('veces','¿Cuántas veces ha ocurrido esta falla?','Veces','numero'),
+    qBase('reportada','¿Esta falla había sido reportada?','Reportada','siNo'),
+    qBase('repite','¿Se repite esta incidencia en el mismo equipo?','Se repite','siNo',{opcional:true}),
+    qBase('estado','Estatus actual de la incidencia','Estatus','estado',{fuente:'estados_sd'}),
+    qBase('comentario','Comentarios adicionales (opcional)','Comentarios','parrafo',{req:false, opcional:true})
   ]}
 };
-function camposDePlantilla(clave){
-  const p = PLANTILLAS_FORMULARIO[clave];
-  if(!p) return [];
-  return p.campos.map(c=> ({id:nuevoIdCampo(), etiqueta:c.etiqueta, tipo:c.tipo, requerido:!!c.requerido, opciones:(c.opciones || []).slice()}));
+function instanciarBase(key){ const b = FORMULARIOS_BASE[key]; return b ? b.crear() : []; }
+function normalizarPregunta(q, i){
+  const seg = q.seguimiento && Array.isArray(q.seguimiento.para) ? {para:q.seguimiento.para.slice(), etiqueta:String(q.seguimiento.etiqueta || ''), req:!!q.seguimiento.req} : null;
+  return {
+    id:String(q.id || q.campo || ('c' + (i+1))), campo:String(q.campo || 'libre'), etiqueta:String(q.etiqueta || '').trim(),
+    corto:String(q.corto || '').trim() || String(q.etiqueta || '').trim().slice(0,14),
+    tipo: TIPOS_PREGUNTA[q.tipo] ? q.tipo : 'texto',
+    req: q.req !== undefined ? !!q.req : (q.requerido === true || q.requerido === 'si'),
+    grid:!!q.grid, icono:q.icono || '📍', fuente:q.fuente || '', fuentes:Array.isArray(q.fuentes) ? q.fuentes.slice() : [], dep:q.dep || '',
+    modo: q.modo === 'nueva' ? 'nueva' : 'original',
+    opciones: Array.isArray(q.opciones) ? q.opciones.map(x=> String(x).trim()).filter(Boolean) : [],
+    placeholder:q.placeholder || '', otra:!!q.otra, opcional:!!q.opcional, seguimiento:seg
+  };
 }
+// Acepta el formato nuevo {base, preguntas} y el anterior {campos} (formulario "desde cero").
+function normalizarFormulario(f){
+  let base = 'libre', lista = [];
+  if(Array.isArray(f)) lista = f;
+  else if(f && typeof f === 'object'){ base = f.base || 'libre'; lista = Array.isArray(f.preguntas) ? f.preguntas : (Array.isArray(f.campos) ? f.campos : []); }
+  const preguntas = lista.map((q,i)=> normalizarPregunta(q,i));
+  if(base === 'libre') preguntas.forEach(p=>{ p.campo = 'libre'; p.modo = 'nueva'; });
+  return {base, preguntas, campos:preguntas};
+}
+function formularioDeSistema(cfg){ return normalizarFormulario(parseJsonSeguro(cfg && cfg.formulario, null)); }
+function opcionesDePregunta(q, valores, preguntas){
+  if(q.tipo === 'estado'){ const l = LISTAS_ORIGINALES[q.fuente]; return l ? l.get() : []; }
+  if(q.tipo !== 'lista') return [];
+  if(q.modo === 'nueva') return q.opciones.slice();
+  const l = LISTAS_ORIGINALES[q.fuente]; if(!l) return [];
+  const qUb = (preguntas || []).find(x=> x.campo === 'ubicacion');
+  return l.get(valores || {}, (qUb && valores) ? valores[qUb.id] : '');
+}
+function validarPreguntas(preguntas, base){
+  const e = [];
+  if(!preguntas.length) e.push('Agrega al menos una pregunta al formulario.');
+  if(preguntas.length > MAX_CAMPOS_FORMULARIO) e.push('El formulario puede tener como máximo ' + MAX_CAMPOS_FORMULARIO + ' preguntas.');
+  preguntas.forEach((q,i)=>{
+    if(!String(q.etiqueta || '').trim()) e.push('La pregunta ' + (i+1) + ' no tiene texto.');
+    if(q.tipo === 'lista' && q.modo === 'nueva' && new Set(q.opciones).size < 2) e.push('La pregunta "' + (q.etiqueta || (i+1)) + '" tiene una lista nueva: necesita al menos 2 opciones distintas.');
+    if(q.tipo === 'lista' && q.modo === 'original' && base !== 'libre' && !LISTAS_ORIGINALES[q.fuente]) e.push('La pregunta "' + (q.etiqueta || (i+1)) + '" no tiene una lista original válida.');
+  });
+  return e;
+}
+// Valida UNA respuesta del asistente. Devuelve el mensaje de error o '' si está bien.
+function validarRespuestaPregunta(q, valor, extra, seg, preguntas, valores){
+  const v = String((valor === undefined || valor === null) ? '' : valor).trim();
+  if(!v) return q.req ? 'Este campo es obligatorio.' : '';
+  if(q.tipo === 'numero'){
+    const n = Number(v);
+    if(isNaN(n)) return 'Escribe un número válido.';
+    if(q.campo === 'veces' && n < 1) return 'Indique un número válido (mínimo 1).';
+  }
+  if(q.tipo === 'siNo' && v !== 'Sí' && v !== 'No') return 'Elige Sí o No.';
+  if(q.tipo === 'lista' || q.tipo === 'estado'){
+    if(opcionesDePregunta(q, valores, preguntas).indexOf(v) === -1) return 'Elige una de las opciones.';
+    if(q.otra && v === 'Otras' && !String(extra || '').trim()) return 'Debe especificar la falla.';
+  }
+  if(q.tipo === 'estado' && q.seguimiento && q.seguimiento.para.indexOf(v) !== -1 && q.seguimiento.req && !String(seg || '').trim()) return 'Debe describir cómo se resolvió.';
+  return '';
+}
+// Convierte las respuestas en una incidencia con las MISMAS columnas que ya usan las tablas del sistema:
+// provincia Santiago → Validador/Torniquete ("vt"); cualquier otra → Sistema de Transporte ("sistema").
+// El nombre del sistema nuevo queda en tipoReporte (y en "sistema" para Santo Domingo).
+function construirRegistroDesdeRespuestas(sis, valores, extras, usuario, id, registradoEl){
+  usuario = usuario || {};
+  const comun = {id, provincia:sis.ciudad, tipoReporte:sis.nombre, registradoPor:usuario.nombre || 'Desconocido', registradoPorUsuario:usuario.usuario || '', registradoEl};
+  if(sis.base === 'libre'){
+    const datos = sis.preguntas.map(q=> ({id:q.id, etiqueta:q.etiqueta, tipo:q.tipo, valor:String((valores[q.id] === undefined) ? '' : valores[q.id]).trim()}));
+    const campoFecha = datos.find(x=> x.tipo === 'fecha' && x.valor);
+    return {tabla:'custom', rec:{id, sistemaClave:sis.clave, sistemaNombre:sis.nombre, ciudad:sis.ciudad, fecha: campoFecha ? campoFecha.valor : '', estado:'Pendiente', datos:JSON.stringify(datos),
+      registradoPor:comun.registradoPor, registradoPorUsuario:comun.registradoPorUsuario, registradoEl, horaResuelta:'', resueltoPor:'', resolucion:'', historialCambios:'[]', eliminado:'no'}};
+  }
+  const get = campo=>{
+    const q = sis.preguntas.find(x=> x.campo === campo); if(!q) return undefined;
+    let v = valores[q.id]; if(v === undefined || v === null) return undefined;
+    if(q.otra && v === 'Otras') v = (extras[q.id] || {}).otra || '';
+    return String(v).trim();
+  };
+  const qEstado = sis.preguntas.find(x=> x.tipo === 'estado');
+  let seg = 'N/A';
+  if(qEstado && qEstado.seguimiento && qEstado.seguimiento.para.indexOf(valores[qEstado.id]) !== -1) seg = String((extras[qEstado.id] || {}).seg || '').trim() || 'N/A';
+  const coment = get('comentario');
+  const nota = (coment !== undefined && coment !== '') ? coment : seg;
+  const rec = Object.assign(comun, {fecha:get('fecha'), falla:get('falla') || get('descripcion') || '', veces:Number(get('veces')) || 1, reportada:get('reportada') || 'No', estado:get('estado') || 'Pendiente'});
+  if(sis.ciudad === 'Santiago'){
+    rec.estacion = get('ubicacion') || ''; rec.gate = get('equipo') || ''; rec.repiteMismoEquipo = get('repite') || ''; rec.comentario = nota;
+    return {tabla:'vt', rec};
+  }
+  rec.sistema = sis.nombre; rec.detalle = get('ubicacion') || ''; rec.ficha = get('equipo') || ''; rec.resolucion = nota;
+  return {tabla:'sistema', rec};
+}
+function destinoDeSistema(sis){
+  if(sis.base === 'libre') return 'Historial → Otros sistemas';
+  return sis.ciudad === 'Santiago' ? 'el historial de Validador / Torniquete' : 'el historial de Sistema de Transporte';
+}
+// Sistemas nuevos (copiados de un formulario existente) que guardan en una de las tablas de siempre.
+function sistemasConHistorialPropio(tabla){
+  return sistemasConfig.filter(c=>{
+    const f = formularioDeSistema(c);
+    if(!f.base || f.base === 'libre' || !f.preguntas.length) return false;
+    return tabla === 'vt' ? c.ciudad === 'Santiago' : c.ciudad !== 'Santiago';
+  }).map(c=> c.nombre);
+}
+// Separa las incidencias de Santiago para el Excel: TOMs, Torniquetes y UNA HOJA POR CADA SISTEMA NUEVO.
+function particionarVtParaExcel(lista){
+  const nombres = sistemasConHistorialPropio('vt');
+  const custom = {}, toms = [], gates = [];
+  lista.forEach(r=>{
+    if(nombres.indexOf(r.tipoReporte) !== -1) (custom[r.tipoReporte] = custom[r.tipoReporte] || []).push(r);
+    else if(/^TOM/i.test(String(r.gate || '').trim())) toms.push(r);
+    else gates.push(r);
+  });
+  return {toms, gates, custom};
+}
+
+/* ---------- utilidades de fechas, firmas y registros ---------- */
+function nuevoIdCampo(){ return 'c' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36); }
 function fechaIsoRD(){
   try{ return new Date().toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'}); }
   catch(e){ return new Date().toISOString().slice(0,10); }
 }
-// Fecha/hora (ms) <-> valor de <input type="datetime-local">
 function msADatetimeLocal(ms){
   const n = aNumeroSeguro(ms); if(n === null) return '';
   const d = new Date(n), p = x=> String(x).padStart(2,'0');
@@ -7705,7 +7847,6 @@ function datetimeLocalAMs(v){
   const t = new Date(v).getTime();
   return isNaN(t) ? null : t;
 }
-// Firma para comprobar que lo guardado en el Sheet coincide con lo enviado.
 function firmaSistema(r){
   const n = v=> String((v === undefined || v === null) ? '' : v);
   return [r.nombre, r.icono, r.ciudad, r.tipo, r.modo, r.disponible, n(aNumeroSeguro(r.habilitarEn)), n(aNumeroSeguro(r.deshabilitarEn)), r.formulario, r.eliminado].map(n).join('|');
@@ -7722,6 +7863,18 @@ function resumenCustom(r){
   const partes = r._datos.filter(d=> d.tipo !== 'fecha' && String(d.valor || '').trim()).slice(0,2).map(d=> String(d.valor));
   return partes.join(' · ') || '—';
 }
+// Constructor "desde cero" (campos libres): validación y plantillas propias de ese modo.
+function validarDefinicionCampos(campos){
+  const errores = [];
+  if(!campos.length) errores.push('Agrega al menos un campo al formulario.');
+  if(campos.length > MAX_CAMPOS_FORMULARIO) errores.push('El formulario puede tener como máximo ' + MAX_CAMPOS_FORMULARIO + ' campos.');
+  campos.forEach((c,i)=>{
+    if(!String(c.etiqueta || '').trim()) errores.push('El campo ' + (i+1) + ' no tiene nombre.');
+    if(c.tipo === 'lista' && (c.opciones || []).length < 2) errores.push('El campo "' + (c.etiqueta || (i+1)) + '" es una lista: necesita al menos 2 opciones.');
+  });
+  return errores;
+}
+
 
 /* ---------- persistencia local y carga ---------- */
 function guardarSistemasLocal(){ try{ localStorage.setItem(LS_SISTEMAS, JSON.stringify(sistemasConfig)); }catch(e){} }
@@ -7844,80 +7997,168 @@ function renderTarjetasSistemas(){
   });
 }
 
-/* ---------- formulario dinámico (asistente) ---------- */
+/* ---------- asistente paso a paso (mismo formato que los formularios originales) ---------- */
+let wizardSis = null;   // {d: datos del sistema, idx, valores, extras, enResumen}
 function datosDeSistema(clave){
-  const def = definicionIntegrada(clave), cfg = configSistema(clave);
-  return {
-    nombre: (cfg && cfg.nombre) || (def && def.nombre) || clave,
-    icono: (cfg && cfg.icono) || (def && def.icono) || '🧩',
-    ciudad: (cfg && cfg.ciudad) || (def && def.ciudad) || 'Todas',
-    campos: formularioDeSistema(cfg).campos
-  };
+  const def = definicionIntegrada(clave), cfg = configSistema(clave), f = formularioDeSistema(cfg);
+  return {clave, nombre:(cfg && cfg.nombre) || (def && def.nombre) || clave, icono:(cfg && cfg.icono) || (def && def.icono) || '🧩',
+    ciudad:(cfg && cfg.ciudad) || (def && def.ciudad) || 'Todas', base:f.base, preguntas:f.preguntas};
 }
 function abrirFormularioSistema(clave){
   const d = datosDeSistema(clave);
-  if(!d.campos.length){ alert('Este sistema todavía no tiene formulario.'); return; }
+  if(!d.preguntas.length){ alert('Este sistema todavía no tiene formulario.'); return; }
+  wizardSis = {d, idx:0, valores:{}, extras:{}, enResumen:false};
   sistemaCustomActual = clave;
-  currentFlow = [{id:'provincia', lbl:'Sistema'}, {id:'custom-form', lbl:d.nombre}];
-  document.getElementById('customFormTitulo').textContent = d.icono + ' ' + d.nombre;
-  const cont = document.getElementById('customFormCampos');
-  cont.innerHTML = d.campos.map(c=>{
-    const id = 'cf-' + c.id;
-    let control;
-    if(c.tipo === 'parrafo') control = '<textarea id="' + id + '" rows="3"></textarea>';
-    else if(c.tipo === 'numero') control = '<input type="number" id="' + id + '" step="any">';
-    else if(c.tipo === 'fecha') control = '<input type="date" id="' + id + '" value="' + fechaIsoRD() + '">';
-    else if(c.tipo === 'lista') control = '<select id="' + id + '"><option value="">-- Seleccione --</option>' + c.opciones.map(o=> '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>').join('') + '</select>';
-    else if(c.tipo === 'siNo') control = '<select id="' + id + '"><option value="">-- Seleccione --</option><option value="Sí">Sí</option><option value="No">No</option></select>';
-    else control = '<input type="text" id="' + id + '">';
-    return '<label' + (c.requerido ? ' class="req"' : '') + '>' + escapeHtml(c.etiqueta) + '</label>' + control + '<div class="error-msg" id="err-' + id + '"></div>';
-  }).join('');
+  currentFlow = [{id:'provincia', lbl:'Sistema'}].concat(d.preguntas.map(q=> ({id:q.id, lbl:q.corto}))).concat([{id:'resumen-sis', lbl:'Enviar'}]);
   goTo('custom-form');
+  renderPreguntaWizard();
 }
-function valoresFormularioActual(campos){
-  const v = {};
-  campos.forEach(c=>{ const el = document.getElementById('cf-' + c.id); v[c.id] = el ? el.value : ''; });
-  return v;
+function cancelarWizard(){ wizardSis = null; sistemaCustomActual = null; currentFlow = FLOW_TOMS; goTo('provincia'); }
+function renderPreguntaWizard(){
+  const w = wizardSis; if(!w) return;
+  const preguntas = w.d.preguntas, q = preguntas[w.idx];
+  w.enResumen = false;
+  currentStepId = q.id; renderStepper();
+  document.getElementById('customFormBadge').textContent = String(w.idx + 2);   // el paso 1 es elegir el sistema, como en los formularios originales
+  document.getElementById('customFormTitulo').textContent = q.etiqueta;
+  const cont = document.getElementById('customFormCampos');
+  const val = (w.valores[q.id] === undefined) ? '' : w.valores[q.id];
+  const extra = w.extras[q.id] || {};
+  const err = '<div class="error-msg" id="wz-err"></div>';
+  const opciones = opcionesDePregunta(q, w.valores, preguntas);
+  const optHtml = opciones.map(o=> '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>').join('');
+  let html = '', esGrid = false;
+  if(q.tipo === 'fecha') html = '<label class="req">' + escapeHtml(q.etiqueta) + '</label><input type="date" id="wz-input" value="' + escapeHtml(val || fechaIsoRD()) + '">' + err;
+  else if(q.tipo === 'numero') html = '<label class="' + (q.req ? 'req' : '') + '">Número</label><input type="number" id="wz-input" step="any"' + (q.campo === 'veces' ? ' min="1"' : '') + ' placeholder="Ej: 1" value="' + escapeHtml(val) + '">' + err;
+  else if(q.tipo === 'texto') html = '<label class="' + (q.req ? 'req' : '') + '">' + escapeHtml(q.etiqueta) + '</label><input type="text" id="wz-input" placeholder="' + escapeHtml(q.placeholder) + '" value="' + escapeHtml(val) + '">' + err;
+  else if(q.tipo === 'parrafo') html = '<label class="' + (q.req ? 'req' : '') + '">' + escapeHtml(q.etiqueta) + '</label><textarea id="wz-input" placeholder="' + escapeHtml(q.placeholder || 'Escribe aquí') + '">' + escapeHtml(val) + '</textarea>' + err;
+  else if(q.tipo === 'siNo') html = '<div class="radio-row"><div class="radio-opt' + (val === 'Sí' ? ' selected' : '') + '" id="wz-si" onclick="wizardElegirSiNo(\'Sí\')">Sí</div><div class="radio-opt' + (val === 'No' ? ' selected' : '') + '" id="wz-no" onclick="wizardElegirSiNo(\'No\')">No</div></div>' + err;
+  else if(q.tipo === 'lista' && q.grid){ esGrid = true; html = '<div class="option-grid" id="wz-grid"></div>' + err; }
+  else if(q.tipo === 'lista') html = '<label class="req">Seleccione una opción</label><select id="wz-input" onchange="wizardCambioSelect()"><option value="">-- Seleccione --</option>' + optHtml + '</select>' + err +
+    (q.otra ? '<div id="wz-otra-box" style="display:none;"><label class="req">Especifique cuál es</label><input type="text" id="wz-otra" placeholder="Descríbalo" value="' + escapeHtml(extra.otra || '') + '"></div>' : '');
+  else if(q.tipo === 'estado'){
+    html = '<label class="req">Seleccione el estado</label><select id="wz-input" onchange="wizardCambioSelect()"><option value="">-- Seleccione --</option>' + optHtml + '</select>' + err;
+    if(q.seguimiento) html += '<div id="wz-seg-box" style="display:none;"><label class="' + (q.seguimiento.req ? 'req' : '') + '">' + escapeHtml(q.seguimiento.etiqueta) + (q.seguimiento.req ? '' : ' <span style="text-transform:none;font-weight:400;color:#96a2a8;">(opcional)</span>') + '</label><textarea id="wz-seg" placeholder="Describa la solución aplicada">' + escapeHtml(extra.seg || '') + '</textarea></div>';
+  }
+  cont.innerHTML = html;
+  if(esGrid) buildOptionGrid('wz-grid', opciones, opt=> wizardElegirGrid(opt), q.icono);
+  const sel = document.getElementById('wz-input');
+  if(sel && sel.tagName === 'SELECT'){ sel.value = val; wizardCambioSelect(); }
+  const btnSig = document.getElementById('customFormSiguiente');
+  btnSig.textContent = 'Siguiente →';
+  btnSig.style.visibility = esGrid ? 'hidden' : 'visible';
 }
-async function enviarFormularioSistema(){
-  const clave = sistemaCustomActual; if(!clave) return;
-  const d = datosDeSistema(clave);
+function wizardCambioSelect(){
+  const w = wizardSis; if(!w) return;
+  const q = w.d.preguntas[w.idx], el = document.getElementById('wz-input'); if(!el) return;
+  const otra = document.getElementById('wz-otra-box'), seg = document.getElementById('wz-seg-box');
+  if(otra) otra.style.display = (q.otra && el.value === 'Otras') ? 'block' : 'none';
+  if(seg) seg.style.display = (q.seguimiento && q.seguimiento.para.indexOf(el.value) !== -1) ? 'block' : 'none';
+}
+function wizardElegirSiNo(v){
+  const w = wizardSis; if(!w) return;
+  w.valores[w.d.preguntas[w.idx].id] = v;
+  const si = document.getElementById('wz-si'), no = document.getElementById('wz-no');
+  if(si) si.classList.toggle('selected', v === 'Sí');
+  if(no) no.classList.toggle('selected', v === 'No');
+}
+function guardarRespuestaWizard(q, valor, extra){
+  const w = wizardSis;
+  w.valores[q.id] = String((valor === undefined || valor === null) ? '' : valor).trim();
+  w.extras[q.id] = extra || {};
+  // si cambia la estación, el gate (que depende de ella) se vuelve a preguntar
+  w.d.preguntas.filter(x=> x.dep === q.campo).forEach(x=>{ delete w.valores[x.id]; delete w.extras[x.id]; });
+}
+function avanzarWizard(){
+  const w = wizardSis;
+  if(w.idx < w.d.preguntas.length - 1){ w.idx++; renderPreguntaWizard(); } else mostrarResumenWizard();
+}
+function wizardElegirGrid(opt){
+  const w = wizardSis; if(!w) return;
+  guardarRespuestaWizard(w.d.preguntas[w.idx], opt, {});
+  avanzarWizard();
+}
+function leerRespuestaActual(q){
+  const w = wizardSis;
+  if(q.tipo === 'siNo' || (q.tipo === 'lista' && q.grid)) return {valor:w.valores[q.id], otra:'', seg:''};
+  const el = document.getElementById('wz-input'), otra = document.getElementById('wz-otra'), seg = document.getElementById('wz-seg');
+  return {valor: el ? el.value : '', otra: otra ? otra.value : '', seg: seg ? seg.value : ''};
+}
+function wizardSiguiente(){
+  const w = wizardSis; if(!w) return;
+  if(w.enResumen){ wizardEnviar(); return; }
+  const preguntas = w.d.preguntas, q = preguntas[w.idx];
+  const lect = leerRespuestaActual(q);
+  const msg = validarRespuestaPregunta(q, lect.valor, lect.otra, lect.seg, preguntas, w.valores);
+  const e = document.getElementById('wz-err');
+  if(e){ e.textContent = msg; e.style.display = msg ? 'block' : 'none'; }
+  if(msg) return;
+  guardarRespuestaWizard(q, lect.valor, {otra:lect.otra, seg:lect.seg});
+  avanzarWizard();
+}
+function wizardAtras(){
+  const w = wizardSis;
+  if(!w){ goTo('provincia'); return; }
+  if(w.enResumen){ w.enResumen = false; w.idx = w.d.preguntas.length - 1; renderPreguntaWizard(); return; }
+  if(w.idx > 0){ w.idx--; renderPreguntaWizard(); return; }
+  cancelarWizard();
+}
+function filasResumenWizard(w){
+  const d = w.d, filas = [['Sistema', d.nombre], ['Provincia', d.ciudad]];
+  d.preguntas.forEach(q=>{
+    let v = w.valores[q.id]; if(v === undefined || v === '') v = '—';
+    if(q.otra && v === 'Otras') v = 'Otras: ' + ((w.extras[q.id] || {}).otra || '');
+    filas.push([q.etiqueta, v]);
+    if(q.tipo === 'estado' && q.seguimiento && q.seguimiento.para.indexOf(w.valores[q.id]) !== -1) filas.push([q.seguimiento.etiqueta, (w.extras[q.id] || {}).seg || 'N/A']);
+  });
+  filas.push(['Registrado por', currentUser ? currentUser.nombre : 'Desconocido']);
+  return filas;
+}
+function mostrarResumenWizard(){
+  const w = wizardSis; w.enResumen = true;
+  currentStepId = 'resumen-sis'; renderStepper();
+  document.getElementById('customFormBadge').textContent = '✓';
+  document.getElementById('customFormTitulo').textContent = 'Confirmar y enviar';
+  document.getElementById('customFormCampos').innerHTML = '<div class="callout">Revise los datos antes de enviar. Esta incidencia se guardará en ' + escapeHtml(destinoDeSistema(w.d)) + '.</div>' +
+    filasResumenWizard(w).map(r=> '<div class="summary-row"><b>' + escapeHtml(String(r[0])) + '</b><span>' + escapeHtml(String(r[1])) + '</span></div>').join('');
+  const btn = document.getElementById('customFormSiguiente');
+  btn.textContent = '✔ Enviar incidencia'; btn.style.visibility = 'visible';
+}
+async function wizardEnviar(){
+  const w = wizardSis; if(!w) return;
+  const d = w.d;
   if(fallaGeneralActiva && esUsuarioBasico() && d.ciudad === 'Santiago'){
     alert('🚨 Actualmente hay una FALLA GENERAL del sistema activa en Santiago.\n\nNo se pueden registrar nuevas incidencias mientras se resuelve. Intenta de nuevo más tarde.');
     return;
   }
-  const valores = valoresFormularioActual(d.campos);
-  const errores = validarRespuestasFormulario(d.campos, valores);
-  d.campos.forEach(c=>{
-    const e = document.getElementById('err-cf-' + c.id);
-    if(e){ e.textContent = errores[c.id] || ''; e.style.display = errores[c.id] ? 'block' : 'none'; }
-  });
-  if(Object.keys(errores).length){ avisoSistemas('Revisa los campos marcados en rojo.', 'error'); return; }
-
-  const datos = d.campos.map(c=> ({id:c.id, etiqueta:c.etiqueta, tipo:c.tipo, valor:String(valores[c.id]).trim()}));
-  const campoFecha = datos.find(x=> x.tipo === 'fecha' && x.valor);
   const id = Date.now();
-  const raw = {
-    id, sistemaClave:clave, sistemaNombre:d.nombre, ciudad:d.ciudad, fecha: campoFecha ? campoFecha.valor : fechaIsoRD(), estado:'Pendiente',
-    datos: JSON.stringify(datos), registradoPor: currentUser ? currentUser.nombre : 'Desconocido', registradoPorUsuario: currentUser ? currentUser.usuario : '',
-    registradoEl: fechaHoraRD(), horaResuelta:'', resueltoPor:'', resolucion:'', historialCambios:'[]', eliminado:'no'
-  };
-  const local = normalizarRegistroCustom(raw); local._localTs = Date.now();
-  customRecords.push(local); guardarCustomLocal(); actualizarSubtabCustom();
-  registrarAuditoria('Registró incidencia en "' + d.nombre + '" (sistema personalizado)', datos.slice(0,3).map(x=> x.etiqueta + ': ' + x.valor).join(' | '));
+  const {tabla, rec} = construirRegistroDesdeRespuestas(d, w.valores, w.extras, currentUser, id, fechaHoraRD());
+  let local = null;
+  if(tabla === 'custom'){
+    local = normalizarRegistroCustom(rec); local._localTs = Date.now();
+    customRecords.push(local); guardarCustomLocal(); actualizarSubtabCustom();
+    registrarAuditoria('Registró incidencia en "' + d.nombre + '" (sistema personalizado)', d.preguntas.slice(0,3).map(q=> q.etiqueta + ': ' + (w.valores[q.id] || '')).join(' | '));
+  } else if(tabla === 'vt'){ vtRecords.push(rec); saveVtRecords(); }
+  else { records.push(rec); saveRecords(); }
+  if(tabla !== 'custom'){ updateSidebarCount(); notificarNuevaIncidenciaPorCorreo(tabla, rec); }
 
-  sistemaCustomActual = null;
-  currentFlow = FLOW_TOMS; goTo('provincia');
-  if(!isLiveEnabled()){ avisoSistemas('Incidencia guardada en este equipo (el modo en vivo no está activo).', 'info'); return; }
+  const destino = destinoDeSistema(d);
+  wizardSis = null; sistemaCustomActual = null;
+  resetWizard(); currentFlow = FLOW_TOMS; goTo('provincia');
+  alert('Incidencia registrada correctamente en ' + destino + '.' + (isLiveEnabled() ? '\n\n☁️ Se está sincronizando en vivo con Google Sheets.' : ''));
+  if(!isLiveEnabled()) return;
   avisoSistemas('✔ Incidencia enviada. Confirmando que llegó al Sheet…', 'info');
-  const ok = await enviarConVerificacion({sheet:'custom', action:'add', record:raw}, async ()=>{
-    const res = await fetchConTimeout(liveUrl + '?sheet=custom&desde=' + (id - 1800000), {method:'GET'}, 12000);
+  const hoja = (tabla === 'custom') ? 'custom' : tabla;
+  const ok = await enviarConVerificacion({sheet:hoja, action:'add', record:rec}, async ()=>{
+    const res = await fetchConTimeout(liveUrl + '?sheet=' + hoja + '&desde=' + (id - 1800000), {method:'GET'}, 12000);
     const data = await res.json();
     return Array.isArray(data) && data.some(r=> String(r.id) === String(id));
   });
-  if(ok){ local._sinConfirmar = false; guardarCustomLocal(); avisoSistemas('✔ Incidencia confirmada en el Sheet.', 'ok'); }
-  else { local._sinConfirmar = true; guardarCustomLocal(); renderTablaCustom(); avisoSistemas('⚠ No se pudo confirmar que la incidencia llegó al Sheet. Quedó guardada en este equipo; avisa a un administrador (¿existe la pestaña IncidenciasSistemas?).', 'error'); }
+  if(local){ local._sinConfirmar = !ok; guardarCustomLocal(); renderTablaCustom(); }
+  if(ok) avisoSistemas('✔ Incidencia confirmada en el Sheet.', 'ok');
+  else avisoSistemas('⚠ No se pudo confirmar que la incidencia llegó al Sheet. Quedó guardada en este equipo; avisa a un administrador.', 'error');
 }
+
 
 /* ---------- Historial: pestaña "Otros sistemas" ---------- */
 function customVisibles(){
@@ -7929,9 +8170,9 @@ function customVisibles(){
   }).sort((a,b)=> Number(b.id) - Number(a.id));
 }
 function hayContenidoCustom(){
-  // Hay algo que mostrar si existe algún sistema personalizado (o uno integrado configurado con formulario) o alguna incidencia.
-  const hayConfig = sistemasConfig.some(c=>{ const d = definicionIntegrada(c.clave); return !d || !d.formularioPropio; });
-  return hayConfig || customVisibles().length > 0;
+  // La pestaña "Otros sistemas" es solo para sistemas con formulario hecho desde cero (los copiados de un formulario existente van a los historiales de siempre).
+  const hayLibre = sistemasConfig.some(c=> { const f = formularioDeSistema(c); return f.base === 'libre' && f.preguntas.length > 0; });
+  return hayLibre || customVisibles().length > 0;
 }
 function actualizarSubtabCustom(){
   const btn = document.getElementById('subtab-custom'); if(!btn) return;
@@ -8036,7 +8277,7 @@ function renderListaSistemas(){
     const est = describirEstadoSistema(f.cfg, f.def ? f.def.porDefecto : false);
     const form = formularioDeSistema(f.cfg);
     const sinForm = (!f.integrado || (f.def && !f.def.formularioPropio)) && form.campos.length === 0;
-    const detalle = [f.ciudad, f.integrado ? 'Integrado' : 'Personalizado', (f.integrado && f.def.formularioPropio) ? 'formulario propio' : (form.campos.length + ' campo(s)')].join(' · ');
+    const detalle = [f.ciudad, f.integrado ? 'Integrado' : 'Personalizado', (f.integrado && f.def.formularioPropio) ? 'formulario propio' : (form.preguntas.length ? ((form.base === 'libre' ? 'hecho desde cero' : 'copia de ' + (FORMULARIOS_BASE[form.base] ? FORMULARIOS_BASE[form.base].nombre : form.base)) + ' · ' + form.preguntas.length + ' pregunta(s)') : 'sin formulario')].join(' · ');
     const clave = attrJs(f.clave);
     return '<div class="sis-fila' + (est.disp ? '' : ' sis-fila-off') + '">' +
       '<div class="sis-ico">' + escapeHtml(f.icono) + '</div>' +
@@ -8101,6 +8342,8 @@ async function eliminarSistema(clave){
 }
 
 /* ----- ventana de configuración (crear / editar) ----- */
+let baseEnEdicion = '';         // 'sd' | 'omsa' | 'vt' | 'tom' | 'libre' | ''
+let preguntasEnEdicion = [];    // preguntas de un formulario copiado de uno existente
 function abrirModalSistema(clave){
   const def = clave ? definicionIntegrada(clave) : null;
   const cfg = clave ? configSistema(clave) : null;
@@ -8110,22 +8353,25 @@ function abrirModalSistema(clave){
   document.getElementById('sisNombre').value = (cfg && cfg.nombre) || (def && def.nombre) || '';
   document.getElementById('sisNombre').disabled = !!def;
   document.getElementById('sisIcono').value = (cfg && cfg.icono) || (def && def.icono) || '🧩';
-  document.getElementById('sisCiudad').value = (cfg && cfg.ciudad) || (def && def.ciudad) || 'Todas';
   document.getElementById('sisCiudadBox').style.display = def ? 'none' : 'block';
   document.getElementById('sisIconosSugeridos').innerHTML = ICONOS_SUGERIDOS.map(i=> '<button type="button" class="sis-icono-btn" onclick="document.getElementById(\'sisIcono\').value=\'' + i + '\'">' + i + '</button>').join('');
   const programado = !!cfg && String(cfg.modo) === 'programado';
   document.getElementById('sisModoManual').checked = !programado;
   document.getElementById('sisModoProgramado').checked = programado;
-  const dispManual = cfg ? String(cfg.disponible) === 'si' : (def ? def.porDefecto : false);
-  document.getElementById('sisDisponibleManual').checked = dispManual;
+  document.getElementById('sisDisponibleManual').checked = cfg ? String(cfg.disponible) === 'si' : (def ? def.porDefecto : false);
   document.getElementById('sisHabilitarEn').value = msADatetimeLocal(cfg && cfg.habilitarEn);
   document.getElementById('sisDeshabilitarEn').value = msADatetimeLocal(cfg && cfg.deshabilitarEn);
   actualizarModoDisponibilidad();
+
+  const form = formularioDeSistema(cfg);
+  baseEnEdicion = esIntegradoPropio ? '' : ((cfg && form.preguntas.length) ? form.base : '');
+  preguntasEnEdicion = []; camposEnEdicion = [];
+  if(baseEnEdicion === 'libre') camposEnEdicion = form.preguntas.map(p=> ({id:p.id, etiqueta:p.etiqueta, tipo:p.tipo, requerido:p.req, opciones:p.opciones.slice(), opcionesTexto:p.opciones.join(', ')}));
+  else if(baseEnEdicion) preguntasEnEdicion = form.preguntas.map(p=> Object.assign({}, p, {opcionesTexto: p.modo === 'nueva' ? p.opciones.join('\n') : ''}));
+  actualizarCiudadesSegunBase((cfg && cfg.ciudad) || (def && def.ciudad) || 'Santo Domingo');
   document.getElementById('sisFormularioBox').style.display = esIntegradoPropio ? 'none' : 'block';
   document.getElementById('sisFormularioIntegradoNota').style.display = esIntegradoPropio ? 'block' : 'none';
-  camposEnEdicion = formularioDeSistema(cfg).campos.map(c=> Object.assign({}, c, {opcionesTexto: (c.opciones || []).join(', ')}));
-  document.getElementById('sisPlantilla').value = '';
-  renderBuilderCampos();
+  renderBasesFormulario(); renderConstructorFormulario();
   document.getElementById('err-sistemaModal').style.display = 'none';
   document.getElementById('sistemaModal').style.display = 'flex';
 }
@@ -8135,32 +8381,103 @@ function actualizarModoDisponibilidad(){
   document.getElementById('sisManualBox').style.display = prog ? 'none' : 'block';
   document.getElementById('sisProgramadoBox').style.display = prog ? 'block' : 'none';
 }
-function cargarPlantillaFormulario(){
-  const clave = document.getElementById('sisPlantilla').value; if(!clave) return;
-  const aplicar = ()=>{ camposEnEdicion = camposDePlantilla(clave).map(c=> Object.assign({}, c, {opcionesTexto:(c.opciones || []).join(', ')})); renderBuilderCampos(); };
-  if(camposEnEdicion.length){ confirmarPersonalizado('Esto reemplaza los campos que ya tienes en el formulario. ¿Continuar?').then(ok=>{ if(ok) aplicar(); else document.getElementById('sisPlantilla').value = ''; }); }
+// La provincia decide en qué historial se guardan las incidencias. "Todas" solo existe para formularios hechos desde cero.
+function actualizarCiudadesSegunBase(valorDeseado){
+  const sel = document.getElementById('sisCiudad'); if(!sel) return;
+  const actual = valorDeseado || sel.value;
+  const opciones = baseEnEdicion === 'libre' ? [['Todas','Todas las provincias'], ['Santo Domingo','Santo Domingo'], ['Santiago','Santiago']] : [['Santo Domingo','Santo Domingo'], ['Santiago','Santiago']];
+  sel.innerHTML = opciones.map(o=> '<option value="' + o[0] + '">' + o[1] + '</option>').join('');
+  sel.value = opciones.some(o=> o[0] === actual) ? actual : opciones[0][0];
+  actualizarNotaDestino();
+}
+function actualizarNotaDestino(){
+  const el = document.getElementById('sisDestinoNota'); if(!el) return;
+  const prov = document.getElementById('sisCiudad').value;
+  if(!baseEnEdicion){ el.textContent = ''; return; }
+  if(baseEnEdicion === 'libre') el.textContent = 'Las incidencias se verán en Historial → Otros sistemas.';
+  else el.textContent = 'Las incidencias se guardarán en el historial de ' + (prov === 'Santiago' ? 'Validador / Torniquete (Santiago)' : 'Sistema de Transporte (Santo Domingo)') + ', junto a las demás, y entran en los mismos reportes, gráficos y exportaciones.';
+}
+function renderBasesFormulario(){
+  const cont = document.getElementById('sisBasesBox'); if(!cont) return;
+  const tarjeta = (k, nombre, desc)=> '<div class="sis-base' + (baseEnEdicion === k ? ' sel' : '') + '" onclick="elegirBaseFormulario(\'' + k + '\')"><b>' + escapeHtml(nombre) + '</b><span>' + escapeHtml(desc) + '</span></div>';
+  cont.innerHTML = ['sd','omsa','vt','tom'].map(k=> tarjeta(k, FORMULARIOS_BASE[k].nombre, FORMULARIOS_BASE[k].desc)).join('') +
+    tarjeta('libre', 'Crear desde cero', 'Tú defines cada pregunta');
+}
+function elegirBaseFormulario(key){
+  if(key === baseEnEdicion) return;
+  const hayCambios = baseEnEdicion === 'libre' ? camposEnEdicion.length > 0 : preguntasEnEdicion.length > 0;
+  const aplicar = ()=>{
+    baseEnEdicion = key;
+    if(key === 'libre'){ camposEnEdicion = []; preguntasEnEdicion = []; }
+    else { camposEnEdicion = []; preguntasEnEdicion = instanciarBase(key).map(q=> Object.assign({}, q, {opcionesTexto:''})); }
+    actualizarCiudadesSegunBase(document.getElementById('sisCiudad').value);
+    renderBasesFormulario(); renderConstructorFormulario();
+  };
+  if(baseEnEdicion && hayCambios) confirmarPersonalizado('Cambiar de formulario reemplaza las preguntas que ya configuraste. ¿Continuar?').then(ok=>{ if(ok) aplicar(); });
   else aplicar();
 }
+function renderConstructorFormulario(){
+  const copiado = !!baseEnEdicion && baseEnEdicion !== 'libre';
+  document.getElementById('sisPreguntasBox').style.display = copiado ? 'block' : 'none';
+  document.getElementById('sisLibreBox').style.display = baseEnEdicion === 'libre' ? 'block' : 'none';
+  document.getElementById('sisSinBase').style.display = baseEnEdicion ? 'none' : 'block';
+  if(copiado) renderPreguntasEdicion();
+  if(baseEnEdicion === 'libre') renderBuilderCampos();
+}
+function renderPreguntasEdicion(){
+  const cont = document.getElementById('sisPreguntasBuilder'); if(!cont) return;
+  cont.innerHTML = preguntasEnEdicion.map((q,i)=>{
+    let cuerpo = '';
+    if(q.tipo === 'lista'){
+      const fuentes = q.fuentes.length ? q.fuentes : [q.fuente];
+      const optsFuente = fuentes.filter(f=> LISTAS_ORIGINALES[f]).map(f=> '<option value="' + f + '"' + (q.fuente === f ? ' selected' : '') + '>' + escapeHtml(LISTAS_ORIGINALES[f].nombre) + ' (' + LISTAS_ORIGINALES[f].get({}, '').length + ')</option>').join('');
+      const orig = LISTAS_ORIGINALES[q.fuente] ? LISTAS_ORIGINALES[q.fuente].get({}, '') : [];
+      cuerpo = '<div class="sis-lista-modo">' +
+        '<label class="sis-radio"><input type="radio" name="lm' + i + '" ' + (q.modo === 'original' ? 'checked' : '') + ' onchange="cambiarModoLista(' + i + ',\'original\')"> Usar una lista que ya existe</label>' +
+        (q.modo === 'original' ? '<select onchange="cambiarFuenteLista(' + i + ',this.value)">' + optsFuente + '</select><div class="sis-lista-vista">' + orig.slice(0,6).map(escapeHtml).join(' · ') + (orig.length > 6 ? ' …' : '') + '</div>' : '') +
+        '<label class="sis-radio"><input type="radio" name="lm' + i + '" ' + (q.modo === 'nueva' ? 'checked' : '') + ' onchange="cambiarModoLista(' + i + ',\'nueva\')"> Crear una lista nueva</label>' +
+        (q.modo === 'nueva' ? '<textarea rows="4" placeholder="Escribe una opción por línea" oninput="preguntasEnEdicion[' + i + '].opcionesTexto=this.value">' + escapeHtml(q.opcionesTexto || '') + '</textarea>' : '') +
+        '</div>';
+    } else if(q.tipo === 'estado'){
+      cuerpo = '<div class="sis-nota">Usa los estados originales (' + (LISTAS_ORIGINALES[q.fuente] ? LISTAS_ORIGINALES[q.fuente].get().map(escapeHtml).join(', ') : '') + '). No se cambian porque con ellos el sistema sabe qué incidencias están resueltas y cuáles pendientes.</div>';
+    } else cuerpo = '<div class="sis-nota">' + TIPO_PREGUNTA_TEXTO[q.tipo] + (q.req ? ' · obligatoria' : ' · opcional') + '</div>';
+    return '<div class="sis-pregunta"><div class="sis-pregunta-cab"><div class="sis-campo-num">' + (i+1) + '</div>' +
+      '<input type="text" value="' + escapeHtml(q.etiqueta) + '" oninput="preguntasEnEdicion[' + i + '].etiqueta=this.value">' +
+      (q.opcional ? '<button type="button" class="sis-quitar" onclick="quitarPregunta(' + i + ')" title="Quitar esta pregunta">✕</button>' : '') + '</div>' + cuerpo + '</div>';
+  }).join('');
+}
+function cambiarModoLista(i, modo){
+  const q = preguntasEnEdicion[i]; q.modo = modo;
+  // al pasar a "lista nueva" se parte de las opciones del original, para solo editarlas
+  if(modo === 'nueva' && !String(q.opcionesTexto || '').trim() && LISTAS_ORIGINALES[q.fuente]) q.opcionesTexto = LISTAS_ORIGINALES[q.fuente].get({}, '').join('\n');
+  renderPreguntasEdicion();
+}
+function cambiarFuenteLista(i, fuente){ preguntasEnEdicion[i].fuente = fuente; renderPreguntasEdicion(); }
+function quitarPregunta(i){ if(preguntasEnEdicion[i] && preguntasEnEdicion[i].opcional){ preguntasEnEdicion.splice(i,1); renderPreguntasEdicion(); } }
+function preguntasListasParaGuardar(){
+  return preguntasEnEdicion.map(q=>{
+    const p = Object.assign({}, q);
+    const lineas = String(q.opcionesTexto || '').split(/\r?\n/).map(x=> x.trim()).filter(Boolean);
+    p.opciones = q.modo === 'nueva' ? lineas.filter((x,i)=> lineas.indexOf(x) === i) : [];
+    p.etiqueta = String(q.etiqueta || '').trim();
+    delete p.opcionesTexto;
+    return p;
+  });
+}
+/* constructor "desde cero" (campos libres) */
 function renderBuilderCampos(){
   const cont = document.getElementById('sisCamposBuilder'); if(!cont) return;
-  if(!camposEnEdicion.length){ cont.innerHTML = '<div class="empty-state" style="padding:14px;">Todavía no hay campos. Elige una plantilla arriba o agrega el primero.</div>'; return; }
+  if(!camposEnEdicion.length){ cont.innerHTML = '<div class="empty-state" style="padding:14px;">Todavía no hay campos. Agrega el primero.</div>'; return; }
   cont.innerHTML = camposEnEdicion.map((c,i)=>
-    '<div class="sis-campo-fila">' +
-      '<div class="sis-campo-num">' + (i+1) + '</div>' +
-      '<div class="sis-campo-cuerpo">' +
-        '<input type="text" placeholder="Nombre del campo (ej: Estación)" value="' + escapeHtml(c.etiqueta) + '" oninput="camposEnEdicion[' + i + '].etiqueta=this.value">' +
-        '<div class="sis-campo-opciones">' +
-          '<select onchange="camposEnEdicion[' + i + '].tipo=this.value;renderBuilderCampos()">' + Object.keys(TIPOS_CAMPO).map(t=> '<option value="' + t + '"' + (c.tipo === t ? ' selected' : '') + '>' + TIPOS_CAMPO[t] + '</option>').join('') + '</select>' +
-          '<label class="sis-check"><input type="checkbox" ' + (c.requerido ? 'checked' : '') + ' onchange="camposEnEdicion[' + i + '].requerido=this.checked"> Obligatorio</label>' +
-        '</div>' +
-        (c.tipo === 'lista' ? '<input type="text" placeholder="Opciones separadas por coma (ej: Pendiente, En proceso, Resuelta)" value="' + escapeHtml(c.opcionesTexto || '') + '" oninput="camposEnEdicion[' + i + '].opcionesTexto=this.value">' : '') +
-      '</div>' +
-      '<div class="sis-campo-acciones">' +
-        '<button type="button" onclick="moverCampo(' + i + ',-1)" title="Subir"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
-        '<button type="button" onclick="moverCampo(' + i + ',1)" title="Bajar"' + (i === camposEnEdicion.length-1 ? ' disabled' : '') + '>▼</button>' +
-        '<button type="button" onclick="quitarCampo(' + i + ')" title="Quitar">✕</button>' +
-      '</div>' +
-    '</div>').join('');
+    '<div class="sis-campo-fila"><div class="sis-campo-num">' + (i+1) + '</div><div class="sis-campo-cuerpo">' +
+      '<input type="text" placeholder="Nombre del campo (ej: Estación)" value="' + escapeHtml(c.etiqueta) + '" oninput="camposEnEdicion[' + i + '].etiqueta=this.value">' +
+      '<div class="sis-campo-opciones"><select onchange="camposEnEdicion[' + i + '].tipo=this.value;renderBuilderCampos()">' + Object.keys(TIPOS_CAMPO).map(t=> '<option value="' + t + '"' + (c.tipo === t ? ' selected' : '') + '>' + TIPOS_CAMPO[t] + '</option>').join('') + '</select>' +
+      '<label class="sis-check"><input type="checkbox" ' + (c.requerido ? 'checked' : '') + ' onchange="camposEnEdicion[' + i + '].requerido=this.checked"> Obligatorio</label></div>' +
+      (c.tipo === 'lista' ? '<input type="text" placeholder="Opciones separadas por coma (ej: Pendiente, En proceso, Resuelta)" value="' + escapeHtml(c.opcionesTexto || '') + '" oninput="camposEnEdicion[' + i + '].opcionesTexto=this.value">' : '') +
+    '</div><div class="sis-campo-acciones">' +
+      '<button type="button" onclick="moverCampo(' + i + ',-1)" title="Subir"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
+      '<button type="button" onclick="moverCampo(' + i + ',1)" title="Bajar"' + (i === camposEnEdicion.length-1 ? ' disabled' : '') + '>▼</button>' +
+      '<button type="button" onclick="quitarCampo(' + i + ')" title="Quitar">✕</button></div></div>').join('');
 }
 function agregarCampo(){
   if(camposEnEdicion.length >= MAX_CAMPOS_FORMULARIO){ avisoSistemas('Máximo ' + MAX_CAMPOS_FORMULARIO + ' campos por formulario.', 'error'); return; }
@@ -8191,27 +8508,39 @@ async function guardarModalSistema(){
     if(desde !== null && hasta !== null && hasta <= desde){ mostrarError('La fecha de deshabilitar debe ser posterior a la de habilitar.'); return; }
   }
   const esIntegradoPropio = !!(def && def.formularioPropio);
-  let campos = [];
+  const ciudad = def ? def.ciudad : document.getElementById('sisCiudad').value;
+  let formularioJson = null, totalPreguntas = 0;
   if(!esIntegradoPropio){
-    campos = camposListosParaGuardar();
-    const problemas = validarDefinicionCampos(campos);
-    // Un sistema sin formulario solo puede quedar deshabilitado.
     const quedaraHabilitado = programado ? true : document.getElementById('sisDisponibleManual').checked;
-    if(problemas.length && (quedaraHabilitado || esNuevo)){ mostrarError(problemas[0]); return; }
+    if(!baseEnEdicion){
+      if(quedaraHabilitado || esNuevo){ mostrarError('Elige el formulario del sistema: copia uno que ya existe o crea uno desde cero.'); return; }
+    } else if(baseEnEdicion === 'libre'){
+      const campos = camposListosParaGuardar();
+      const problemas = validarDefinicionCampos(campos);
+      if(problemas.length && (quedaraHabilitado || esNuevo)){ mostrarError(problemas[0]); return; }
+      formularioJson = JSON.stringify({base:'libre', campos}); totalPreguntas = campos.length;
+    } else {
+      const preguntas = preguntasListasParaGuardar();
+      const problemas = validarPreguntas(preguntas, baseEnEdicion);
+      if(problemas.length && (quedaraHabilitado || esNuevo)){ mostrarError(problemas[0]); return; }
+      formularioJson = JSON.stringify({base:baseEnEdicion, preguntas}); totalPreguntas = preguntas.length;
+    }
   }
   const reg = cfg ? Object.assign({}, cfg) : (def ? registroBaseSistema(def) : {id:Date.now(), clave:'custom_' + Date.now(), tipo:'personalizado', orden: sistemasConfig.filter(s=> s.tipo === 'personalizado').length + 1, creadoPor: currentUser ? currentUser.nombre : '', eliminado:'no'});
   reg.nombre = nombre;
   reg.icono = document.getElementById('sisIcono').value.trim() || (def ? def.icono : '🧩');
-  reg.ciudad = def ? def.ciudad : document.getElementById('sisCiudad').value;
+  reg.ciudad = ciudad;
   reg.modo = programado ? 'programado' : 'manual';
   reg.disponible = programado ? 'no' : (document.getElementById('sisDisponibleManual').checked ? 'si' : 'no');
   reg.habilitarEn = programado && desde !== null ? desde : '';
   reg.deshabilitarEn = programado && hasta !== null ? hasta : '';
-  if(!esIntegradoPropio) reg.formulario = JSON.stringify({campos});
-  registrarAuditoria((esNuevo ? 'Creó' : 'Configuró') + ' el sistema "' + nombre + '"', (programado ? 'Programado' : ('Manual: ' + (reg.disponible === 'si' ? 'disponible' : 'no disponible'))) + (esIntegradoPropio ? '' : ' | ' + campos.length + ' campo(s)'));
+  if(formularioJson !== null) reg.formulario = formularioJson;
+  registrarAuditoria((esNuevo ? 'Creó' : 'Configuró') + ' el sistema "' + nombre + '"', (programado ? 'Programado' : ('Manual: ' + (reg.disponible === 'si' ? 'disponible' : 'no disponible'))) + ' | Provincia: ' + ciudad + (esIntegradoPropio ? '' : ' | Formulario: ' + (baseEnEdicion === 'libre' ? 'desde cero' : (FORMULARIOS_BASE[baseEnEdicion] ? FORMULARIOS_BASE[baseEnEdicion].nombre : '—')) + ' (' + totalPreguntas + ' preguntas)'));
   cerrarModalSistema();
   await guardarRegistroSistema(reg);
 }
+
+
 
 /* ---------- arranque ---------- */
 function iniciarModuloSistemas(){
@@ -12921,8 +13250,9 @@ async function exportarExcel(){
   }
   if(vtRecords.length){
     // Se separan por tipo de equipo: si el "gate" empieza con "TOM" es un TOM, si no, es Torniquete/Gate.
-    const tomsRecs = vtRecords.filter(r=> /^TOM/i.test(String(r.gate||'').trim()));
-    const gatesRecs = vtRecords.filter(r=> !/^TOM/i.test(String(r.gate||'').trim()));
+    const _part = particionarVtParaExcel(vtRecords);   // TOMs, Torniquetes y una hoja por cada sistema nuevo
+    const tomsRecs = _part.toms;
+    const gatesRecs = _part.gates;
 
     const anchosRef = [{wch:18},{wch:38},{wch:44},{wch:24},{wch:20},{wch:20},{wch:26},{wch:20},{wch:60}];
     // Orden EXACTO de columnas, tal como en tus archivos de referencia — se fuerza explícitamente
@@ -12962,6 +13292,26 @@ async function exportarExcel(){
       wsGates['!cols'] = anchosRef;
       XLSX.utils.book_append_sheet(wb, wsGates, "DatosGATES");
     }
+    // Un sistema nuevo de Santiago sale en su propia hoja, con el mismo formato de las otras dos.
+    Object.keys(_part.custom).forEach(nombreSis=>{
+      const cab = headerGates.slice(); cab[2] = 'SELECCIONE EQUIPO QUE PRESENTE INCIDENCIA';
+      const datosSis = _part.custom[nombreSis].map(r=>({
+        'Fecha del Reporte': r.fecha,
+        'ESTACION DONDE OCURRIO INCIDENCIA': r.estacion,
+        'SELECCIONE EQUIPO QUE PRESENTE INCIDENCIA': r.gate,
+        'DESCRIPCION DE FALLA': r.falla,
+        '¿CUANTAS VECES HA OCURRIDO ESTA FALLA?': r.veces,
+        'ESTA FALLA HABIA SIDO REPORTADA': String(r.reportada||'').replace('Sí','Si'),
+        'SE REPITE ESTA INCIDENCIA EN EL MISMO EQUIPO': String(r.repiteMismoEquipo||'').replace('Sí','Si'),
+        'ESTATUS ACTUAL QUE PERMANECE': r.estado,
+        'AGREGA UN COMENTARIO ADICIONAL SOBRE LA SOLUCION APLICADA': r.comentario||''
+      }));
+      const wsSis = XLSX.utils.json_to_sheet(datosSis, {header: cab});
+      wsSis['!cols'] = anchosRef;
+      let nombreHoja = String(nombreSis).replace(/[\\\/\?\*\[\]:]/g, ' ').slice(0, 28) || 'Sistema', nHoja = 1; const baseHoja = nombreHoja;
+      while(wb.SheetNames.indexOf(nombreHoja) !== -1){ nHoja++; nombreHoja = baseHoja + ' ' + nHoja; }
+      XLSX.utils.book_append_sheet(wb, wsSis, nombreHoja);
+    });
   }
 
   // ---- Hoja de Resumen: fórmulas de Excel reales (se recalculan solas si editas los datos) ----
@@ -12986,8 +13336,9 @@ async function exportarExcel(){
     sistemasConteo = sistemasUnicos.map(sis=>({label:sis, value: records.filter(r=>r.sistema===sis).length}));
   }
   if(vtRecords.length){
-    const tomsRecsResumen = vtRecords.filter(r=> /^TOM/i.test(String(r.gate||'').trim()));
-    const gatesRecsResumen = vtRecords.filter(r=> !/^TOM/i.test(String(r.gate||'').trim()));
+    const _partR = particionarVtParaExcel(vtRecords);
+    const tomsRecsResumen = _partR.toms;
+    const gatesRecsResumen = _partR.gates;
 
     if(tomsRecsResumen.length){
       filas.push(['TOMS — BOLETERÍA (Santiago)']);
